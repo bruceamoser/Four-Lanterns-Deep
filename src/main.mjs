@@ -331,6 +331,7 @@ async function init() {
       selectedAction = null;
       scene.showPath([]);
     }
+    if (type === "world-objects") scene.syncInteractions(game.worldInteractions());
     if (type === "loot") {
       scene.highlightInteraction(null);
       scene.syncInteractions(game.worldInteractions());
@@ -1453,7 +1454,7 @@ function shop() {
 function dying(h) {
   dialog(
     `${esc(h.name)} is Dying`,
-    `<p>Spend Grit to return to full available HP, or make a Fortitude death roll. Spent Grit does not return through ordinary rest.</p>`,
+    h.draft.forge?.version === 2 ? `<p>${esc(game.deathSummary(h))}. Spend Grit to recover ${Math.ceil(h.survival.maxHp / 2)} HP or make a Fortitude death roll.</p>` : `<p>Spend Grit to return to full available HP, or make a Fortitude death roll.</p>`,
     `<button id="death-roll">Make death roll</button><button id="grit" ${h.survival.gritAvailable ? "" : "disabled"}>Spend 1 Grit</button>`,
   );
   modal.querySelector(".close").onclick = () =>

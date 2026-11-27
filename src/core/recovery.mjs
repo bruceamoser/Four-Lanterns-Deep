@@ -1,3 +1,4 @@
+import { deedsHero } from "./deeds-development.mjs";
 import { wallAt } from "./battlefield.mjs";
 import { ABILITIES } from "./abilities.mjs";
 import { distance, key } from "./dungeon.mjs";
@@ -184,6 +185,10 @@ export const recoveryMethods = {
       const id = this.creatureIdentity(source);
       if (!h.grudges.includes(id)) h.grudges.push(id);
     }
+    if (deedsHero(h.draft)) {
+      if (amount > 0) h.conditions = h.conditions.filter(c => c.key !== "asleep");
+      return this.deedsHarm(h, amount, type);
+    }
     const prior = h.survival.wounds,
       result = this.R.sufferDamage(h.survival, amount);
     h.survival = result.state;
@@ -251,7 +256,7 @@ export const recoveryMethods = {
     else this.advance();
     this.emit("change");
   },
-  forceMove(actor, dir, amount) {
+  forceMove(actor, dir, amount, source = null) {
     if (
       !Number.isInteger(dir?.x) ||
       !Number.isInteger(dir?.z) ||
@@ -274,6 +279,12 @@ export const recoveryMethods = {
       ...this.enemies.filter((e) => e.hp > 0),
     ];
     const hit = (h, n) => {
+      if (deedsHero(h.draft) || deedsHero(source?.draft)) {
+        const damage = this.powerDamage(h,n + (source ? this.buildStat(source,"impact") : 0),"physical",source,false);
+        this.note(h.name + " takes " + damage + " collision damage.");
+        this.emit("feedback",{id:h.id,kind:"damage",text:"COLLISION · " + damage});
+        return;
+      }
       const damage = this.R.damageEvent({
         components: [{ type: "physical", amount: n }],
         resistances: h.survival
@@ -335,7 +346,7 @@ export const recoveryMethods = {
         ...next.map((p) => (this.map.tiles[key(p.x, p.z)].difficult ? 2 : 1)),
       );
     }
-    if (collision) {
+    if (collision && !deedsHero(source?.draft) && !deedsHero(actor.draft)) {
       const p = { x: actor.x - dir.x, z: actor.z - dir.z };
       if (
         this.map.tiles[key(p.x, p.z)] &&
@@ -368,12 +379,12 @@ export const recoveryMethods = {
       if (!e) continue;
       this.suffer(
         h,
-        e.damage.total,
+        deedsHero(h.draft) ? e.damage.subtotal : e.damage.total,
         key === "burning" ? "fire" : key === "freezing" ? "cold" : "physical",
         prior.find((c) => c.key === key)?.source,
       );
       this.note(
-        `${h.name}: ${e.damage.total} ${key} damage; temporary severity decays afterward.`,
+        `${h.name}: ${deedsHero(h.draft) ? e.damage.subtotal : e.damage.total} ${key} damage; temporary severity decays afterward.`,
       );
     }
   },

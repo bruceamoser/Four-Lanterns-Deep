@@ -455,8 +455,17 @@ export const expeditionMethods = {
     if (reason) throw new Error(reason);
     this.paths.clear();
     for (const h of this.party) h.torch.lit = false;
+    const start = this.clock().seconds;
     this.advanceTime(3600, { sleeping: true, provisions: true });
-    for (const h of this.party.filter((h) => h.survival.status === "active")) {
+    for (const h of this.party.filter(h => ["stable","active"].includes(h.survival.status))) {
+      if (h.draft.forge?.version === 2) {
+        const now = this.clock().seconds;
+        h.innRestHours = (h.innRestEnd === start ? h.innRestHours ?? 0 : 0) + 1;
+        h.innRestEnd = now;
+        this.recoverBrief(h);
+        if (h.innRestHours >= 8 && this.recoverNight(h)) h.innRestHours = 0;
+        continue;
+      }
       const before = h.survival.hp;
       h.survival = this.R.receiveHealing(h.survival, 2);
       h.survival.hp = Math.max(

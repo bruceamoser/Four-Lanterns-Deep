@@ -1,3 +1,7 @@
+import { furnishDelve, vaultMethods } from "./deeds-vault.mjs";
+import { deedsDamage, coverBetween } from "./deeds-damage.mjs";
+import { deedsCareMethods, deathBand } from "./deeds-care.mjs";
+import { deedsHero } from "./deeds-development.mjs";
 import { discoveryMethods } from "./discoveries.mjs";
 import { strongest, weaponBonus } from "./equipment-bonuses.mjs";
 import { creatureAiMethods } from "./creature-ai.mjs";
@@ -76,6 +80,13 @@ export class Game {
     this.R = catalogs.forge
       ? { ...rules, workshopCharacter: forgeCharacter }
       : rules;
+    if (catalogs.forge) {
+      for (const method of ["stabilize", "receiveHealing"]) this.R[method] = (...args) => {
+        const next = rules[method](...args);
+        if (next.successes !== undefined && next.status !== "dying") next.successes = 0;
+        return next;
+      };
+    }
     this.C = bulkCatalog(catalogs);
     this.notify = notify;
     this.listeners = [];
@@ -280,6 +291,8 @@ export class Game {
         }
       }
       this.R.validateSurvival(h.survival);
+      if (deedsHero(h.draft) && (!Number.isInteger(h.survival.successes ?? 0) || (h.survival.successes ?? 0) < 0 || (h.survival.successes ?? 0) > 2 || (h.avertDeath != null && typeof h.avertDeath !== "boolean")))
+        throw new Error("Invalid Deeds survival record.");
       this.R.validateContributions(h.conditions);
       if (
         !Number.isInteger(h.earnedLevel) ||
@@ -441,6 +454,7 @@ export class Game {
     );
     this.pendingInteraction = null;
     this.map = saved?.map ?? generate(this.campaign.seed, this.campaign.depth);
+    if (!saved && this.C.forge) furnishDelve(this.map);
     prepareLighting(this.map);
     if (!this.map.waterSources) {
       const room = this.map.rooms[1] ?? this.map.rooms[0] ?? this.map.start;
@@ -504,6 +518,7 @@ export class Game {
             ? this.uniqueMagic((treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth)
             : this.treasureDraw(c.vault ? "vault" : c.dropped ? "loose" : "coffer", (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth),
         ].filter(Boolean);
+        if (c.vault && !saved) c.items.push(this.createFind("antitoxin","vault-bottle-"+(this.map.lootSeed ?? treasureSeed)));
       });
     if (!saved && this.map.chests[0])
       this.map.chests[0].items.push(
@@ -1083,7 +1098,7 @@ export class Game {
       this.attribute(h, "knowledge") > this.attribute(h, action.attribute)
         ? "knowledge"
         : action.attribute;
-    const result = this.rollFor(h, defenseAttribute, boons, banes, {
+    const result = this.rollFor(h, defenseAttribute, boons + (deedsHero(h.draft) ? coverBetween(this.map,e,h) : 0), banes, {
       mode: "defense",
       target: e,
       type: action.type,
@@ -1096,7 +1111,7 @@ export class Game {
       projectile: !!action.ammunition,
     });
     const outcome = action.outcomes[result.tier];
-    const damage = this.R.damageEvent({
+    const damage = (deedsHero(h.draft) ? deedsDamage : this.R.damageEvent)({
       components: [
         {
           type: action.type,
@@ -1286,7 +1301,7 @@ export class Game {
         return "Choose wearable equipment.";
       if (
         operation === "wear" &&
-        tier &&
+        tier && !deedsHero(h.draft) &&
         !h.preview.state.abilities.includes(`ability-wear-${tier}-armor`)
       )
         return `Requires ${tier} armor training.`;
@@ -1973,6 +1988,7 @@ export class Game {
             )),
       )
     ) {
+      this.recordScars();
       this.awardEncounterXP(
         this.encounter.roster
           .filter((r) => r.side === "opposition")
@@ -2093,6 +2109,10 @@ export class Game {
     e.powerTurn = (e.powerTurn ?? 0) + 1;
     this.surfaceContact(e);
     this.enemyManeuver(e);
+    if (e.vaultKeeper && this.enemyCapable(e) && e.retained.includes("main") && distance(e,this.map.vault.bell) <= 1 &&
+        !e.conditions.some(c => ["grappled","paralyzed","slowed","dazed"].includes(c.key)) && this.ringVault()) {
+      this.finishEnemyTurn(e); return;
+    }
     const h = this.enemyTarget(e);
     e.aiState ??= {};
     if (h) {
@@ -2215,6 +2235,17 @@ export class Game {
 
   survivalChoice(kind) {
     const h = this.active;
+    if (deedsHero(h.draft)) {
+      if (kind === "grit") return this.useGrit(h);
+      if (kind !== "roll" || h.survival.status !== "dying" || h.survival.due !== h.survival.ownTurn)
+        throw new Error("No death roll is due.");
+      h.survival = deathBand(h.survival, this.heroRoll(h,"fortitude","death").tier, h.avertDeath !== false);
+      h.survival.due = null;
+      h.survival.choice = { kind:"roll", turn:h.survival.ownTurn, resolved:true };
+      this.note(h.name + " · " + this.deathSummary(h));
+      this.emit("change");
+      return;
+    }
     const result =
       kind === "roll" ? this.heroRoll(h, "fortitude", "death") : null;
     h.survival = this.R.resolveSurvival(
@@ -2366,7 +2397,7 @@ Object.assign(Game.prototype, ancestryGameMethods);
 
 Object.assign(Game.prototype, tacticMethods);
 
-Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods);
+Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods, deedsCareMethods, vaultMethods);
 
 Object.assign(Game.prototype, powerMethods, battlefieldMethods);
 Object.assign(Game.prototype, buildMethods, forgeGameMethods);

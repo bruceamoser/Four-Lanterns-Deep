@@ -145,7 +145,10 @@ test("click-to-open approach waits for hazard approval and cancellation discards
 test("walking powers and voluntary swaps also require approval before their action cost", () => {
   for (const id of ["power-crosswind", "power-spirit-crossing"]) {
     const g = arena();
+    g.active.sp = 6;
     g.provoke = () => false;
+    for (const i of g.active.preview.inventory.items.filter(i=>i.held)) g.active.draft.loadout[i.instanceId] = {held:false};
+    g.refreshHero(g.active);
     g.active.preview.state.abilities.push(id);
     const target =
       id === "power-spirit-crossing" ? g.party[1].id : { x: 7, z: 4 };

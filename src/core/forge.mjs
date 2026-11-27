@@ -27,6 +27,7 @@ export function newForgeDraft() {
     traitIds: [],
     languages: { home: "common" },
     classDisciplines: [],
+    signatures: {},
     culture: {},
     background: {},
     forge: { version: FORGE_VERSION, nodes: [] },
@@ -44,7 +45,7 @@ export function forgeCatalog(source) {
   c.choices = c.choices.filter(
     (r) =>
       r.kind !== "ability" ||
-      powers.has(r.id) ||
+      POWERS[r.id]?.signature || powers.has(r.id) ||
       grants.has(r.id) ||
       (r.universal &&
         ![
@@ -58,7 +59,8 @@ export function forgeCatalog(source) {
         ].includes(r.id)),
   );
   for (const r of c.choices) {
-    if (r.kind === "class") r.signatures = {};
+    if (r.kind === "class")
+      r.signatures = Object.fromEntries([1,3,7].map(level => [level,r.signatures[level].filter(id => POWERS[id]?.signature)]));
     if (r.kind === "origin")
       r.pairs = [
         ...new Map(
@@ -135,13 +137,15 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
   if (owned.has(node.id)) return ["Already learned."];
   if (node.kind === "origin" && level < 2 && !deedsHero(draft))
     reasons.push("Learn additional disciplines from level 2.");
-  if (level < (node.minimumLevel ?? 1))
-    reasons.push(`Requires level ${node.minimumLevel}.`);
+  const mastery = deedsHero(draft) && node.mastery;
+  const minimumLevel = mastery ? 7 : (node.minimumLevel ?? 1);
+  if (level < minimumLevel)
+    reasons.push(`Requires level ${minimumLevel}.`);
   for (const id of node.requires ?? [])
     if (!owned.has(id)) reasons.push(`Unlock ${FORGE_NODE[id]?.name ?? id}.`);
   const ranks = forgeRanks(draft, C);
   if (
-    node.minimumRank &&
+    !mastery && node.minimumRank &&
     (ranks[`discipline-${node.discipline}`] ?? 0) < node.minimumRank
   )
     reasons.push(
@@ -218,6 +222,14 @@ export function forgeBenefits(draft, C) {
     upgrades = [],
     abilities = deedsHero(draft) ? ["power-forge-strike", "power-forge-shot", "ability-stabilize"] : [],
     recipes = [];
+  if (deedsHero(draft)) {
+    const signatures = Object.values(draft.signatures ?? {}).map(id => POWERS[id]).filter(p => p?.signature && p.classId === draft.classId && p.minimumLevel <= draft.progression.level);
+    for (const power of signatures) {
+      abilities.push(power.id);
+      for (const [key,value] of Object.entries(power.buildStats ?? {}))
+        stats[key] = Math.max(stats[key] ?? 0,value);
+    }
+  }
   if (!deedsHero(draft) && draft.traitIds?.includes("trait-human-far-walker")) {
     stats.movement = 1;
     stats.capacity = 2;
@@ -329,6 +341,9 @@ export function forgeCharacter(draft, C) {
   )
     error("traits", "Choose two distinct ancestry traits.");
   if (deedsHero(draft)) {
+    for (const [tier,id] of Object.entries(draft.signatures ?? {}))
+      if (!cls?.signatures?.[tier]?.includes(id) || Number(tier) > draft.progression.level)
+        error("signature","Choose a signature for this class and trained level.");
     for (const stat of DEEDS_CLASSES[draft.classId]?.minimum ?? [])
       if (attr[stat] < 0) error("class", "This class requires at least 0 " + stat + ".");
     const roots = forgeOrigins(draft, C);
@@ -410,7 +425,7 @@ export function forgeCharacter(draft, C) {
           (r.instanceId.startsWith("kit:") &&
             !!kit?.held.includes(r.catalogId)),
         worn: armor
-          ? b.abilities.includes(`ability-wear-${armor}-armor`) &&
+          ? (deedsHero(draft) || b.abilities.includes(`ability-wear-${armor}-armor`)) &&
             (saved?.worn ?? r.instanceId.startsWith("kit:"))
           : (saved?.worn ?? r.catalogId === "item-travel-clothes"),
         inventoryDie: definition.inventoryDie,
@@ -556,17 +571,35 @@ export function forgePower(spec, h) {
         self: true,
       });
   }
+  if (deedsHero(h.draft)) {
+    if (p.id === "power-forge-shot") {
+      p.normalRange = 12 + (b.stats.rangedRange ?? 0);
+      p.range = p.normalRange + 6;
+    }
+    if (p.spell) {
+      p.attribute = DEEDS_CLASSES[h.draft.classId]?.casting ?? "knowledge";
+      p.spCost = p.spCost ?? (p.rank <= 1 ? 0 : Math.min(5,(p.rank ?? 2) + Number(!!p.radius)));
+    }
+    if (p.effects.some(e => e.kind === "damage"))
+      for (const e of p.effects) if (["condition","push","pull"].includes(e.kind)) e.minimumBand ??= 1;
+    if (p.effects.some(e => e.kind === "wound")) {
+      p.effects = p.effects.flatMap(e => e.kind === "wound" ? [{kind:"stabilize"},{kind:"cleanse",keys:["bleeding","poisoned","burning"],amount:3},{kind:"heal",amount:[2,4,6]}] : [e]);
+      delete p.supply;
+    }
+  }
   return p;
 }
 export function forgePowerText(p) {
   const value = (v) => (Array.isArray(v) ? v.join("/") : v);
   return [
     `${{ main: "Action", maneuver: "Maneuver", reaction: "Reaction", passive: "Passive" }[p.category] ?? "Power"}${p.target === "self" ? "" : ` · range ${p.range ?? 0}`}${p.radius ? ` · radius ${p.radius}` : ""}${p.shape ? ` · ${p.shape}` : ""}${p.shots ? ` · ${p.shots} arrows` : ""}.`,
+    p.spell && p.spCost != null ? p.spCost + " SP · " + (p.weapon || p.shield ? "Held focus." : "Free hand required.") : "",
+    p.normalRange ? "Normal range " + p.normalRange + ". Beyond it, 1 Bane." : "",
     p.attribute && p.effects?.some((e) => ["damage", "heal"].includes(e.kind))
       ? `Roll ${p.attribute}.`
       : "",
     ...(p.effects ?? []).map(
-      (e) =>
+      (e) => (e.minimumBand === 1 ? "Standard or Strong · " : e.minimumBand === 2 ? "Strong · " : "") + (
         ({
           damage: `${value(e.amount)} ${e.type} damage.`,
           heal: `Restore ${value(e.amount)} HP.`,
@@ -592,7 +625,7 @@ export function forgePowerText(p) {
           stabilize: "Stabilize a dying companion.",
           reveal: "Reveal the target.",
           resource: `Restore/queue one ${e.resource}.`,
-        })[e.kind] ?? e.kind,
+        })[e.kind] ?? e.kind),
     ),
     p.recipes?.length
       ? `Learn ${p.recipes.map((r) => r.replace("recipe-", "").replaceAll("-", " ")).join(", ")}.`

@@ -52,6 +52,8 @@ export const forgeGameMethods = {
     const h = this.party[index];
     if (expectedHeroId && h.heroId !== expectedHeroId)
       throw new Error("The party slot changed. Reopen this hero’s forge.");
+    if (!respec) for (const [level,selected] of Object.entries(h.draft.signatures ?? {}))
+      if (selected !== draft.signatures?.[level]) throw new Error("Respec in Greyhaven to replace a chosen signature.");
     const p = forgeCharacter(draft, this.C);
     if (!p.valid) throw new Error(p.errors.map((e) => e.text).join("\n"));
     const level = p.state.level;
@@ -121,10 +123,18 @@ export const forgeGameMethods = {
         /item-ordinary-(light|medium|heavy)-armor/,
       )?.[1];
       if (
-        tier &&
+        tier && !deedsHero(draft) &&
         !next.preview.state.abilities.includes(`ability-wear-${tier}-armor`)
       )
         item.worn = false;
+    }
+    if (respec && deedsHero(draft) && !deedsHero(h.draft)) {
+      next.scars = [...(h.scars ?? []), ...h.wounds.map(w => ({text:w.record.injury, source:w.id, depth:this.campaign.depth}))];
+      next.injuryHistory = [...(h.injuryHistory ?? []), ...structuredClone(h.wounds)];
+      next.conditions = next.conditions.filter(c => !c.woundId);
+      next.wounds = [];
+      next.survival.wounds = next.scars.length;
+      delete next.survival.recovery;
     }
     next.preview = gearPreview(this.R, this.C, next);
     this.R.validateSurvival(next.survival);

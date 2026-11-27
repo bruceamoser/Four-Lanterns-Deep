@@ -291,6 +291,7 @@ export const ancestryGameMethods = {
       );
     }
     if (mode === "defense") {
+      if (h.draft?.forge?.version >= 2 && h.survival.hp === 0) banes += 3;
       bonus += this.tacticValue(h, "defense");
       if (target && distance(h, target) <= 1 && traits.some((t) => t.terror))
         bonus++;

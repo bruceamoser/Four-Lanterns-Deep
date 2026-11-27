@@ -1,3 +1,4 @@
+import { deedsHero } from "./deeds-development.mjs";
 import { delveFind } from "./delve-finds.mjs";
 import { EQUIPMENT_BONUSES, strongest } from "./equipment-bonuses.mjs";
 import { combineSupplyDice, collapseSupplyDice } from "./supply-dice.mjs";
@@ -717,7 +718,11 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
     const tier = armor.catalogId.match(
       /item-ordinary-(light|medium|heavy)-armor/,
     )?.[1];
-    if (tier && p.state.abilities.includes(`ability-wear-${tier}-armor`))
+    if (tier && deedsHero(draft) && !p.state.abilities.includes(`ability-wear-${tier}-armor`)) {
+      const penalty = {light:1,medium:2,heavy:3}[tier];
+      p.attributes.agility -= penalty;
+    }
+    if (tier && (deedsHero(draft) || p.state.abilities.includes(`ability-wear-${tier}-armor`)))
       p.resistances.physical = Math.max(
         p.resistances.physical ?? 0,
         { light: 1, medium: 2, heavy: 3 }[tier],
@@ -730,7 +735,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
   );
   p.resistances.physical = Math.min(
     3,
-    (p.resistances.physical ?? 0) + physicalBonus,
+    deedsHero(draft) ? Math.max(p.resistances.physical ?? 0, physicalBonus) : (p.resistances.physical ?? 0) + physicalBonus,
   );
   for (const e of p.equipmentEffects.filter(
     (e) => e.effect === "resistance" && e.type !== "physical",
@@ -756,7 +761,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
   );
   p.summary.speed = Math.max(
     0,
-    p.summary.unencumberedSpeed -
+    p.summary.unencumberedSpeed + (deedsHero(draft) ? p.attributes.agility - draft.attributes.agility : 0) -
       p.inventory.encumbrance +
       Math.max(
         0,
@@ -826,7 +831,8 @@ export const treasureMethods = {
       ),
     ];
     for (const i of existing.filter((i) => i.base)) {
-      seen.add(i.definition.name);
+      seen.add(i.appraisedName ?? i.definition.name);
+      if (!i.relic && i.affixes?.length) seen.add("powers:"+i.base+":"+[...i.affixes].sort().join("+"));
       seen.add(`item:${i.instanceId}`);
       if (i.relic) seen.add(`relic:${i.relic}`);
     }

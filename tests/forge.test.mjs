@@ -27,6 +27,7 @@ import { ordinaryItem } from "../src/core/treasure.mjs";
 function high(i = 0) {
   const d = structuredClone(drafts[i]);
   d.progression.level = 30;
+  d.signatures = {}; // Isolate the purchased circle from class damage and recovery bonuses.
   d.forge.nodes = [];
   return d;
 }
@@ -150,7 +151,8 @@ test("bow and melee profiles replace previous profiles, range applies to all bow
     g.powerSpec("power-barbed-arrow").effects[0].amount,
     [2, 3, 5],
   );
-  assert.equal(g.powerSpec("power-forge-shot").range, 6);
+  assert.equal(g.powerSpec("power-forge-shot").normalRange,14);
+  assert.equal(g.powerSpec("power-forge-shot").range,20);
   assert.deepEqual(
     g.powerSpec("power-forge-twin-shot").effects[0].amount,
     [2, 3, 5],
@@ -207,6 +209,7 @@ test("every learned active node can execute its actual effects in a valid arena"
       h = g.active,
       p = g.powerSpec(n.power),
       e = g.enemies[0];
+    if (p.spell && !p.shield && !p.weapon) for (const item of h.preview.inventory.items.filter(i=>i.held)) h.draft.loadout[item.instanceId] = {held:false};
     if (p.weapon) {
       for (const i of h.preview.inventory.items)
         if (i.held) h.draft.loadout[i.instanceId] = { held: false };

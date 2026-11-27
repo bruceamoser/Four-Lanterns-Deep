@@ -104,6 +104,7 @@ export function forgeStartingDrafts(examples, C) {
         reason: 0,
       };
     d.classId = s.classId;
+    d.signatures = {1:C.choices.find(r => r.id === d.classId).signatures[1][0]};
     d.classDisciplines = ["discipline-" + s.classRoot];
     d.culture = { id: s.culture, discipline: "discipline-" + s.cultureRoot };
     d.background = {

@@ -85,7 +85,7 @@ export const discoveryMethods = {
     const coins = wild ? 0 : rng.int(0, 3 + this.map.depth);
     if (!item && !coins) return;
     this.map.chests.push({ id: "spoils-" + enemy.id, x: enemy.x, z: enemy.z, dropped: true, opened: !coins, coins, recipeSearched: true, items: item ? [item] : [] });
-    this.emit("loot", { chest: this.map.chests.at(-1) });
+    this.emit("world-objects");
   },
   findTargets(h, item) {
     const effect = DELVE_FINDS[item.find].effect;

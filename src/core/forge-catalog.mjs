@@ -1297,6 +1297,7 @@ for (const d of FORGE_DISCIPLINES) {
         discipline: d.id,
         path: path.id,
         pathName: name,
+        mastery: major,
         kind: major ? "major" : "minor",
         cost: major ? Math.max(2, entry.cost) : entry.cost,
         requires: [i ? `${d.id}:${p}:${i - 1}` : origin],

@@ -289,6 +289,7 @@ export function creationScreen({
         )}${disciplineStrip(p.state, C.choices)}<p class="forge-origin-help">${forgeOrigins(draft, C).length}/3 starting points chosen. ${forgeBudget(draft, C)} total DP available across your paths. Origins grant ranks; learn attacks and techniques by purchasing circles in the forge.</p>`;
       bind("#class", "change", (e) => {
         draft.classId = e.value;
+        draft.signatures = {};
         draft.classDisciplines = [];
         changed({ origin: true });
       });
@@ -303,7 +304,7 @@ export function creationScreen({
         changed({ origin: true });
       });
     } else if (step === 4) {
-      host.innerHTML = `<div class="forge-summary-hero"><span class="eyebrow">ONE CURRENCY · EVERY PATH</span><h3>${remaining} DP to shape your hero</h3><p>Follow the circles around each starting discipline. Basic attacks, techniques, recipes and passive improvements all live in the same atlas.</p>${disciplineStrip(p.state, C.choices)}<button class="primary" id="open-creation-forge">Open discipline forge</button></div><h3 class="subheading">Your purchased circles · ${draft.forge.nodes.length}</h3><div class="forge-owned-powers">${draft.forge.nodes.map((id) => `<article><h4>${esc(FORGE_NODE[id].name)}</h4><p>${esc(FORGE_NODE[id].discipline ?? "Confluence")} · ${FORGE_NODE[id].cost} DP</p></article>`).join("") || "<p>No circles purchased yet. Learn a basic attack or spell before setting out.</p>"}</div><p class="cost-note">Saving unspent DP is allowed. New disciplines can be purchased from level 2. Rank II paths open from level 3 and rank III from level 7.</p>`;
+      host.innerHTML = `<div class="forge-summary-hero"><span class="eyebrow">ONE CURRENCY · EVERY PATH</span><h3>${remaining} DP to shape your hero</h3><p>Follow the circles around each starting discipline. Basic attacks, techniques, recipes and passive improvements all live in the same atlas.</p>${disciplineStrip(p.state, C.choices)}<button class="primary" id="open-creation-forge">Open discipline forge</button></div><h3 class="subheading">Your purchased circles · ${draft.forge.nodes.length}</h3><div class="forge-owned-powers">${draft.forge.nodes.map((id) => `<article><h4>${esc(FORGE_NODE[id].name)}</h4><p>${esc(FORGE_NODE[id].discipline ?? "Confluence")} · ${FORGE_NODE[id].cost} DP</p></article>`).join("") || "<p>No circles purchased yet. Open the Forge to specialize or select a class signature.</p>"}</div><p class="cost-note">Saving unspent DP is allowed. Discipline prices depend on your class. Rank II paths open from level 3 and rank III from level 7.</p>`;
       root.querySelector("#open-creation-forge").onclick = openAtlas;
     } else if (step === 5) {
       if (respec) {

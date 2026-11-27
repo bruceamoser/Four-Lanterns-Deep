@@ -324,7 +324,7 @@ export class Scene {
         const stairs = ["entrance", "descent"].includes(item.kind);
         const dropped = !!item.source?.dropped;
         const modelName =
-          item.kind === "spring"
+          item.kind === "ore" ? "rubble" : item.kind === "vaultDoor" ? "wallHalf" : item.kind === "bell" ? "toolAnvil" : item.kind === "spring"
             ? "well"
             : stairs
               ? "stairs"
