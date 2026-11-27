@@ -1,3 +1,4 @@
+import { DELVE_FINDS } from "../core/delve-finds.mjs";
 import { appearancePreviewHero } from "../core/appearance-preview.mjs";
 import { FORGE_NODES } from "../core/forge-catalog.mjs";
 import { appearanceControls } from "./appearance.mjs";
@@ -375,7 +376,7 @@ export function characterSheet({
               `<details class="equipment-compare"><summary>Compare equipped item</summary>${itemComparison(h, i)}</details>`,
             );
         }
-        if (i.effects?.some((e) => e.effect === "illumination")) {
+        if (!i.veiled && i.effects?.some((e) => e.effect === "illumination")) {
           host.insertAdjacentHTML(
             "beforeend",
             `<button id="item-light">${i.lightEnabled === false ? "Enable" : "Disable"} magical light</button><p class="cost-note">Fuel-free · 3 squares · active only while equipped.</p>`,
@@ -425,6 +426,17 @@ export function characterSheet({
             view.update(game.party[index]);
             draw();
           });
+        if (i.kind === "find") {
+          const d = DELVE_FINDS[i.find];
+          const targets = game.findTargets(h, i);
+          const text = i.appearance ? (game.discoveries().tried.includes(i.find) ? "Tried. Its effect is still unknown." : "Its effect is unknown. Try it or pay for identification in Greyhaven.") : d.description;
+          host.insertAdjacentHTML("beforeend", `<p>${esc(text)}</p>${d.family === "reagent" ? "" : `<label class="creator-field"><span>Target</span><select id="find-target">${targets.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("")}</select></label><button class="primary" id="use-find" ${!targets.length ? "disabled" : ""}>${d.family === "potion" ? "Drink" : d.family === "scroll" ? "Read" : "Use"}</button>`}`);
+          host.querySelector("#use-find")?.addEventListener("click", () => attempt(() => {
+            game.useFind(index, i.instanceId, host.querySelector("#find-target").value);
+            if (game.pendingDefense || game.pendingProvocation) return;
+            draw();
+          }));
+        }
         if (i.kind === "scroll") {
           const reason = game.recallReason(index);
           host.insertAdjacentHTML(

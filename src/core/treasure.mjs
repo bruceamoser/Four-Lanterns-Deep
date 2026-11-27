@@ -1,3 +1,4 @@
+import { delveFind } from "./delve-finds.mjs";
 import { EQUIPMENT_BONUSES, strongest } from "./equipment-bonuses.mjs";
 import { combineSupplyDice, collapseSupplyDice } from "./supply-dice.mjs";
 import { MATERIAL_STOCKS, stockForItem } from "./supply-stock.mjs";
@@ -269,8 +270,8 @@ const basesForDepth = (d) =>
     (k) => (k !== "medium" || d >= 3) && (k !== "heavy" || d >= 7),
   );
 export function magicItem(seed, depth = 1, options = {}) {
-  if ((options.revision ?? 3) === 3)
-    return approvedMagicItem(seed, depth, options);
+  if ([3, 4].includes(options.revision ?? 4))
+    return approvedMagicItem(seed, depth, { ...options, revision: options.revision ?? 4 });
   const old = legacyMagicItem(seed, depth, options);
   const alternatives = {
     ram: ["push", "capacity", "protect-dazed", "armorward"],
@@ -475,7 +476,7 @@ function approvedMagicItem(seed, depth, options) {
     : (options.power ?? (depth >= 7 && rng.next() < 0.35 ? 2 : 1));
   const first = pool[rng.int(0, pool.length - 1)],
     rest = pool.filter((k) => k !== first);
-  const affixes = relic
+  let affixes = relic
     ? relicAffixes[options.relic]
     : (options.affixes ??
       (depth >= 3 && rng.next() < 0.55
@@ -490,10 +491,15 @@ function approvedMagicItem(seed, depth, options) {
     affixes.some((k) => !pool.includes(k))
   )
     throw new Error("Invalid enchantment for this form.");
+  if (options.revision === 4 && power === 2 && affixes.length === 1) {
+    const compatible = pool.filter(id => id !== affixes[0] && EQUIPMENT_BONUSES[id].effect !== EQUIPMENT_BONUSES[affixes[0]].effect);
+    if (compatible.length) affixes = [...affixes, compatible[rng.int(0, compatible.length - 1)]];
+  }
   const effects = affixes.map((id) => {
     const { allowed, ...e } = EQUIPMENT_BONUSES[id];
     return {
       ...e,
+      ...(options.revision === 4 && ENCHANTMENTS[id]?.discipline && e.effect === "damage" ? { discipline: ENCHANTMENTS[id].discipline, rank: 1 } : {}),
       text:
         e.text +
         (base === "kit" && e.effect === "competence"
@@ -513,7 +519,7 @@ function approvedMagicItem(seed, depth, options) {
     icon: def.icon,
     seed,
     depth,
-    revision: 3,
+    revision: options.revision ?? 3,
     relic: options.relic ?? null,
     power,
     affixes,
@@ -620,6 +626,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
     const item =
       saved.kind === "ordinary"
         ? ordinaryItem(C, saved.catalogId, saved.instanceId)
+        : saved.kind === "find" ? delveFind(saved.find, saved.instanceId, saved.appearance)
         : saved.kind === "scroll"
           ? recallScroll(saved.seed, saved.instanceId)
           : magicItem(saved.seed, saved.depth, {
@@ -633,6 +640,8 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
       throw new Error("Invalid saved treasure identity.");
     return {
       ...item,
+      veiled: !!saved.veiled,
+      facts: saved.facts ?? 0,
       hands:
         saved.kind === "ordinary" &&
         item.definition.handChoices?.includes(saved.hands)
@@ -830,12 +839,15 @@ export const treasureMethods = {
     }
     for (let n = 0; n < 1024; n++) {
       const item = magicItem((seed + n * 104729) >>> 0, depth, options);
+      const combination = "powers:" + item.base + ":" + [...item.affixes].sort().join("+");
+      if (!item.relic && seen.has(combination)) continue;
       if (
         seen.has(item.definition.name) ||
         seen.has(`item:${item.instanceId}`) ||
         (item.relic && seen.has(`relic:${item.relic}`))
       )
         continue;
+      seen.add(combination);
       seen.add(item.definition.name);
       seen.add(`item:${item.instanceId}`);
       if (item.relic) seen.add(`relic:${item.relic}`);

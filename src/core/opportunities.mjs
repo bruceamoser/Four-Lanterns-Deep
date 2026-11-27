@@ -120,6 +120,7 @@ export const opportunityMethods = {
       if (o.kind === "move") this.step();
       else if (o.kind === "ability") this.useAbility(o.id, o.target, o.options);
       else if (o.kind === "recovery") this.recoveryAbility(o.id, o.target);
+      else if (o.kind === "find") this.useFind(o.index, o.item, o.target);
       else if (o.kind === "potion") this.drinkPotion(o.index, o.item, o.target);
       else if (o.kind === "equip")
         this.equip(o.index, o.item, o.operation, o.slot);

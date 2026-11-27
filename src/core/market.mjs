@@ -91,7 +91,7 @@ export const marketMethods = {
   },
   sellPrice(h, item) {
     return Math.floor(
-      item.definition.price *
+      (item.veiled ? 20 : item.definition.price) *
         Math.max(0.5, ...this.traits(h).map((t) => t.sellRate ?? 0.5)),
     );
   },

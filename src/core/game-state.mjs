@@ -1,3 +1,4 @@
+import { DELVE_FINDS } from "./delve-finds.mjs";
 import { CHALLENGES } from "./challenge.mjs";
 import { validateCamp } from "./camp.mjs";
 import { RECIPES } from "./recipes.mjs";
@@ -10,6 +11,11 @@ const recipeIds = new Set(RECIPES.map((r) => r.id));
 // Missing fields are legitimate in pre-0.4 saves.
 export function validateGameState(campaign) {
   validateCamp(campaign);
+  if (campaign.discoveries !== undefined) {
+    const d = campaign.discoveries;
+    if (!d || !Number.isSafeInteger(d.seed) || ![d.known, d.tried].every(list => Array.isArray(list) && list.length <= Object.keys(DELVE_FINDS).length && new Set(list).size === list.length && list.every(k => Object.hasOwn(DELVE_FINDS, k) && DELVE_FINDS[k].family === "potion")))
+      throw new Error("Invalid saved discoveries.");
+  }
   if (campaign.xpCurve !== undefined && ![1, 2, 3].includes(campaign.xpCurve))
     throw new Error("Invalid XP curve.");
   if (
@@ -48,6 +54,8 @@ export function validateGameState(campaign) {
     ),
   ];
   for (const item of items) {
+    if (item.kind === "find" && (!Object.hasOwn(DELVE_FINDS, item.find) || item.catalogId !== "delve-" + item.find || typeof item.instanceId !== "string" || (item.appearance != null && (typeof item.appearance !== "string" || item.appearance.length > 64))))
+      throw new Error("Invalid saved dungeon find.");
     if (
       item.lightEnabled !== undefined &&
       typeof item.lightEnabled !== "boolean"

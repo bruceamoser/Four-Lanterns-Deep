@@ -1,3 +1,4 @@
+import { APPRAISAL_PRICE } from "../core/discoveries.mjs";
 import { MERCHANTS } from "../core/market.mjs";
 import { icon, itemIcon, esc } from "./icons.mjs";
 import { enchantmentDetails } from "./treasure.mjs";
@@ -9,7 +10,8 @@ export function marketScreen({ root, game, close, attempt }) {
     const m = MERCHANTS.find((m) => m.id === selected),
       h = game.party[hero],
       stock = game.market().stock[selected];
-    root.innerHTML = `<div class="veil"><section class="market-window" role="dialog" aria-label="Greyhaven merchants"><header><div><span class="eyebrow">THE MARKET OF GREYHAVEN</span><h2>Trade by lanternlight</h2></div><span class="market-purse">${icon("coins")} ${game.campaign.bank} <small>COINS</small></span><button class="icon-button close" aria-label="Close">${icon("close")}</button></header><div class="market-body"><nav class="merchant-list">${MERCHANTS.map((t) => `<button data-merchant="${t.id}" class="${selected === t.id ? "chosen" : ""}">${icon(t.icon)}<span>${esc(t.trade)}<small>${esc(t.name)}</small></span></button>`).join("")}</nav><main><div class="merchant-intro"><span class="eyebrow">${esc(m.name)}</span><h3>${esc(m.shop)}</h3><p>“${esc(m.quote)}”</p></div><div class="market-toolbar"><div class="filter-tabs"><button data-market-mode="buy" class="${mode === "buy" ? "chosen" : ""}">Buy</button><button data-market-mode="sell" class="${mode === "sell" ? "chosen" : ""}">Sell</button></div><label>For <select id="market-hero">${game.party.map((p, i) => `<option value="${i}" ${i === hero ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label></div><div class="market-stock">${
+    root.innerHTML = `<div class="veil"><section class="market-window" role="dialog" aria-label="Greyhaven merchants"><header><div><span class="eyebrow">THE MARKET OF GREYHAVEN</span><h2>Trade by lanternlight</h2></div><span class="market-purse">${icon("coins")} ${game.campaign.bank} <small>COINS</small></span><button class="icon-button close" aria-label="Close">${icon("close")}</button></header><div class="market-body"><nav class="merchant-list">${MERCHANTS.map((t) => `<button data-merchant="${t.id}" class="${selected === t.id ? "chosen" : ""}">${icon(t.icon)}<span>${esc(t.trade)}<small>${esc(t.name)}</small></span></button>`).join("")}</nav><main><div class="merchant-intro"><span class="eyebrow">${esc(m.name)}</span><h3>${esc(m.shop)}</h3><p>“${esc(m.quote)}”</p></div><div class="market-toolbar"><div class="filter-tabs"><button data-market-mode="buy" class="${mode === "buy" ? "chosen" : ""}">Buy</button><button data-market-mode="sell" class="${mode === "sell" ? "chosen" : ""}">Sell</button>${selected === "alchemy" ? '<button data-market-mode="appraise" class="' + (mode === "appraise" ? "chosen" : "") + '">Identify</button>' : ""}</div><label>For <select id="market-hero">${game.party.map((p, i) => `<option value="${i}" ${i === hero ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label></div><div class="market-stock">${
+      mode === "appraise" ? (h.treasure ?? []).filter(i => i.carried && (i.veiled || i.appearance)).map(i => `<article class="stock-card"><h4>${esc(i.definition.name)}</h4><p>Reveal its identity, effects and requirements.</p><button data-appraise="${esc(i.instanceId)}" ${game.campaign.bank < APPRAISAL_PRICE ? "disabled" : ""}>Identify · ${APPRAISAL_PRICE} coins</button></article>`).join("") || "<p>No unidentified finds in this pack.</p>" :
       mode === "buy"
         ? stock
             .map(
@@ -30,6 +32,7 @@ export function marketScreen({ root, game, close, attempt }) {
       (b) =>
         (b.onclick = () => {
           selected = b.dataset.merchant;
+          if (mode === "appraise" && selected !== "alchemy") mode = "buy";
           draw();
         }),
     );
@@ -44,6 +47,10 @@ export function marketScreen({ root, game, close, attempt }) {
       hero = +e.target.value;
       draw();
     };
+    for (const button of root.querySelectorAll("[data-appraise]")) button.onclick = () => attempt(() => {
+      game.appraise(hero, button.dataset.appraise);
+      draw();
+    });
     root.querySelectorAll("[data-buy]").forEach(
       (b) =>
         (b.onclick = () =>

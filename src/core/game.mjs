@@ -1,3 +1,4 @@
+import { discoveryMethods } from "./discoveries.mjs";
 import { strongest, weaponBonus } from "./equipment-bonuses.mjs";
 import { creatureAiMethods } from "./creature-ai.mjs";
 import { migrateSimpleStocks } from "./supply-stock.mjs";
@@ -334,6 +335,7 @@ export class Game {
           "ability",
           "recovery",
           "potion",
+          "find",
           "equip",
           "stand",
           "torch",
@@ -461,6 +463,7 @@ export class Game {
       this.campaign.lootGeneration = (this.campaign.lootGeneration ?? 0) + 1;
     const treasureSeed =
       this.campaign.seed + (this.campaign.lootGeneration ?? 0) * 32452843;
+    if (!saved && this.C.forge) this.map.lootSeed = treasureSeed >>> 0;
     if (!this.map.xpClaims) {
       this.map.xpClaims = saved
         ? [
@@ -497,10 +500,9 @@ export class Game {
       this.map.chests.forEach((c, i) => {
         if (saved && (c.opened || c.items !== undefined)) return;
         c.items = [
-          this.uniqueMagic(
-            (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0,
-            this.campaign.depth,
-          ),
+          this.map.lootSeed === undefined
+            ? this.uniqueMagic((treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth)
+            : this.treasureDraw(c.vault ? "vault" : c.dropped ? "loose" : "coffer", (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth),
         ].filter(Boolean);
       });
     if (!saved && this.map.chests[0])
@@ -929,6 +931,7 @@ export class Game {
   }
   defeatEnemy(e) {
     if (e.hp <= 0) {
+      this.creatureTreasure(e);
       const zones = this.map.zones ?? [];
       this.map.zones = zones.filter(
         (z) => !(z.source === e.id && z.npcUntilTurn !== undefined),
@@ -2363,7 +2366,7 @@ Object.assign(Game.prototype, ancestryGameMethods);
 
 Object.assign(Game.prototype, tacticMethods);
 
-Object.assign(Game.prototype, retrainingMethods, respecMethods);
+Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods);
 
 Object.assign(Game.prototype, powerMethods, battlefieldMethods);
 Object.assign(Game.prototype, buildMethods, forgeGameMethods);
