@@ -1,5 +1,11 @@
 # Four Lanterns Deep — implementation status v0.8.4
 
+## 0.9.0 Deeds edition
+
+The current edition has 23 displayed disciplines, 77 connected paths, 33 confluences and 90 signature choices. Paid field and combat techniques, typed damage, Grit, discovery, appraisal, creature spoils and vaults are documented in the [conversion report](deeds-conversion.md). The generated [current Forge catalog](game-power-coverage.json) and [review of book paths and spells](deeds-tree-review.md) distinguish shipped effects from source material reserved for future adaptations. Version-three save envelopes read existing version-two Forge journeys. A town respec converts an individual hero. The entries below describe earlier releases.
+
+
+
 Playable desktop dungeon RPG with game-owned powers over HoL's base mechanics.
 The production presentation target remains; the current modular art and balance
 are a playable iteration rather than final production assets.

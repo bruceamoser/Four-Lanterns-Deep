@@ -57,10 +57,11 @@ await fs.writeFile(
   new URL("../docs/game-power-coverage.json", import.meta.url),
   JSON.stringify(
     {
-      revision: 4,
-      ruleset: "discipline-forge-v1",
+      revision: 5,
+      ruleset: "deeds-discipline-forge-v2",
+      bookCommit: "44ef046880502c0902d9d610a0782d8af2c8ce68",
       policy:
-        "Game-owned discipline paths replace prior staged ability purchases, mastery and fixed signatures. Fresh v0.6 saves only; historical source-card coverage is retained in ability-coverage.json.",
+        "Deeds uses class-priced disciplines, connected paths, pure masteries and optional confluences. Power previews use an unupgraded Arcanist. The source table indexed in ability-coverage.json describes the legacy edition.",
       counts: {
         disciplines: FORGE_DISCIPLINES.length,
         paths: FORGE_PATHS.length,
@@ -68,16 +69,18 @@ await fs.writeFile(
         confluences: FORGE_NODES.filter((n) => n.kind === "intersection")
           .length,
         powers: new Set(FORGE_NODES.map((n) => n.power).filter(Boolean)).size,
+        classSignatures: Object.values(POWERS).filter(p => p.signature).length,
         recipes: RECIPES.length,
         namedRelics: Object.keys(RELICS).length,
       },
+      classSignatures: Object.values(POWERS).filter(p => p.signature).map(({id,name,classId,minimumLevel}) => ({id,name,classId,minimumLevel})),
       disciplines: FORGE_DISCIPLINES,
       paths: FORGE_PATHS,
       nodes: FORGE_NODES,
       powers: [...new Set(FORGE_NODES.map((n) => n.power).filter(Boolean))].map(
         (id) => {
           const p = forgePower(POWERS[id], {
-            draft: { forge: {} },
+            draft: { forge: {version: 2}, classId: "class-arcanist" },
             preview: {
               forge: {
                 stats: {},

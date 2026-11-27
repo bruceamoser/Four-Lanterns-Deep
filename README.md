@@ -4,7 +4,7 @@ A four-hero expedition beneath Greyhaven, built on Deeds of Legend.
 
 A desktop, single-player, 3D isometric dungeon-delving RPG for four heroes, based on **Deeds of Legend**. Target: Linux and Windows, stylized dark fantasy, a persistent town, repeated descents and recoverable expedition losses.
 
-**v0.8.5 — Tactical creatures and clearer camp planning.** A playable dungeon RPG with game-owned character progression over Deeds of Legend combat and survival mechanics. Eighteen discipline origins, 72 circular paths and 33 combined techniques share one persistent DP budget. See [implementation coverage and limitations](docs/implementation-status.md). The high-end presentation target remains an acceptance requirement.
+**v0.9.0 — Deeds in the Deep.** Develop four heroes across 23 discipline origins and 77 paths. Single-path masteries, 33 confluences and tiered class signatures offer different ways to specialize. Unknown potions, charged devices, enchanted gear and guarded vaults give the company reasons to risk another floor. See the [rules conversion and game balance results](docs/deeds-conversion.md).
 
 ## Working across local computers
 
@@ -12,9 +12,9 @@ Shared Codex instructions live in [AGENTS.md](AGENTS.md). Say **“Pull the repo
 
 ## Download and install
 
-Get the [latest release](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/latest). Windows has an installer; Debian/Ubuntu has a `.deb` package (`sudo apt install ./Four-Lanterns-Deep-0.8.5-amd64.deb`). Other Linux systems can use the `linux-x64.tar.gz` bundle: extract it and run `bash install-linux.sh` to add the game to your applications menu. A standalone AppImage is also available. No development tools or GitHub account are needed. Initial Windows builds are unsigned.
+Get the [latest release](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/latest). Windows has an installer; Debian/Ubuntu has a `.deb` package (`sudo apt install ./Four-Lanterns-Deep-0.9.0-amd64.deb`). Other Linux systems can use the `linux-x64.tar.gz` bundle: extract it and run `bash install-linux.sh` to add the game to your applications menu. A standalone AppImage is also available. No development tools or GitHub account are needed. Initial Windows builds are unsigned.
 
-The installed game checks for updates on startup and every four hours, downloads them in the background, and offers **Settings → Updates → Save & restart to install**. Your active journey is saved before installation. Updates preserve save files. v0.6–v0.8.5 Forge journeys continue; pre-v0.6 runs remain preserved separately and require an older edition. Source-checkout/unpacked builds link to the release installer instead of self-updating. See [release details and publishing](docs/releases.md).
+The installed game checks for updates on startup and every four hours, downloads them in the background, and offers **Settings → Updates → Save & restart to install**. Your active journey is saved before installation. Updates preserve save files. Existing Forge journeys continue. You can finish a 0.8.8 battle and respec in Greyhaven to adopt Deeds. Pre-v0.6 runs are preserved separately and require an older edition. Source-checkout/unpacked builds link to the release installer instead of self-updating. See [release details and publishing](docs/releases.md).
 
 ## Run from source
 
@@ -57,7 +57,7 @@ Packaging creates Linux AppImage/Debian packages or a Windows NSIS setup executa
 - Heroes can pass willing companions but must end on an empty square. Prone occupied squares cost 2 movement. This is an explicit companion-passage adaptation; standing enemies still block.
 - C / I opens the character command screen: animated equipment preview, pack, quick ready/stow, abilities and Journey. Star favorite actions to put them on the combat bar; 5–9 activate the first five. Shield Block is offered before eligible enemy attacks.
 - Sound opens master volume, mute and a test sound. Audio starts on the first click or key press.
-- Discover chambers, overcome encounters and bring treasure home to earn XP equally for living expedition members. Level 2 needs 400 XP; each subsequent level costs 175 more XP than the last, up to level 30. Journey shows totals, progress, recent awards and the reward rules. The discipline forge applies earned levels in town, adding 4 DP per level; damage, injuries and spent Grit persist.
+- Explore rooms, win encounters and bring treasure home to earn shared XP. Levels 2, 3 and 4 require 10,000, 32,500 and 85,000 XP. Train in Greyhaven through level 10, then bank additional XP on deeper descents. Each level grants 6 + the new level in DP plus applicable traits. The Journey tab shows each hero’s awards.
 - Return to entrance stairs to extract; gather at far stairs to descend. Every fifth floor has a guardian blocking onward travel and its coffer.
 - Bestiary shows the 58 playable book creatures. Encounters use party levels and dungeon depth. Shift-click a creature to inspect its card.
 - The market quarter has six merchants. Search coffers for individual magical items and choose who carries each. The sheet shows eleven equipment slots and readable, form-specific [equipment bonuses](docs/equipment-bonuses.md). Matching bonuses use the strongest value; suitable equipped items can provide toggleable magical light.

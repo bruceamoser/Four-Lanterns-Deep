@@ -1,16 +1,560 @@
 {
-  "revision": 4,
-  "ruleset": "discipline-forge-v1",
-  "policy": "Game-owned discipline paths replace prior staged ability purchases, mastery and fixed signatures. Fresh v0.6 saves only; historical source-card coverage is retained in ability-coverage.json.",
+  "revision": 5,
+  "ruleset": "deeds-discipline-forge-v2",
+  "bookCommit": "44ef046880502c0902d9d610a0782d8af2c8ce68",
+  "policy": "Deeds uses class-priced disciplines, connected paths, pure masteries and optional confluences. Power previews use an unupgraded Arcanist. The source table indexed in ability-coverage.json describes the legacy edition.",
   "counts": {
-    "disciplines": 18,
-    "paths": 72,
-    "nodes": 377,
+    "disciplines": 23,
+    "paths": 77,
+    "nodes": 427,
     "confluences": 33,
-    "powers": 161,
+    "powers": 179,
+    "classSignatures": 90,
     "recipes": 11,
     "namedRelics": 8
   },
+  "classSignatures": [
+    {
+      "id": "power-signature-arcane-reservoir",
+      "name": "Arcane Reservoir",
+      "classId": "class-arcanist",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-fold-space",
+      "name": "Fold Space",
+      "classId": "class-arcanist",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-arcane-cataclysm",
+      "name": "Arcane Cataclysm",
+      "classId": "class-arcanist",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-duelists-tempo",
+      "name": "Duelist’s Tempo",
+      "classId": "class-blade",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-whirling-steel",
+      "name": "Whirling Steel",
+      "classId": "class-blade",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-relentless-edge",
+      "name": "Relentless Edge",
+      "classId": "class-blade",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-battle-plan",
+      "name": "Battle Plan",
+      "classId": "class-intellect",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-fault-line",
+      "name": "Fault Line",
+      "classId": "class-intellect",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-perfect-timing",
+      "name": "Perfect Timing",
+      "classId": "class-intellect",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-commanding-presence",
+      "name": "Commanding Presence",
+      "classId": "class-leader",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-reposition-company",
+      "name": "Reposition Company",
+      "classId": "class-leader",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-seize-the-moment",
+      "name": "Seize the Moment",
+      "classId": "class-leader",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-unseen-angle",
+      "name": "Unseen Angle",
+      "classId": "class-odd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-impossible-exchange",
+      "name": "Impossible Exchange",
+      "classId": "class-odd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-borrowed-night",
+      "name": "Borrowed Night",
+      "classId": "class-odd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-sworn-guardian",
+      "name": "Sworn Guardian",
+      "classId": "class-protector",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-unyielding-wall",
+      "name": "Unyielding Wall",
+      "classId": "class-protector",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-company-bulwark",
+      "name": "Company Bulwark",
+      "classId": "class-protector",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-fade-away",
+      "name": "Fade Away",
+      "classId": "class-shadow",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-behind-the-lines",
+      "name": "Behind the Lines",
+      "classId": "class-shadow",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-assassins-moment",
+      "name": "Assassin’s Moment",
+      "classId": "class-shadow",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-life-thread",
+      "name": "Life Thread",
+      "classId": "class-shepherd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-sanctuary",
+      "name": "Sanctuary",
+      "classId": "class-shepherd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-restore-the-broken",
+      "name": "Restore the Broken",
+      "classId": "class-shepherd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-reckless-momentum",
+      "name": "Reckless Momentum",
+      "classId": "class-unbalanced",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-break-their-line",
+      "name": "Break Their Line",
+      "classId": "class-unbalanced",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-storm-of-blows",
+      "name": "Storm of Blows",
+      "classId": "class-unbalanced",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-quarry-mark",
+      "name": "Quarry Mark",
+      "classId": "class-warden",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-watchers-focus",
+      "name": "Watcher’s Focus",
+      "classId": "class-warden",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-wardens-volley",
+      "name": "Warden’s Volley",
+      "classId": "class-warden",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-arcanist-pyre-1",
+      "name": "Pyre Adept",
+      "classId": "class-arcanist",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-arcanist-rift-1",
+      "name": "Rift Weaver",
+      "classId": "class-arcanist",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-arcanist-pyre-3",
+      "name": "Pyre Adept II",
+      "classId": "class-arcanist",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-arcanist-rift-3",
+      "name": "Rift Weaver II",
+      "classId": "class-arcanist",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-arcanist-pyre-7",
+      "name": "Pyre Adept III",
+      "classId": "class-arcanist",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-arcanist-rift-7",
+      "name": "Rift Weaver III",
+      "classId": "class-arcanist",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-blade-sanguine-1",
+      "name": "Sanguine Edge",
+      "classId": "class-blade",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-blade-reaver-1",
+      "name": "Reaver’s Reach",
+      "classId": "class-blade",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-blade-sanguine-3",
+      "name": "Sanguine Edge II",
+      "classId": "class-blade",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-blade-reaver-3",
+      "name": "Reaver’s Reach II",
+      "classId": "class-blade",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-blade-sanguine-7",
+      "name": "Sanguine Edge III",
+      "classId": "class-blade",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-blade-reaver-7",
+      "name": "Reaver’s Reach III",
+      "classId": "class-blade",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-intellect-dismantler-1",
+      "name": "Dismantler",
+      "classId": "class-intellect",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-intellect-anticipation-1",
+      "name": "Perfect Anticipation",
+      "classId": "class-intellect",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-intellect-dismantler-3",
+      "name": "Dismantler II",
+      "classId": "class-intellect",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-intellect-anticipation-3",
+      "name": "Perfect Anticipation II",
+      "classId": "class-intellect",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-intellect-dismantler-7",
+      "name": "Dismantler III",
+      "classId": "class-intellect",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-intellect-anticipation-7",
+      "name": "Perfect Anticipation III",
+      "classId": "class-intellect",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-leader-marshal-1",
+      "name": "Shield Marshal",
+      "classId": "class-leader",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-leader-warmaster-1",
+      "name": "War Master",
+      "classId": "class-leader",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-leader-marshal-3",
+      "name": "Shield Marshal II",
+      "classId": "class-leader",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-leader-warmaster-3",
+      "name": "War Master II",
+      "classId": "class-leader",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-leader-marshal-7",
+      "name": "Shield Marshal III",
+      "classId": "class-leader",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-leader-warmaster-7",
+      "name": "War Master III",
+      "classId": "class-leader",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-odd-mirror-1",
+      "name": "Mirror Walker",
+      "classId": "class-odd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-odd-hex-1",
+      "name": "Hex Weaver",
+      "classId": "class-odd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-odd-mirror-3",
+      "name": "Mirror Walker II",
+      "classId": "class-odd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-odd-hex-3",
+      "name": "Hex Weaver II",
+      "classId": "class-odd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-odd-mirror-7",
+      "name": "Mirror Walker III",
+      "classId": "class-odd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-odd-hex-7",
+      "name": "Hex Weaver III",
+      "classId": "class-odd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-protector-bastion-1",
+      "name": "Living Bastion",
+      "classId": "class-protector",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-protector-breaker-1",
+      "name": "Line Breaker",
+      "classId": "class-protector",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-protector-bastion-3",
+      "name": "Living Bastion II",
+      "classId": "class-protector",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-protector-breaker-3",
+      "name": "Line Breaker II",
+      "classId": "class-protector",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-protector-bastion-7",
+      "name": "Living Bastion III",
+      "classId": "class-protector",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-protector-breaker-7",
+      "name": "Line Breaker III",
+      "classId": "class-protector",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-shadow-venom-1",
+      "name": "Venom Fang",
+      "classId": "class-shadow",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-shadow-executioner-1",
+      "name": "Executioner",
+      "classId": "class-shadow",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-shadow-venom-3",
+      "name": "Venom Fang II",
+      "classId": "class-shadow",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-shadow-executioner-3",
+      "name": "Executioner II",
+      "classId": "class-shadow",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-shadow-venom-7",
+      "name": "Venom Fang III",
+      "classId": "class-shadow",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-shadow-executioner-7",
+      "name": "Executioner III",
+      "classId": "class-shadow",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-shepherd-bloodweaver-1",
+      "name": "Blood Weaver",
+      "classId": "class-shepherd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-shepherd-sanctuary-1",
+      "name": "Sanctuary Keeper",
+      "classId": "class-shepherd",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-shepherd-bloodweaver-3",
+      "name": "Blood Weaver II",
+      "classId": "class-shepherd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-shepherd-sanctuary-3",
+      "name": "Sanctuary Keeper II",
+      "classId": "class-shepherd",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-shepherd-bloodweaver-7",
+      "name": "Blood Weaver III",
+      "classId": "class-shepherd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-shepherd-sanctuary-7",
+      "name": "Sanctuary Keeper III",
+      "classId": "class-shepherd",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-unbalanced-berserker-1",
+      "name": "Berserker",
+      "classId": "class-unbalanced",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-unbalanced-tempest-1",
+      "name": "Living Tempest",
+      "classId": "class-unbalanced",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-unbalanced-berserker-3",
+      "name": "Berserker II",
+      "classId": "class-unbalanced",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-unbalanced-tempest-3",
+      "name": "Living Tempest II",
+      "classId": "class-unbalanced",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-unbalanced-berserker-7",
+      "name": "Berserker III",
+      "classId": "class-unbalanced",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-unbalanced-tempest-7",
+      "name": "Living Tempest III",
+      "classId": "class-unbalanced",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-warden-frosthunter-1",
+      "name": "Frost Hunter",
+      "classId": "class-warden",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-warden-pathfinder-1",
+      "name": "Pathfinder",
+      "classId": "class-warden",
+      "minimumLevel": 1
+    },
+    {
+      "id": "power-signature-warden-frosthunter-3",
+      "name": "Frost Hunter II",
+      "classId": "class-warden",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-warden-pathfinder-3",
+      "name": "Pathfinder II",
+      "classId": "class-warden",
+      "minimumLevel": 3
+    },
+    {
+      "id": "power-signature-warden-frosthunter-7",
+      "name": "Frost Hunter III",
+      "classId": "class-warden",
+      "minimumLevel": 7
+    },
+    {
+      "id": "power-signature-warden-pathfinder-7",
+      "name": "Pathfinder III",
+      "classId": "class-warden",
+      "minimumLevel": 7
+    }
+  ],
   "disciplines": [
     {
       "id": "flame",
@@ -137,6 +681,41 @@
       "description": "Recipes, devices, repairs and preparation.",
       "position": 5,
       "inner": 1
+    },
+    {
+      "id": "fencing",
+      "name": "Fencing",
+      "description": "Precise thrusts and safe steps.",
+      "position": 0,
+      "inner": 2
+    },
+    {
+      "id": "tactics",
+      "name": "Tactics",
+      "description": "Create openings for your companions.",
+      "position": 1,
+      "inner": 2
+    },
+    {
+      "id": "divination",
+      "name": "Divination",
+      "description": "Sense, survey and identify dungeon finds.",
+      "position": 2,
+      "inner": 2
+    },
+    {
+      "id": "force",
+      "name": "Force",
+      "description": "Move, strike and reshape the battlefield.",
+      "position": 3,
+      "inner": 2
+    },
+    {
+      "id": "spellcraft",
+      "name": "Spellcraft",
+      "description": "Develop your spell reserves.",
+      "position": 4,
+      "inner": 2
     }
   ],
   "paths": [
@@ -933,6 +1512,76 @@
         "craft:3:2",
         "craft:3:3"
       ]
+    },
+    {
+      "id": "fencing:path0",
+      "discipline": "fencing",
+      "name": "Pointwork",
+      "nodes": [
+        "fencing:0:0",
+        "fencing:0:1",
+        "fencing:0:2",
+        "fencing:0:3",
+        "fencing:0:4",
+        "fencing:0:5",
+        "fencing:0:6"
+      ]
+    },
+    {
+      "id": "tactics:path0",
+      "discipline": "tactics",
+      "name": "Openings",
+      "nodes": [
+        "tactics:0:0",
+        "tactics:0:1",
+        "tactics:0:2",
+        "tactics:0:3",
+        "tactics:0:4",
+        "tactics:0:5",
+        "tactics:0:6"
+      ]
+    },
+    {
+      "id": "divination:path0",
+      "discipline": "divination",
+      "name": "Detection",
+      "nodes": [
+        "divination:0:0",
+        "divination:0:1",
+        "divination:0:2",
+        "divination:0:3",
+        "divination:0:4",
+        "divination:0:5",
+        "divination:0:6"
+      ]
+    },
+    {
+      "id": "force:path0",
+      "discipline": "force",
+      "name": "Telekinesis",
+      "nodes": [
+        "force:0:0",
+        "force:0:1",
+        "force:0:2",
+        "force:0:3",
+        "force:0:4",
+        "force:0:5",
+        "force:0:6"
+      ]
+    },
+    {
+      "id": "spellcraft:path0",
+      "discipline": "spellcraft",
+      "name": "Soul Capacity",
+      "nodes": [
+        "spellcraft:0:0",
+        "spellcraft:0:1",
+        "spellcraft:0:2",
+        "spellcraft:0:3",
+        "spellcraft:0:4",
+        "spellcraft:0:5",
+        "spellcraft:0:6"
+      ]
     }
   ],
   "nodes": [
@@ -991,6 +1640,7 @@
       "discipline": "flame",
       "path": "flame:path0",
       "pathName": "Embers",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1009,6 +1659,7 @@
       "discipline": "flame",
       "path": "flame:path0",
       "pathName": "Embers",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1031,6 +1682,7 @@
       "discipline": "flame",
       "path": "flame:path0",
       "pathName": "Embers",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1052,6 +1704,7 @@
       "discipline": "flame",
       "path": "flame:path0",
       "pathName": "Embers",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1075,6 +1728,7 @@
       "discipline": "flame",
       "path": "flame:path1",
       "pathName": "Conflagration",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1093,6 +1747,7 @@
       "discipline": "flame",
       "path": "flame:path1",
       "pathName": "Conflagration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1114,6 +1769,7 @@
       "discipline": "flame",
       "path": "flame:path1",
       "pathName": "Conflagration",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1132,6 +1788,7 @@
       "discipline": "flame",
       "path": "flame:path1",
       "pathName": "Conflagration",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -1150,6 +1807,7 @@
       "discipline": "flame",
       "path": "flame:path2",
       "pathName": "Ash",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1168,6 +1826,7 @@
       "discipline": "flame",
       "path": "flame:path2",
       "pathName": "Ash",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1190,6 +1849,7 @@
       "discipline": "flame",
       "path": "flame:path2",
       "pathName": "Ash",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1208,6 +1868,7 @@
       "discipline": "flame",
       "path": "flame:path2",
       "pathName": "Ash",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1229,6 +1890,7 @@
       "discipline": "flame",
       "path": "flame:path3",
       "pathName": "Hearth",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1247,6 +1909,7 @@
       "discipline": "flame",
       "path": "flame:path3",
       "pathName": "Hearth",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1269,6 +1932,7 @@
       "discipline": "flame",
       "path": "flame:path3",
       "pathName": "Hearth",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1290,6 +1954,7 @@
       "discipline": "flame",
       "path": "flame:path3",
       "pathName": "Hearth",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1361,6 +2026,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path0",
       "pathName": "Ballistics",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1379,6 +2045,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path0",
       "pathName": "Ballistics",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1405,6 +2072,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path0",
       "pathName": "Ballistics",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1431,6 +2099,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path0",
       "pathName": "Ballistics",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1457,6 +2126,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path0",
       "pathName": "Ballistics",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -1475,6 +2145,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path1",
       "pathName": "Longbow",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1496,6 +2167,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path1",
       "pathName": "Longbow",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1517,6 +2189,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path1",
       "pathName": "Longbow",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1535,6 +2208,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path1",
       "pathName": "Longbow",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1556,6 +2230,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path2",
       "pathName": "Penetration",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1563,7 +2238,7 @@
       ],
       "minimumRank": 1,
       "power": "power-barbed-arrow",
-      "name": "Barbed Arrow",
+      "name": "Barbed Volley",
       "local": {
         "x": 0,
         "y": 48
@@ -1574,6 +2249,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path2",
       "pathName": "Penetration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1595,6 +2271,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path2",
       "pathName": "Penetration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1606,7 +2283,7 @@
         "power": "power-barbed-arrow",
         "condition": 1
       },
-      "description": "Barbed Arrow applies one additional Bleeding.",
+      "description": "Barbed Volley applies one additional Bleeding.",
       "local": {
         "x": -43,
         "y": 249
@@ -1617,6 +2294,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path2",
       "pathName": "Penetration",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -1635,6 +2313,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path3",
       "pathName": "Skirmishing",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1653,6 +2332,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path3",
       "pathName": "Skirmishing",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1671,6 +2351,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path3",
       "pathName": "Skirmishing",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1692,6 +2373,7 @@
       "discipline": "marksmanship",
       "path": "marksmanship:path3",
       "pathName": "Skirmishing",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -1713,7 +2395,7 @@
       "cost": 3,
       "requires": [],
       "rank": 1,
-      "description": "Open the Wilderness paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "description": "Open the Wilderness paths. Rank I activates matching enchantments. Learn additional disciplines from level 2. Each rank slightly improves finding water, wood and food when foraging.",
       "local": {
         "x": 0,
         "y": 0
@@ -1731,7 +2413,7 @@
       "rank": 2,
       "investment": 4,
       "minimumLevel": 3,
-      "description": "Rank II: unlock advanced Wilderness nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "description": "Rank II: unlock advanced Wilderness nodes and rank-II enchantments. Requires four purchased nodes in this discipline. Each rank slightly improves finding water, wood and food when foraging.",
       "local": {
         "x": -45,
         "y": 60
@@ -1749,7 +2431,7 @@
       "rank": 3,
       "investment": 9,
       "minimumLevel": 7,
-      "description": "Rank III: unlock the deepest Wilderness paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "description": "Rank III: unlock the deepest Wilderness paths and rank-III enchantments. Requires nine purchased nodes in this discipline. Each rank slightly improves finding water, wood and food when foraging.",
       "local": {
         "x": 45,
         "y": 60
@@ -1760,6 +2442,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path0",
       "pathName": "Entanglement",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1778,6 +2461,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path0",
       "pathName": "Entanglement",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1800,6 +2484,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path0",
       "pathName": "Entanglement",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1818,6 +2503,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path0",
       "pathName": "Entanglement",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1840,6 +2526,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path1",
       "pathName": "Foraging",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1858,6 +2545,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path1",
       "pathName": "Foraging",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -1880,6 +2568,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path1",
       "pathName": "Foraging",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1901,6 +2590,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path1",
       "pathName": "Foraging",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -1922,6 +2612,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path2",
       "pathName": "Briars",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -1940,6 +2631,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path2",
       "pathName": "Briars",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1962,6 +2654,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path2",
       "pathName": "Briars",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -1983,6 +2676,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path2",
       "pathName": "Briars",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2005,6 +2699,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path3",
       "pathName": "Canopy",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2023,6 +2718,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path3",
       "pathName": "Canopy",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2045,6 +2741,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path3",
       "pathName": "Canopy",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -2063,6 +2760,7 @@
       "discipline": "wilderness",
       "path": "wilderness:path3",
       "pathName": "Canopy",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2134,6 +2832,7 @@
       "discipline": "life",
       "path": "life:path0",
       "pathName": "Mending",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2152,6 +2851,7 @@
       "discipline": "life",
       "path": "life:path0",
       "pathName": "Mending",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2174,6 +2874,7 @@
       "discipline": "life",
       "path": "life:path0",
       "pathName": "Mending",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2196,6 +2897,7 @@
       "discipline": "life",
       "path": "life:path0",
       "pathName": "Mending",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2217,6 +2919,7 @@
       "discipline": "life",
       "path": "life:path1",
       "pathName": "Sanctuary",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2235,6 +2938,7 @@
       "discipline": "life",
       "path": "life:path1",
       "pathName": "Sanctuary",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2257,6 +2961,7 @@
       "discipline": "life",
       "path": "life:path1",
       "pathName": "Sanctuary",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -2275,6 +2980,7 @@
       "discipline": "life",
       "path": "life:path1",
       "pathName": "Sanctuary",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2296,6 +3002,7 @@
       "discipline": "life",
       "path": "life:path2",
       "pathName": "Restoration",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2314,6 +3021,7 @@
       "discipline": "life",
       "path": "life:path2",
       "pathName": "Restoration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2336,6 +3044,7 @@
       "discipline": "life",
       "path": "life:path2",
       "pathName": "Restoration",
+      "mastery": false,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -2354,6 +3063,7 @@
       "discipline": "life",
       "path": "life:path2",
       "pathName": "Restoration",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2375,6 +3085,7 @@
       "discipline": "life",
       "path": "life:path3",
       "pathName": "Vitality",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2393,6 +3104,7 @@
       "discipline": "life",
       "path": "life:path3",
       "pathName": "Vitality",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2415,6 +3127,7 @@
       "discipline": "life",
       "path": "life:path3",
       "pathName": "Vitality",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -2433,6 +3146,7 @@
       "discipline": "life",
       "path": "life:path3",
       "pathName": "Vitality",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2458,7 +3172,7 @@
       "cost": 3,
       "requires": [],
       "rank": 1,
-      "description": "Open the Medicine paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "description": "Open the Medicine paths. Rank I activates matching enchantments. Learn additional disciplines from level 2. Each rank slightly improves finding medicinal materials when foraging.",
       "local": {
         "x": 0,
         "y": 0
@@ -2476,7 +3190,7 @@
       "rank": 2,
       "investment": 4,
       "minimumLevel": 3,
-      "description": "Rank II: unlock advanced Medicine nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "description": "Rank II: unlock advanced Medicine nodes and rank-II enchantments. Requires four purchased nodes in this discipline. Each rank slightly improves finding medicinal materials when foraging.",
       "local": {
         "x": -45,
         "y": 60
@@ -2494,7 +3208,7 @@
       "rank": 3,
       "investment": 9,
       "minimumLevel": 7,
-      "description": "Rank III: unlock the deepest Medicine paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "description": "Rank III: unlock the deepest Medicine paths and rank-III enchantments. Requires nine purchased nodes in this discipline. Each rank slightly improves finding medicinal materials when foraging.",
       "local": {
         "x": 45,
         "y": 60
@@ -2505,6 +3219,7 @@
       "discipline": "medicine",
       "path": "medicine:path0",
       "pathName": "First aid",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2523,6 +3238,7 @@
       "discipline": "medicine",
       "path": "medicine:path0",
       "pathName": "First aid",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2545,6 +3261,7 @@
       "discipline": "medicine",
       "path": "medicine:path0",
       "pathName": "First aid",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -2567,6 +3284,7 @@
       "discipline": "medicine",
       "path": "medicine:path0",
       "pathName": "First aid",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2589,6 +3307,7 @@
       "discipline": "medicine",
       "path": "medicine:path1",
       "pathName": "Detoxification",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2607,6 +3326,7 @@
       "discipline": "medicine",
       "path": "medicine:path1",
       "pathName": "Detoxification",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2629,6 +3349,7 @@
       "discipline": "medicine",
       "path": "medicine:path1",
       "pathName": "Detoxification",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -2647,6 +3368,7 @@
       "discipline": "medicine",
       "path": "medicine:path1",
       "pathName": "Detoxification",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2669,6 +3391,7 @@
       "discipline": "medicine",
       "path": "medicine:path2",
       "pathName": "Trauma",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2687,6 +3410,7 @@
       "discipline": "medicine",
       "path": "medicine:path2",
       "pathName": "Trauma",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2709,6 +3433,7 @@
       "discipline": "medicine",
       "path": "medicine:path2",
       "pathName": "Trauma",
+      "mastery": false,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -2727,6 +3452,7 @@
       "discipline": "medicine",
       "path": "medicine:path2",
       "pathName": "Trauma",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2748,6 +3474,7 @@
       "discipline": "medicine",
       "path": "medicine:path3",
       "pathName": "Clarity",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2766,6 +3493,7 @@
       "discipline": "medicine",
       "path": "medicine:path3",
       "pathName": "Clarity",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2788,6 +3516,7 @@
       "discipline": "medicine",
       "path": "medicine:path3",
       "pathName": "Clarity",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2810,6 +3539,7 @@
       "discipline": "medicine",
       "path": "medicine:path3",
       "pathName": "Clarity",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2881,6 +3611,7 @@
       "discipline": "radiance",
       "path": "radiance:path0",
       "pathName": "Sunlight",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2899,6 +3630,7 @@
       "discipline": "radiance",
       "path": "radiance:path0",
       "pathName": "Sunlight",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -2921,6 +3653,7 @@
       "discipline": "radiance",
       "path": "radiance:path0",
       "pathName": "Sunlight",
+      "mastery": false,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -2939,6 +3672,7 @@
       "discipline": "radiance",
       "path": "radiance:path0",
       "pathName": "Sunlight",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -2960,6 +3694,7 @@
       "discipline": "radiance",
       "path": "radiance:path1",
       "pathName": "Revelation",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -2978,6 +3713,7 @@
       "discipline": "radiance",
       "path": "radiance:path1",
       "pathName": "Revelation",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3000,6 +3736,7 @@
       "discipline": "radiance",
       "path": "radiance:path1",
       "pathName": "Revelation",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3018,6 +3755,7 @@
       "discipline": "radiance",
       "path": "radiance:path1",
       "pathName": "Revelation",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3040,6 +3778,7 @@
       "discipline": "radiance",
       "path": "radiance:path2",
       "pathName": "Aegis",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3058,6 +3797,7 @@
       "discipline": "radiance",
       "path": "radiance:path2",
       "pathName": "Aegis",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3080,6 +3820,7 @@
       "discipline": "radiance",
       "path": "radiance:path2",
       "pathName": "Aegis",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3098,6 +3839,7 @@
       "discipline": "radiance",
       "path": "radiance:path2",
       "pathName": "Aegis",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3119,6 +3861,7 @@
       "discipline": "radiance",
       "path": "radiance:path3",
       "pathName": "Courage",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3137,6 +3880,7 @@
       "discipline": "radiance",
       "path": "radiance:path3",
       "pathName": "Courage",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3159,6 +3903,7 @@
       "discipline": "radiance",
       "path": "radiance:path3",
       "pathName": "Courage",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3180,6 +3925,7 @@
       "discipline": "radiance",
       "path": "radiance:path3",
       "pathName": "Courage",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3251,6 +3997,7 @@
       "discipline": "frost",
       "path": "frost:path0",
       "pathName": "Rime",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3269,6 +4016,7 @@
       "discipline": "frost",
       "path": "frost:path0",
       "pathName": "Rime",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3291,6 +4039,7 @@
       "discipline": "frost",
       "path": "frost:path0",
       "pathName": "Rime",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3312,6 +4061,7 @@
       "discipline": "frost",
       "path": "frost:path0",
       "pathName": "Rime",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3334,6 +4084,7 @@
       "discipline": "frost",
       "path": "frost:path1",
       "pathName": "Glacier",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3352,6 +4103,7 @@
       "discipline": "frost",
       "path": "frost:path1",
       "pathName": "Glacier",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3374,6 +4126,7 @@
       "discipline": "frost",
       "path": "frost:path1",
       "pathName": "Glacier",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3392,6 +4145,7 @@
       "discipline": "frost",
       "path": "frost:path1",
       "pathName": "Glacier",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3413,6 +4167,7 @@
       "discipline": "frost",
       "path": "frost:path2",
       "pathName": "Shatter",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3431,6 +4186,7 @@
       "discipline": "frost",
       "path": "frost:path2",
       "pathName": "Shatter",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3452,6 +4208,7 @@
       "discipline": "frost",
       "path": "frost:path2",
       "pathName": "Shatter",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3473,6 +4230,7 @@
       "discipline": "frost",
       "path": "frost:path2",
       "pathName": "Shatter",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3495,6 +4253,7 @@
       "discipline": "frost",
       "path": "frost:path3",
       "pathName": "Thaw",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3513,6 +4272,7 @@
       "discipline": "frost",
       "path": "frost:path3",
       "pathName": "Thaw",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3535,6 +4295,7 @@
       "discipline": "frost",
       "path": "frost:path3",
       "pathName": "Thaw",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3553,6 +4314,7 @@
       "discipline": "frost",
       "path": "frost:path3",
       "pathName": "Thaw",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -3621,6 +4383,7 @@
       "discipline": "calling",
       "path": "calling:path0",
       "pathName": "Ward spirits",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3639,6 +4402,7 @@
       "discipline": "calling",
       "path": "calling:path0",
       "pathName": "Ward spirits",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3661,6 +4425,7 @@
       "discipline": "calling",
       "path": "calling:path0",
       "pathName": "Ward spirits",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3683,6 +4448,7 @@
       "discipline": "calling",
       "path": "calling:path0",
       "pathName": "Ward spirits",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3704,6 +4470,7 @@
       "discipline": "calling",
       "path": "calling:path1",
       "pathName": "Haunting",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3722,6 +4489,7 @@
       "discipline": "calling",
       "path": "calling:path1",
       "pathName": "Haunting",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3744,6 +4512,7 @@
       "discipline": "calling",
       "path": "calling:path1",
       "pathName": "Haunting",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3762,6 +4531,7 @@
       "discipline": "calling",
       "path": "calling:path1",
       "pathName": "Haunting",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3784,6 +4554,7 @@
       "discipline": "calling",
       "path": "calling:path2",
       "pathName": "Crossing",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3802,6 +4573,7 @@
       "discipline": "calling",
       "path": "calling:path2",
       "pathName": "Crossing",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3824,6 +4596,7 @@
       "discipline": "calling",
       "path": "calling:path2",
       "pathName": "Crossing",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3842,6 +4615,7 @@
       "discipline": "calling",
       "path": "calling:path2",
       "pathName": "Crossing",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3864,6 +4638,7 @@
       "discipline": "calling",
       "path": "calling:path3",
       "pathName": "Ancestors",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -3882,6 +4657,7 @@
       "discipline": "calling",
       "path": "calling:path3",
       "pathName": "Ancestors",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -3904,6 +4680,7 @@
       "discipline": "calling",
       "path": "calling:path3",
       "pathName": "Ancestors",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -3922,6 +4699,7 @@
       "discipline": "calling",
       "path": "calling:path3",
       "pathName": "Ancestors",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -3994,6 +4772,7 @@
       "discipline": "mind",
       "path": "mind:path0",
       "pathName": "Pressure",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4012,6 +4791,7 @@
       "discipline": "mind",
       "path": "mind:path0",
       "pathName": "Pressure",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4034,6 +4814,7 @@
       "discipline": "mind",
       "path": "mind:path0",
       "pathName": "Pressure",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -4052,6 +4833,7 @@
       "discipline": "mind",
       "path": "mind:path0",
       "pathName": "Pressure",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4073,6 +4855,7 @@
       "discipline": "mind",
       "path": "mind:path1",
       "pathName": "Force",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4091,6 +4874,7 @@
       "discipline": "mind",
       "path": "mind:path1",
       "pathName": "Force",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4113,6 +4897,7 @@
       "discipline": "mind",
       "path": "mind:path1",
       "pathName": "Force",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -4131,6 +4916,7 @@
       "discipline": "mind",
       "path": "mind:path1",
       "pathName": "Force",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4152,6 +4938,7 @@
       "discipline": "mind",
       "path": "mind:path2",
       "pathName": "Confusion",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4170,6 +4957,7 @@
       "discipline": "mind",
       "path": "mind:path2",
       "pathName": "Confusion",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4192,6 +4980,7 @@
       "discipline": "mind",
       "path": "mind:path2",
       "pathName": "Confusion",
+      "mastery": false,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -4210,6 +4999,7 @@
       "discipline": "mind",
       "path": "mind:path2",
       "pathName": "Confusion",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4231,6 +5021,7 @@
       "discipline": "mind",
       "path": "mind:path3",
       "pathName": "Focus",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4249,6 +5040,7 @@
       "discipline": "mind",
       "path": "mind:path3",
       "pathName": "Focus",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4271,6 +5063,7 @@
       "discipline": "mind",
       "path": "mind:path3",
       "pathName": "Focus",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4293,6 +5086,7 @@
       "discipline": "mind",
       "path": "mind:path3",
       "pathName": "Focus",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4364,6 +5158,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path0",
       "pathName": "Concealment",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4382,6 +5177,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path0",
       "pathName": "Concealment",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4404,6 +5200,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path0",
       "pathName": "Concealment",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4425,6 +5222,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path0",
       "pathName": "Concealment",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4446,6 +5244,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path1",
       "pathName": "Escape",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4464,6 +5263,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path1",
       "pathName": "Escape",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4486,6 +5286,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path1",
       "pathName": "Escape",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -4504,6 +5305,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path1",
       "pathName": "Escape",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -4522,6 +5324,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path2",
       "pathName": "Dirty fighting",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4540,6 +5343,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path2",
       "pathName": "Dirty fighting",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4562,6 +5366,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path2",
       "pathName": "Dirty fighting",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -4580,6 +5385,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path2",
       "pathName": "Dirty fighting",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4602,6 +5408,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path3",
       "pathName": "Smoke",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4620,6 +5427,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path3",
       "pathName": "Smoke",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4642,6 +5450,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path3",
       "pathName": "Smoke",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4663,6 +5472,7 @@
       "discipline": "subterfuge",
       "path": "subterfuge:path3",
       "pathName": "Smoke",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4734,6 +5544,7 @@
       "discipline": "athletics",
       "path": "athletics:path0",
       "pathName": "Footwork",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4752,6 +5563,7 @@
       "discipline": "athletics",
       "path": "athletics:path0",
       "pathName": "Footwork",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4770,6 +5582,7 @@
       "discipline": "athletics",
       "path": "athletics:path0",
       "pathName": "Footwork",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4791,6 +5604,7 @@
       "discipline": "athletics",
       "path": "athletics:path0",
       "pathName": "Footwork",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -4809,6 +5623,7 @@
       "discipline": "athletics",
       "path": "athletics:path1",
       "pathName": "Leaping",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4827,6 +5642,7 @@
       "discipline": "athletics",
       "path": "athletics:path1",
       "pathName": "Leaping",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4849,6 +5665,7 @@
       "discipline": "athletics",
       "path": "athletics:path1",
       "pathName": "Leaping",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4871,6 +5688,7 @@
       "discipline": "athletics",
       "path": "athletics:path1",
       "pathName": "Leaping",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4893,6 +5711,7 @@
       "discipline": "athletics",
       "path": "athletics:path2",
       "pathName": "Force",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4911,6 +5730,7 @@
       "discipline": "athletics",
       "path": "athletics:path2",
       "pathName": "Force",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4933,6 +5753,7 @@
       "discipline": "athletics",
       "path": "athletics:path2",
       "pathName": "Force",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -4954,6 +5775,7 @@
       "discipline": "athletics",
       "path": "athletics:path2",
       "pathName": "Force",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -4975,6 +5797,7 @@
       "discipline": "athletics",
       "path": "athletics:path3",
       "pathName": "Rescue",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -4993,6 +5816,7 @@
       "discipline": "athletics",
       "path": "athletics:path3",
       "pathName": "Rescue",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5015,6 +5839,7 @@
       "discipline": "athletics",
       "path": "athletics:path3",
       "pathName": "Rescue",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -5033,6 +5858,7 @@
       "discipline": "athletics",
       "path": "athletics:path3",
       "pathName": "Rescue",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5104,6 +5930,7 @@
       "discipline": "storm",
       "path": "storm:path0",
       "pathName": "Lightning",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5122,6 +5949,7 @@
       "discipline": "storm",
       "path": "storm:path0",
       "pathName": "Lightning",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5144,6 +5972,7 @@
       "discipline": "storm",
       "path": "storm:path0",
       "pathName": "Lightning",
+      "mastery": false,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -5162,6 +5991,7 @@
       "discipline": "storm",
       "path": "storm:path0",
       "pathName": "Lightning",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5183,6 +6013,7 @@
       "discipline": "storm",
       "path": "storm:path1",
       "pathName": "Gales",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5201,6 +6032,7 @@
       "discipline": "storm",
       "path": "storm:path1",
       "pathName": "Gales",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5223,6 +6055,7 @@
       "discipline": "storm",
       "path": "storm:path1",
       "pathName": "Gales",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -5241,6 +6074,7 @@
       "discipline": "storm",
       "path": "storm:path1",
       "pathName": "Gales",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5262,6 +6096,7 @@
       "discipline": "storm",
       "path": "storm:path2",
       "pathName": "Motion",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5280,6 +6115,7 @@
       "discipline": "storm",
       "path": "storm:path2",
       "pathName": "Motion",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5302,6 +6138,7 @@
       "discipline": "storm",
       "path": "storm:path2",
       "pathName": "Motion",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -5320,6 +6157,7 @@
       "discipline": "storm",
       "path": "storm:path2",
       "pathName": "Motion",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5341,6 +6179,7 @@
       "discipline": "storm",
       "path": "storm:path3",
       "pathName": "Weather",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5359,6 +6198,7 @@
       "discipline": "storm",
       "path": "storm:path3",
       "pathName": "Weather",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5381,6 +6221,7 @@
       "discipline": "storm",
       "path": "storm:path3",
       "pathName": "Weather",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5402,6 +6243,7 @@
       "discipline": "storm",
       "path": "storm:path3",
       "pathName": "Weather",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5473,6 +6315,7 @@
       "discipline": "arms",
       "path": "arms:path0",
       "pathName": "Bladework",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5491,6 +6334,7 @@
       "discipline": "arms",
       "path": "arms:path0",
       "pathName": "Bladework",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5517,6 +6361,7 @@
       "discipline": "arms",
       "path": "arms:path0",
       "pathName": "Bladework",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5543,6 +6388,7 @@
       "discipline": "arms",
       "path": "arms:path0",
       "pathName": "Bladework",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5569,6 +6415,7 @@
       "discipline": "arms",
       "path": "arms:path0",
       "pathName": "Bladework",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -5587,6 +6434,7 @@
       "discipline": "arms",
       "path": "arms:path1",
       "pathName": "Impact",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5605,6 +6453,7 @@
       "discipline": "arms",
       "path": "arms:path1",
       "pathName": "Impact",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5626,6 +6475,7 @@
       "discipline": "arms",
       "path": "arms:path1",
       "pathName": "Impact",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5647,6 +6497,7 @@
       "discipline": "arms",
       "path": "arms:path1",
       "pathName": "Impact",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -5665,6 +6516,7 @@
       "discipline": "arms",
       "path": "arms:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5683,6 +6535,7 @@
       "discipline": "arms",
       "path": "arms:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5705,6 +6558,7 @@
       "discipline": "arms",
       "path": "arms:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -5723,6 +6577,7 @@
       "discipline": "arms",
       "path": "arms:path2",
       "pathName": "Disruption",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5744,6 +6599,7 @@
       "discipline": "arms",
       "path": "arms:path3",
       "pathName": "Duelist",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5762,6 +6618,7 @@
       "discipline": "arms",
       "path": "arms:path3",
       "pathName": "Duelist",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5783,6 +6640,7 @@
       "discipline": "arms",
       "path": "arms:path3",
       "pathName": "Duelist",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -5801,6 +6659,7 @@
       "discipline": "arms",
       "path": "arms:path3",
       "pathName": "Duelist",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -5872,6 +6731,7 @@
       "discipline": "armor",
       "path": "armor:path0",
       "pathName": "Harness",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5891,6 +6751,7 @@
       "discipline": "armor",
       "path": "armor:path0",
       "pathName": "Harness",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5912,6 +6773,7 @@
       "discipline": "armor",
       "path": "armor:path0",
       "pathName": "Harness",
+      "mastery": false,
       "kind": "minor",
       "cost": 2,
       "requires": [
@@ -5931,6 +6793,7 @@
       "discipline": "armor",
       "path": "armor:path0",
       "pathName": "Harness",
+      "mastery": true,
       "kind": "major",
       "cost": 3,
       "requires": [
@@ -5950,6 +6813,7 @@
       "discipline": "armor",
       "path": "armor:path1",
       "pathName": "Bracing",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -5968,6 +6832,7 @@
       "discipline": "armor",
       "path": "armor:path1",
       "pathName": "Bracing",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -5990,6 +6855,7 @@
       "discipline": "armor",
       "path": "armor:path1",
       "pathName": "Bracing",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6008,6 +6874,7 @@
       "discipline": "armor",
       "path": "armor:path1",
       "pathName": "Bracing",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -6026,6 +6893,7 @@
       "discipline": "armor",
       "path": "armor:path2",
       "pathName": "Marching",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6044,6 +6912,7 @@
       "discipline": "armor",
       "path": "armor:path2",
       "pathName": "Marching",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6065,6 +6934,7 @@
       "discipline": "armor",
       "path": "armor:path2",
       "pathName": "Marching",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6083,6 +6953,7 @@
       "discipline": "armor",
       "path": "armor:path2",
       "pathName": "Marching",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6104,6 +6975,7 @@
       "discipline": "armor",
       "path": "armor:path3",
       "pathName": "Deflection",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6122,6 +6994,7 @@
       "discipline": "armor",
       "path": "armor:path3",
       "pathName": "Deflection",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6143,6 +7016,7 @@
       "discipline": "armor",
       "path": "armor:path3",
       "pathName": "Deflection",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6161,6 +7035,7 @@
       "discipline": "armor",
       "path": "armor:path3",
       "pathName": "Deflection",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6232,6 +7107,7 @@
       "discipline": "guard",
       "path": "guard:path0",
       "pathName": "Shield",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6251,6 +7127,7 @@
       "discipline": "guard",
       "path": "guard:path0",
       "pathName": "Shield",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6269,6 +7146,7 @@
       "discipline": "guard",
       "path": "guard:path0",
       "pathName": "Shield",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6291,6 +7169,7 @@
       "discipline": "guard",
       "path": "guard:path0",
       "pathName": "Shield",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -6309,6 +7188,7 @@
       "discipline": "guard",
       "path": "guard:path1",
       "pathName": "Protection",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6327,6 +7207,7 @@
       "discipline": "guard",
       "path": "guard:path1",
       "pathName": "Protection",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6349,6 +7230,7 @@
       "discipline": "guard",
       "path": "guard:path1",
       "pathName": "Protection",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6367,6 +7249,7 @@
       "discipline": "guard",
       "path": "guard:path1",
       "pathName": "Protection",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6388,6 +7271,7 @@
       "discipline": "guard",
       "path": "guard:path2",
       "pathName": "Riposte",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6406,6 +7290,7 @@
       "discipline": "guard",
       "path": "guard:path2",
       "pathName": "Riposte",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6427,6 +7312,7 @@
       "discipline": "guard",
       "path": "guard:path2",
       "pathName": "Riposte",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6448,6 +7334,7 @@
       "discipline": "guard",
       "path": "guard:path2",
       "pathName": "Riposte",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6470,6 +7357,7 @@
       "discipline": "guard",
       "path": "guard:path3",
       "pathName": "Withdrawal",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6488,6 +7376,7 @@
       "discipline": "guard",
       "path": "guard:path3",
       "pathName": "Withdrawal",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6510,6 +7399,7 @@
       "discipline": "guard",
       "path": "guard:path3",
       "pathName": "Withdrawal",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6528,6 +7418,7 @@
       "discipline": "guard",
       "path": "guard:path3",
       "pathName": "Withdrawal",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6599,6 +7490,7 @@
       "discipline": "influence",
       "path": "influence:path0",
       "pathName": "Command",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6617,6 +7509,7 @@
       "discipline": "influence",
       "path": "influence:path0",
       "pathName": "Command",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6639,6 +7532,7 @@
       "discipline": "influence",
       "path": "influence:path0",
       "pathName": "Command",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6657,6 +7551,7 @@
       "discipline": "influence",
       "path": "influence:path0",
       "pathName": "Command",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6678,6 +7573,7 @@
       "discipline": "influence",
       "path": "influence:path1",
       "pathName": "Morale",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6696,6 +7592,7 @@
       "discipline": "influence",
       "path": "influence:path1",
       "pathName": "Morale",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6718,6 +7615,7 @@
       "discipline": "influence",
       "path": "influence:path1",
       "pathName": "Morale",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6736,6 +7634,7 @@
       "discipline": "influence",
       "path": "influence:path1",
       "pathName": "Morale",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6757,6 +7656,7 @@
       "discipline": "influence",
       "path": "influence:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6775,6 +7675,7 @@
       "discipline": "influence",
       "path": "influence:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6797,6 +7698,7 @@
       "discipline": "influence",
       "path": "influence:path2",
       "pathName": "Disruption",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -6815,6 +7717,7 @@
       "discipline": "influence",
       "path": "influence:path2",
       "pathName": "Disruption",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6837,6 +7740,7 @@
       "discipline": "influence",
       "path": "influence:path3",
       "pathName": "Inspiration",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6855,6 +7759,7 @@
       "discipline": "influence",
       "path": "influence:path3",
       "pathName": "Inspiration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6877,6 +7782,7 @@
       "discipline": "influence",
       "path": "influence:path3",
       "pathName": "Inspiration",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -6898,6 +7804,7 @@
       "discipline": "influence",
       "path": "influence:path3",
       "pathName": "Inspiration",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -6969,6 +7876,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path0",
       "pathName": "Cartography",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -6987,6 +7895,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path0",
       "pathName": "Cartography",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7009,6 +7918,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path0",
       "pathName": "Cartography",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7030,6 +7940,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path0",
       "pathName": "Cartography",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7051,6 +7962,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path1",
       "pathName": "Anatomy",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7069,6 +7981,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path1",
       "pathName": "Anatomy",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7091,6 +8004,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path1",
       "pathName": "Anatomy",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -7109,6 +8023,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path1",
       "pathName": "Anatomy",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7130,6 +8045,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path2",
       "pathName": "Analysis",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7148,6 +8064,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path2",
       "pathName": "Analysis",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7170,6 +8087,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path2",
       "pathName": "Analysis",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -7188,6 +8106,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path2",
       "pathName": "Analysis",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7209,6 +8128,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path3",
       "pathName": "Instruction",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7227,6 +8147,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path3",
       "pathName": "Instruction",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7249,6 +8170,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path3",
       "pathName": "Instruction",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -7271,6 +8193,7 @@
       "discipline": "scholarship",
       "path": "scholarship:path3",
       "pathName": "Instruction",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7295,7 +8218,7 @@
       "cost": 3,
       "requires": [],
       "rank": 1,
-      "description": "Open the Craft paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "description": "Open the Craft paths. Rank I activates matching enchantments. Learn additional disciplines from level 2. Each rank slightly improves finding wood and fletching materials when foraging.",
       "local": {
         "x": 0,
         "y": 0
@@ -7313,7 +8236,7 @@
       "rank": 2,
       "investment": 4,
       "minimumLevel": 3,
-      "description": "Rank II: unlock advanced Craft nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "description": "Rank II: unlock advanced Craft nodes and rank-II enchantments. Requires four purchased nodes in this discipline. Each rank slightly improves finding wood and fletching materials when foraging.",
       "local": {
         "x": -45,
         "y": 60
@@ -7331,7 +8254,7 @@
       "rank": 3,
       "investment": 9,
       "minimumLevel": 7,
-      "description": "Rank III: unlock the deepest Craft paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "description": "Rank III: unlock the deepest Craft paths and rank-III enchantments. Requires nine purchased nodes in this discipline. Each rank slightly improves finding wood and fletching materials when foraging.",
       "local": {
         "x": 45,
         "y": 60
@@ -7342,6 +8265,7 @@
       "discipline": "craft",
       "path": "craft:path0",
       "pathName": "Workshop",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7360,6 +8284,7 @@
       "discipline": "craft",
       "path": "craft:path0",
       "pathName": "Workshop",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7381,6 +8306,7 @@
       "discipline": "craft",
       "path": "craft:path0",
       "pathName": "Workshop",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -7403,6 +8329,7 @@
       "discipline": "craft",
       "path": "craft:path0",
       "pathName": "Workshop",
+      "mastery": true,
       "kind": "skill",
       "cost": 3,
       "requires": [
@@ -7421,6 +8348,7 @@
       "discipline": "craft",
       "path": "craft:path1",
       "pathName": "Alchemy",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7443,6 +8371,7 @@
       "discipline": "craft",
       "path": "craft:path1",
       "pathName": "Alchemy",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7464,6 +8393,7 @@
       "discipline": "craft",
       "path": "craft:path1",
       "pathName": "Alchemy",
+      "mastery": false,
       "kind": "minor",
       "cost": 2,
       "requires": [
@@ -7485,6 +8415,7 @@
       "discipline": "craft",
       "path": "craft:path1",
       "pathName": "Alchemy",
+      "mastery": true,
       "kind": "major",
       "cost": 3,
       "requires": [
@@ -7506,6 +8437,7 @@
       "discipline": "craft",
       "path": "craft:path2",
       "pathName": "Fieldworks",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7524,6 +8456,7 @@
       "discipline": "craft",
       "path": "craft:path2",
       "pathName": "Fieldworks",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7546,6 +8479,7 @@
       "discipline": "craft",
       "path": "craft:path2",
       "pathName": "Fieldworks",
+      "mastery": false,
       "kind": "skill",
       "cost": 2,
       "requires": [
@@ -7564,6 +8498,7 @@
       "discipline": "craft",
       "path": "craft:path2",
       "pathName": "Fieldworks",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7586,6 +8521,7 @@
       "discipline": "craft",
       "path": "craft:path3",
       "pathName": "Preparation",
+      "mastery": false,
       "kind": "skill",
       "cost": 1,
       "requires": [
@@ -7604,6 +8540,7 @@
       "discipline": "craft",
       "path": "craft:path3",
       "pathName": "Preparation",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7626,6 +8563,7 @@
       "discipline": "craft",
       "path": "craft:path3",
       "pathName": "Preparation",
+      "mastery": false,
       "kind": "minor",
       "cost": 1,
       "requires": [
@@ -7647,6 +8585,7 @@
       "discipline": "craft",
       "path": "craft:path3",
       "pathName": "Preparation",
+      "mastery": true,
       "kind": "major",
       "cost": 1,
       "requires": [
@@ -7664,6 +8603,1031 @@
       }
     },
     {
+      "id": "fencing:origin",
+      "discipline": "fencing",
+      "name": "Fencing",
+      "kind": "origin",
+      "cost": 3,
+      "requires": [],
+      "rank": 1,
+      "description": "Open the Fencing paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "local": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "fencing:rank2",
+      "discipline": "fencing",
+      "name": "Fencing II",
+      "kind": "rank",
+      "cost": 2,
+      "requires": [
+        "fencing:origin"
+      ],
+      "rank": 2,
+      "investment": 2,
+      "minimumLevel": 3,
+      "description": "Rank II: unlock advanced Fencing nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "local": {
+        "x": -45,
+        "y": 60
+      }
+    },
+    {
+      "id": "fencing:rank3",
+      "discipline": "fencing",
+      "name": "Fencing III",
+      "kind": "rank",
+      "cost": 3,
+      "requires": [
+        "fencing:rank2"
+      ],
+      "rank": 3,
+      "investment": 4,
+      "minimumLevel": 7,
+      "description": "Rank III: unlock the deepest Fencing paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "local": {
+        "x": 45,
+        "y": 60
+      }
+    },
+    {
+      "id": "fencing:0:0",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 1,
+      "requires": [
+        "fencing:origin"
+      ],
+      "minimumRank": 1,
+      "name": "Direct Thrust",
+      "power": "power-direct-thrust",
+      "minimumLevel": 1,
+      "local": {
+        "x": 0,
+        "y": -48
+      }
+    },
+    {
+      "id": "fencing:0:1",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "fencing:0:0"
+      ],
+      "minimumRank": 1,
+      "name": "Direct Thrust II",
+      "upgrade": {
+        "power": "power-direct-thrust",
+        "fixedProfile": [
+          2,
+          3,
+          5
+        ]
+      },
+      "description": "Direct Thrust deals 2/3/5 physical damage.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -82,
+        "y": -87
+      }
+    },
+    {
+      "id": "fencing:0:2",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "fencing:0:1"
+      ],
+      "minimumRank": 1,
+      "name": "Direct Thrust III",
+      "upgrade": {
+        "power": "power-direct-thrust",
+        "strongSteps": 2
+      },
+      "description": "A Strong hit grants an optional two-square safe step.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -103,
+        "y": -175
+      }
+    },
+    {
+      "id": "fencing:0:3",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 3,
+      "requires": [
+        "fencing:0:2"
+      ],
+      "minimumRank": 1,
+      "name": "Passing Thrust",
+      "power": "power-passing-thrust",
+      "minimumLevel": 3,
+      "local": {
+        "x": -48,
+        "y": -247
+      }
+    },
+    {
+      "id": "fencing:0:4",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "fencing:0:3"
+      ],
+      "minimumRank": 1,
+      "name": "Passing Thrust II",
+      "upgrade": {
+        "power": "power-passing-thrust",
+        "fixedProfile": [
+          2,
+          4,
+          6
+        ]
+      },
+      "description": "Passing Thrust deals 2/4/6 physical damage.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 43,
+        "y": -249
+      }
+    },
+    {
+      "id": "fencing:0:5",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "fencing:0:4"
+      ],
+      "minimumRank": 1,
+      "name": "Passing Thrust III",
+      "upgrade": {
+        "power": "power-passing-thrust",
+        "strongSteps": 3
+      },
+      "description": "On Strong, reposition up to three squares.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 101,
+        "y": -180
+      }
+    },
+    {
+      "id": "fencing:0:6",
+      "discipline": "fencing",
+      "path": "fencing:path0",
+      "pathName": "Pointwork",
+      "mastery": true,
+      "kind": "major",
+      "cost": 5,
+      "requires": [
+        "fencing:0:5"
+      ],
+      "minimumRank": 2,
+      "name": "Needle’s Eye",
+      "power": "power-needle-eye",
+      "minimumLevel": 7,
+      "local": {
+        "x": 85,
+        "y": -91
+      }
+    },
+    {
+      "id": "tactics:origin",
+      "discipline": "tactics",
+      "name": "Tactics",
+      "kind": "origin",
+      "cost": 3,
+      "requires": [],
+      "rank": 1,
+      "description": "Open the Tactics paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "local": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "tactics:rank2",
+      "discipline": "tactics",
+      "name": "Tactics II",
+      "kind": "rank",
+      "cost": 2,
+      "requires": [
+        "tactics:origin"
+      ],
+      "rank": 2,
+      "investment": 2,
+      "minimumLevel": 3,
+      "description": "Rank II: unlock advanced Tactics nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "local": {
+        "x": -45,
+        "y": 60
+      }
+    },
+    {
+      "id": "tactics:rank3",
+      "discipline": "tactics",
+      "name": "Tactics III",
+      "kind": "rank",
+      "cost": 3,
+      "requires": [
+        "tactics:rank2"
+      ],
+      "rank": 3,
+      "investment": 4,
+      "minimumLevel": 7,
+      "description": "Rank III: unlock the deepest Tactics paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "local": {
+        "x": 45,
+        "y": 60
+      }
+    },
+    {
+      "id": "tactics:0:0",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 1,
+      "requires": [
+        "tactics:origin"
+      ],
+      "minimumRank": 1,
+      "name": "Exploit the Opening",
+      "power": "power-exploit-opening",
+      "minimumLevel": 1,
+      "local": {
+        "x": 0,
+        "y": -48
+      }
+    },
+    {
+      "id": "tactics:0:1",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "tactics:0:0"
+      ],
+      "minimumRank": 1,
+      "name": "Exploit the Opening II",
+      "upgrade": {
+        "power": "power-exploit-opening",
+        "fixedProfile": [
+          2,
+          4,
+          5
+        ]
+      },
+      "description": "Exploit the Opening deals 2/4/5 physical damage.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -82,
+        "y": -87
+      }
+    },
+    {
+      "id": "tactics:0:2",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "tactics:0:1"
+      ],
+      "minimumRank": 1,
+      "name": "Exploit the Opening III",
+      "upgrade": {
+        "power": "power-exploit-opening",
+        "ignoreTarget": true
+      },
+      "description": "The attacked enemy cannot react to the ally’s step.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -103,
+        "y": -175
+      }
+    },
+    {
+      "id": "tactics:0:3",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 3,
+      "requires": [
+        "tactics:0:2"
+      ],
+      "minimumRank": 1,
+      "name": "Divide Their Attention",
+      "power": "power-divide-attention",
+      "minimumLevel": 3,
+      "local": {
+        "x": -48,
+        "y": -247
+      }
+    },
+    {
+      "id": "tactics:0:4",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "tactics:0:3"
+      ],
+      "minimumRank": 1,
+      "name": "Divide Their Attention II",
+      "upgrade": {
+        "power": "power-divide-attention",
+        "fixedProfile": [
+          3,
+          5,
+          7
+        ]
+      },
+      "description": "Divide Their Attention deals 3/5/7 physical damage.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 43,
+        "y": -249
+      }
+    },
+    {
+      "id": "tactics:0:5",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "tactics:0:4"
+      ],
+      "minimumRank": 1,
+      "name": "Divide Their Attention III",
+      "upgrade": {
+        "power": "power-divide-attention",
+        "strongSteps": 2
+      },
+      "description": "A Strong hit grants your chosen ally up to two squares.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 101,
+        "y": -180
+      }
+    },
+    {
+      "id": "tactics:0:6",
+      "discipline": "tactics",
+      "path": "tactics:path0",
+      "pathName": "Openings",
+      "mastery": true,
+      "kind": "major",
+      "cost": 5,
+      "requires": [
+        "tactics:0:5"
+      ],
+      "minimumRank": 2,
+      "name": "Spring the Trap",
+      "power": "power-spring-trap",
+      "minimumLevel": 7,
+      "local": {
+        "x": 85,
+        "y": -91
+      }
+    },
+    {
+      "id": "divination:origin",
+      "discipline": "divination",
+      "name": "Divination",
+      "kind": "origin",
+      "cost": 3,
+      "requires": [],
+      "rank": 1,
+      "description": "Open the Divination paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "local": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "divination:rank2",
+      "discipline": "divination",
+      "name": "Divination II",
+      "kind": "rank",
+      "cost": 2,
+      "requires": [
+        "divination:origin"
+      ],
+      "rank": 2,
+      "investment": 2,
+      "minimumLevel": 3,
+      "description": "Rank II: unlock advanced Divination nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "local": {
+        "x": -45,
+        "y": 60
+      }
+    },
+    {
+      "id": "divination:rank3",
+      "discipline": "divination",
+      "name": "Divination III",
+      "kind": "rank",
+      "cost": 3,
+      "requires": [
+        "divination:rank2"
+      ],
+      "rank": 3,
+      "investment": 4,
+      "minimumLevel": 7,
+      "description": "Rank III: unlock the deepest Divination paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "local": {
+        "x": 45,
+        "y": 60
+      }
+    },
+    {
+      "id": "divination:0:0",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 1,
+      "requires": [
+        "divination:origin"
+      ],
+      "minimumRank": 1,
+      "name": "Detect Magic",
+      "power": "power-detect-magic",
+      "minimumLevel": 1,
+      "local": {
+        "x": 0,
+        "y": -48
+      }
+    },
+    {
+      "id": "divination:0:1",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "divination:0:0"
+      ],
+      "minimumRank": 1,
+      "name": "Find Traps",
+      "power": "power-find-traps",
+      "minimumLevel": 1,
+      "local": {
+        "x": -82,
+        "y": -87
+      }
+    },
+    {
+      "id": "divination:0:2",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "divination:0:1"
+      ],
+      "minimumRank": 1,
+      "name": "Identify",
+      "stats": {
+        "identify": 1
+      },
+      "description": "Examine a carried find for ten minutes and spend 3 SP to learn its properties. Each roll uncovers one to three facts.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -103,
+        "y": -175
+      }
+    },
+    {
+      "id": "divination:0:3",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 3,
+      "requires": [
+        "divination:0:2"
+      ],
+      "minimumRank": 1,
+      "name": "True Seeing",
+      "power": "power-true-seeing",
+      "minimumLevel": 3,
+      "local": {
+        "x": -48,
+        "y": -247
+      }
+    },
+    {
+      "id": "divination:0:4",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "divination:0:3"
+      ],
+      "minimumRank": 1,
+      "name": "Scaling Analysis",
+      "stats": {
+        "identify": 1
+      },
+      "description": "Each identification ritual reveals one additional fact.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 43,
+        "y": -249
+      }
+    },
+    {
+      "id": "divination:0:5",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "divination:0:4"
+      ],
+      "minimumRank": 1,
+      "name": "Find the Path",
+      "power": "power-find-path",
+      "minimumLevel": 3,
+      "local": {
+        "x": 101,
+        "y": -180
+      }
+    },
+    {
+      "id": "divination:0:6",
+      "discipline": "divination",
+      "path": "divination:path0",
+      "pathName": "Detection",
+      "mastery": true,
+      "kind": "major",
+      "cost": 5,
+      "requires": [
+        "divination:0:5"
+      ],
+      "minimumRank": 2,
+      "name": "Sight True",
+      "power": "power-sight-true",
+      "minimumLevel": 7,
+      "local": {
+        "x": 85,
+        "y": -91
+      }
+    },
+    {
+      "id": "force:origin",
+      "discipline": "force",
+      "name": "Force",
+      "kind": "origin",
+      "cost": 3,
+      "requires": [],
+      "rank": 1,
+      "description": "Open the Force paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "local": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "force:rank2",
+      "discipline": "force",
+      "name": "Force II",
+      "kind": "rank",
+      "cost": 2,
+      "requires": [
+        "force:origin"
+      ],
+      "rank": 2,
+      "investment": 2,
+      "minimumLevel": 3,
+      "description": "Rank II: unlock advanced Force nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "local": {
+        "x": -45,
+        "y": 60
+      }
+    },
+    {
+      "id": "force:rank3",
+      "discipline": "force",
+      "name": "Force III",
+      "kind": "rank",
+      "cost": 3,
+      "requires": [
+        "force:rank2"
+      ],
+      "rank": 3,
+      "investment": 4,
+      "minimumLevel": 7,
+      "description": "Rank III: unlock the deepest Force paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "local": {
+        "x": 45,
+        "y": 60
+      }
+    },
+    {
+      "id": "force:0:0",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 1,
+      "requires": [
+        "force:origin"
+      ],
+      "minimumRank": 1,
+      "name": "Arcane Bolt",
+      "power": "power-arcane-bolt",
+      "minimumLevel": 1,
+      "local": {
+        "x": 0,
+        "y": -48
+      }
+    },
+    {
+      "id": "force:0:1",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "force:0:0"
+      ],
+      "minimumRank": 1,
+      "name": "Staying",
+      "power": "power-staying",
+      "minimumLevel": 1,
+      "local": {
+        "x": -82,
+        "y": -87
+      }
+    },
+    {
+      "id": "force:0:2",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "force:0:1"
+      ],
+      "minimumRank": 1,
+      "name": "Shatter",
+      "power": "power-shatter",
+      "minimumLevel": 1,
+      "local": {
+        "x": -103,
+        "y": -175
+      }
+    },
+    {
+      "id": "force:0:3",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 3,
+      "requires": [
+        "force:0:2"
+      ],
+      "minimumRank": 1,
+      "name": "Resilient Shell",
+      "power": "power-force-ward",
+      "minimumLevel": 3,
+      "local": {
+        "x": -48,
+        "y": -247
+      }
+    },
+    {
+      "id": "force:0:4",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "force:0:3"
+      ],
+      "minimumRank": 1,
+      "name": "Wall of Force",
+      "power": "power-force-wall",
+      "minimumLevel": 3,
+      "local": {
+        "x": 43,
+        "y": -249
+      }
+    },
+    {
+      "id": "force:0:5",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "force:0:4"
+      ],
+      "minimumRank": 1,
+      "name": "Hammer Lance",
+      "power": "power-force-lance",
+      "minimumLevel": 3,
+      "local": {
+        "x": 101,
+        "y": -180
+      }
+    },
+    {
+      "id": "force:0:6",
+      "discipline": "force",
+      "path": "force:path0",
+      "pathName": "Telekinesis",
+      "mastery": true,
+      "kind": "major",
+      "cost": 5,
+      "requires": [
+        "force:0:5"
+      ],
+      "minimumRank": 2,
+      "name": "Gravitic Well",
+      "power": "power-force-crush",
+      "minimumLevel": 7,
+      "local": {
+        "x": 85,
+        "y": -91
+      }
+    },
+    {
+      "id": "spellcraft:origin",
+      "discipline": "spellcraft",
+      "name": "Spellcraft",
+      "kind": "origin",
+      "cost": 3,
+      "requires": [],
+      "rank": 1,
+      "description": "Open the Spellcraft paths. Rank I activates matching enchantments. Learn additional disciplines from level 2.",
+      "local": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "spellcraft:rank2",
+      "discipline": "spellcraft",
+      "name": "Spellcraft II",
+      "kind": "rank",
+      "cost": 2,
+      "requires": [
+        "spellcraft:origin"
+      ],
+      "rank": 2,
+      "investment": 2,
+      "minimumLevel": 3,
+      "description": "Rank II: unlock advanced Spellcraft nodes and rank-II enchantments. Requires four purchased nodes in this discipline.",
+      "local": {
+        "x": -45,
+        "y": 60
+      }
+    },
+    {
+      "id": "spellcraft:rank3",
+      "discipline": "spellcraft",
+      "name": "Spellcraft III",
+      "kind": "rank",
+      "cost": 3,
+      "requires": [
+        "spellcraft:rank2"
+      ],
+      "rank": 3,
+      "investment": 4,
+      "minimumLevel": 7,
+      "description": "Rank III: unlock the deepest Spellcraft paths and rank-III enchantments. Requires nine purchased nodes in this discipline.",
+      "local": {
+        "x": 45,
+        "y": 60
+      }
+    },
+    {
+      "id": "spellcraft:0:0",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 1,
+      "requires": [
+        "spellcraft:origin"
+      ],
+      "minimumRank": 1,
+      "name": "Soul Capacity I",
+      "stats": {
+        "maximumSp": 2
+      },
+      "description": "Increase maximum SP by 2. Learning this circle preserves current SP.",
+      "minimumLevel": 1,
+      "local": {
+        "x": 0,
+        "y": -48
+      }
+    },
+    {
+      "id": "spellcraft:0:1",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "spellcraft:0:0"
+      ],
+      "minimumRank": 1,
+      "name": "Soul Capacity II",
+      "stats": {
+        "maximumSp": 2
+      },
+      "description": "Increase maximum SP by 2. Learning this circle preserves current SP.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -82,
+        "y": -87
+      }
+    },
+    {
+      "id": "spellcraft:0:2",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 2,
+      "requires": [
+        "spellcraft:0:1"
+      ],
+      "minimumRank": 1,
+      "name": "Soul Capacity III",
+      "stats": {
+        "maximumSp": 3
+      },
+      "description": "Increase maximum SP by 3. Learning this circle preserves current SP.",
+      "minimumLevel": 1,
+      "local": {
+        "x": -103,
+        "y": -175
+      }
+    },
+    {
+      "id": "spellcraft:0:3",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 3,
+      "requires": [
+        "spellcraft:0:2"
+      ],
+      "minimumRank": 1,
+      "name": "Deep Reserves I",
+      "stats": {
+        "maximumSp": 3
+      },
+      "description": "Increase maximum SP by 3. Learning this circle preserves current SP.",
+      "minimumLevel": 3,
+      "local": {
+        "x": -48,
+        "y": -247
+      }
+    },
+    {
+      "id": "spellcraft:0:4",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "spellcraft:0:3"
+      ],
+      "minimumRank": 1,
+      "name": "Deep Reserves II",
+      "stats": {
+        "maximumSp": 3
+      },
+      "description": "Increase maximum SP by 3. Learning this circle preserves current SP.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 43,
+        "y": -249
+      }
+    },
+    {
+      "id": "spellcraft:0:5",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": false,
+      "kind": "minor",
+      "cost": 4,
+      "requires": [
+        "spellcraft:0:4"
+      ],
+      "minimumRank": 1,
+      "name": "Deep Reserves III",
+      "stats": {
+        "maximumSp": 3
+      },
+      "description": "Increase maximum SP by 3. Learning this circle preserves current SP.",
+      "minimumLevel": 3,
+      "local": {
+        "x": 101,
+        "y": -180
+      }
+    },
+    {
+      "id": "spellcraft:0:6",
+      "discipline": "spellcraft",
+      "path": "spellcraft:path0",
+      "pathName": "Soul Capacity",
+      "mastery": true,
+      "kind": "major",
+      "cost": 5,
+      "requires": [
+        "spellcraft:0:5"
+      ],
+      "minimumRank": 2,
+      "name": "Soul Wellspring",
+      "stats": {
+        "maximumSp": 4
+      },
+      "description": "Increase maximum SP by 4. Learning this circle preserves current SP.",
+      "minimumLevel": 7,
+      "local": {
+        "x": 85,
+        "y": -91
+      }
+    },
+    {
       "id": "intersection:flaming-arrow",
       "name": "Flaming Arrow",
       "kind": "intersection",
@@ -7673,8 +9637,8 @@
       ],
       "cost": 3,
       "requires": [
-        "flame:0:3",
-        "marksmanship:0:4"
+        "flame:0:2",
+        "marksmanship:0:3"
       ],
       "power": "power-forge-flaming-arrow",
       "minimumLevel": 3,
@@ -7691,8 +9655,8 @@
       ],
       "cost": 3,
       "requires": [
-        "marksmanship:2:3",
-        "wilderness:0:3"
+        "marksmanship:2:2",
+        "wilderness:0:2"
       ],
       "power": "power-forge-thorn-arrow",
       "minimumLevel": 3,
@@ -7709,8 +9673,8 @@
       ],
       "cost": 3,
       "requires": [
-        "wilderness:3:3",
-        "life:1:3"
+        "wilderness:3:2",
+        "life:1:2"
       ],
       "power": "power-forge-renewing-grove",
       "minimumLevel": 3,
@@ -7727,8 +9691,8 @@
       ],
       "cost": 3,
       "requires": [
-        "life:2:3",
-        "medicine:2:3"
+        "life:2:2",
+        "medicine:2:2"
       ],
       "power": "power-forge-vital-surgery",
       "minimumLevel": 3,
@@ -7745,8 +9709,8 @@
       ],
       "cost": 3,
       "requires": [
-        "medicine:1:3",
-        "radiance:2:3"
+        "medicine:1:2",
+        "radiance:2:2"
       ],
       "power": "power-forge-purifying-light",
       "minimumLevel": 3,
@@ -7763,8 +9727,8 @@
       ],
       "cost": 3,
       "requires": [
-        "radiance:2:3",
-        "frost:1:3"
+        "radiance:2:2",
+        "frost:1:2"
       ],
       "power": "power-forge-aurora-ward",
       "minimumLevel": 3,
@@ -7781,8 +9745,8 @@
       ],
       "cost": 3,
       "requires": [
-        "frost:0:3",
-        "calling:1:3"
+        "frost:0:2",
+        "calling:1:2"
       ],
       "power": "power-forge-winter-spirit",
       "minimumLevel": 3,
@@ -7799,8 +9763,8 @@
       ],
       "cost": 3,
       "requires": [
-        "calling:2:3",
-        "mind:1:3"
+        "calling:2:2",
+        "mind:1:2"
       ],
       "power": "power-forge-psychic-crossing",
       "minimumLevel": 3,
@@ -7817,8 +9781,8 @@
       ],
       "cost": 3,
       "requires": [
-        "mind:0:3",
-        "subterfuge:0:3"
+        "mind:0:2",
+        "subterfuge:0:2"
       ],
       "power": "power-forge-phantom-knife",
       "minimumLevel": 3,
@@ -7835,8 +9799,8 @@
       ],
       "cost": 3,
       "requires": [
-        "subterfuge:1:3",
-        "athletics:0:3"
+        "subterfuge:1:2",
+        "athletics:0:2"
       ],
       "power": "power-forge-shadow-dancer",
       "minimumLevel": 3,
@@ -7853,8 +9817,8 @@
       ],
       "cost": 3,
       "requires": [
-        "athletics:2:3",
-        "storm:1:3"
+        "athletics:2:2",
+        "storm:1:2"
       ],
       "power": "power-forge-thunder-charge",
       "minimumLevel": 3,
@@ -7871,8 +9835,8 @@
       ],
       "cost": 3,
       "requires": [
-        "storm:0:3",
-        "flame:1:3"
+        "storm:0:2",
+        "flame:1:2"
       ],
       "power": "power-forge-firestorm",
       "minimumLevel": 3,
@@ -7889,8 +9853,8 @@
       ],
       "cost": 3,
       "requires": [
-        "arms:0:4",
-        "armor:0:3"
+        "arms:0:3",
+        "armor:0:2"
       ],
       "power": "power-forge-iron-cleave",
       "minimumLevel": 3,
@@ -7907,8 +9871,8 @@
       ],
       "cost": 3,
       "requires": [
-        "armor:1:3",
-        "guard:0:3"
+        "armor:1:2",
+        "guard:0:2"
       ],
       "power": "power-forge-bastion",
       "minimumLevel": 3,
@@ -7925,8 +9889,8 @@
       ],
       "cost": 3,
       "requires": [
-        "guard:1:3",
-        "influence:0:3"
+        "guard:1:2",
+        "influence:0:2"
       ],
       "power": "power-forge-rallying-bulwark",
       "minimumLevel": 3,
@@ -7943,8 +9907,8 @@
       ],
       "cost": 3,
       "requires": [
-        "influence:3:3",
-        "scholarship:2:3"
+        "influence:3:2",
+        "scholarship:2:2"
       ],
       "power": "power-forge-battle-plan",
       "minimumLevel": 3,
@@ -7961,8 +9925,8 @@
       ],
       "cost": 3,
       "requires": [
-        "scholarship:3:3",
-        "craft:1:3"
+        "scholarship:3:2",
+        "craft:1:2"
       ],
       "power": "power-forge-alchemical-insight",
       "minimumLevel": 3,
@@ -7983,8 +9947,8 @@
       ],
       "cost": 3,
       "requires": [
-        "craft:3:3",
-        "arms:0:4"
+        "craft:3:2",
+        "arms:0:3"
       ],
       "power": "power-forge-tempered-edge",
       "minimumLevel": 3,
@@ -8001,8 +9965,8 @@
       ],
       "cost": 3,
       "requires": [
-        "flame:2:3",
-        "arms:1:3"
+        "flame:2:2",
+        "arms:1:2"
       ],
       "power": "power-forge-furnace-blade",
       "minimumLevel": 3,
@@ -8019,8 +9983,8 @@
       ],
       "cost": 3,
       "requires": [
-        "marksmanship:3:3",
-        "armor:3:3"
+        "marksmanship:3:2",
+        "armor:3:2"
       ],
       "power": "power-forge-armored-volley",
       "minimumLevel": 3,
@@ -8037,8 +10001,8 @@
       ],
       "cost": 3,
       "requires": [
-        "wilderness:3:3",
-        "guard:2:3"
+        "wilderness:3:2",
+        "guard:2:2"
       ],
       "power": "power-forge-sheltering-thicket",
       "minimumLevel": 3,
@@ -8055,8 +10019,8 @@
       ],
       "cost": 3,
       "requires": [
-        "life:0:3",
-        "influence:1:3"
+        "life:0:2",
+        "influence:1:2"
       ],
       "power": "power-forge-inspiring-renewal",
       "minimumLevel": 3,
@@ -8073,8 +10037,8 @@
       ],
       "cost": 3,
       "requires": [
-        "medicine:3:3",
-        "scholarship:1:3"
+        "medicine:3:2",
+        "scholarship:1:2"
       ],
       "power": "power-forge-clinical-precision",
       "minimumLevel": 3,
@@ -8091,8 +10055,8 @@
       ],
       "cost": 3,
       "requires": [
-        "radiance:1:3",
-        "craft:2:3"
+        "radiance:1:2",
+        "craft:2:2"
       ],
       "power": "power-forge-rune-lantern",
       "minimumLevel": 3,
@@ -8286,7 +10250,7 @@
     {
       "id": "power-ember-lance",
       "name": "Ember Lance",
-      "description": "Action · range 5. Roll knowledge. 2/3/4 fire damage. Apply burning 1.",
+      "description": "Action · range 5. 0 SP · Free hand required. Roll knowledge. 2/3/4 fire damage. Standard or Strong · Apply burning 1.",
       "discipline": "discipline-flame",
       "rank": 1,
       "minimumLevel": 1,
@@ -8308,16 +10272,18 @@
         {
           "kind": "condition",
           "key": "burning",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-flame-fan",
       "name": "Flame Fan",
-      "description": "Action · range 3 · cone. Roll knowledge. 1/2/2 fire damage.",
+      "description": "Action · range 3 · cone. 0 SP · Free hand required. Roll knowledge. 1/2/2 fire damage.",
       "discipline": "discipline-flame",
       "rank": 1,
       "minimumLevel": 1,
@@ -8340,12 +10306,13 @@
       "shape": "cone",
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-firebreak",
       "name": "Firebreak",
-      "description": "Action · range 5 · radius 1. Create fire for 3 rounds.",
+      "description": "Action · range 5 · radius 1. 3 SP · Free hand required. Create fire for 3 rounds.",
       "discipline": "discipline-flame",
       "rank": 2,
       "minimumLevel": 3,
@@ -8362,12 +10329,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 3
     },
     {
       "id": "power-sunburst",
       "name": "Sunburst",
-      "description": "Action · range 5 · radius 2. Roll knowledge. 3/4/5 fire damage.",
+      "description": "Action · range 5 · radius 2. 4 SP · Free hand required. Roll knowledge. 3/4/5 fire damage.",
       "discipline": "discipline-flame",
       "rank": 3,
       "minimumLevel": 7,
@@ -8389,12 +10358,13 @@
       ],
       "radius": 2,
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 4
     },
     {
       "id": "power-ash-veil",
       "name": "Ash Veil",
-      "description": "Maneuver · range 4 · radius 1. Create smoke for 3 rounds. disengage enabled for 1 turns.",
+      "description": "Maneuver · range 4 · radius 1. 0 SP · Free hand required. Create smoke for 3 rounds. disengage enabled for 1 turns.",
       "discipline": "discipline-flame",
       "rank": 1,
       "minimumLevel": 1,
@@ -8420,12 +10390,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-searing-mark",
       "name": "Searing Mark",
-      "description": "Maneuver · range 4. dr -1 for 2 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. dr -1 for 2 turns.",
       "discipline": "discipline-flame",
       "rank": 1,
       "minimumLevel": 1,
@@ -8444,12 +10416,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-cinderlight",
       "name": "Cinderlight",
-      "description": "Action · range 3 · radius 1. Create light for 3 rounds.",
+      "description": "Action · range 3 · radius 1. 0 SP · Free hand required. Create light for 3 rounds.",
       "discipline": "discipline-flame",
       "rank": 1,
       "minimumLevel": 1,
@@ -8467,13 +10441,15 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "category": "main",
       "target": "enemy",
       "attribute": "agility",
-      "range": 4,
+      "range": 18,
       "effects": [
         {
           "kind": "damage",
@@ -8488,12 +10464,13 @@
       "forgePower": true,
       "id": "power-forge-shot",
       "name": "Bow Attack",
-      "description": "Action · range 4. Roll agility. 1/1/2 physical damage. Requires a readied bow and ammunition.",
+      "description": "Action · range 18. Normal range 12. Beyond it, 1 Bane. Roll agility. 1/1/2 physical damage. Requires a readied bow and ammunition.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "weapon": "ranged",
-      "forgeProfile": "ranged"
+      "forgeProfile": "ranged",
+      "normalRange": 12
     },
     {
       "category": "main",
@@ -8547,14 +10524,14 @@
     },
     {
       "id": "power-barbed-arrow",
-      "name": "Barbed Arrow",
-      "description": "Action · range 8. Roll agility. 1/1/2 physical damage. Apply bleeding 1. Requires a readied bow and ammunition.",
+      "name": "Barbed Volley",
+      "description": "Action · range 8 · radius 1. Roll agility. 1/1/2 physical damage. Standard or Strong · Apply bleeding 1. Requires a readied bow and ammunition.",
       "discipline": "discipline-marksmanship",
       "rank": 1,
       "minimumLevel": 1,
       "cost": 2,
       "category": "main",
-      "target": "enemy",
+      "target": "ground",
       "range": 8,
       "attribute": "agility",
       "effects": [
@@ -8570,10 +10547,12 @@
         {
           "kind": "condition",
           "key": "bleeding",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "ranged",
+      "radius": 1,
       "gamePower": true
     },
     {
@@ -8606,7 +10585,7 @@
     {
       "id": "power-point-blank-shot",
       "name": "Point-Blank Shot",
-      "description": "Action · range 2. Roll agility. 1/1/2 physical damage. Push 1 squares. Requires a readied bow and ammunition.",
+      "description": "Action · range 2. Roll agility. 1/1/2 physical damage. Standard or Strong · Push 1 squares. Requires a readied bow and ammunition.",
       "discipline": "discipline-marksmanship",
       "rank": 1,
       "minimumLevel": 1,
@@ -8627,7 +10606,8 @@
         },
         {
           "kind": "push",
-          "amount": 1
+          "amount": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "ranged",
@@ -8637,7 +10617,7 @@
     {
       "id": "power-leg-shot",
       "name": "Leg Shot",
-      "description": "Action · range 6. Roll agility. 1/1/2 physical damage. Apply slowed 1. Requires a readied bow and ammunition.",
+      "description": "Action · range 6. Roll agility. 1/1/2 physical damage. Standard or Strong · Apply slowed 1. Requires a readied bow and ammunition.",
       "discipline": "discipline-marksmanship",
       "rank": 1,
       "minimumLevel": 1,
@@ -8659,7 +10639,8 @@
         {
           "kind": "condition",
           "key": "slowed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "ranged",
@@ -8780,7 +10761,7 @@
     {
       "id": "power-briar-lash",
       "name": "Briar Lash",
-      "description": "Action · range 3. Roll reason. 1/2/3 physical damage. Pull 1 squares.",
+      "description": "Action · range 3. 0 SP · Free hand required. Roll knowledge. 1/2/3 physical damage. Standard or Strong · Pull 1 squares.",
       "discipline": "discipline-wilderness",
       "rank": 1,
       "minimumLevel": 1,
@@ -8788,7 +10769,7 @@
       "category": "main",
       "target": "enemy",
       "range": 3,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -8801,12 +10782,14 @@
         },
         {
           "kind": "pull",
-          "amount": 1
+          "amount": 1,
+          "minimumBand": 1
         }
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-brush-cover",
@@ -8864,7 +10847,7 @@
     {
       "id": "power-mending-touch",
       "name": "Mending Touch",
-      "description": "Action · range 4. Roll reason. Restore 3/5/7 HP. Outside combat, check a field dressing.",
+      "description": "Action · range 4. 0 SP · Free hand required. Roll knowledge. Restore 3/5/7 HP. Outside combat, check a field dressing.",
       "discipline": "discipline-life",
       "rank": 1,
       "minimumLevel": 1,
@@ -8882,16 +10865,17 @@
           ]
         }
       ],
-      "attribute": "reason",
+      "attribute": "knowledge",
       "spell": true,
       "field": true,
       "gamePower": true,
-      "fieldSupply": "item-field-dressing"
+      "fieldSupply": "item-field-dressing",
+      "spCost": 0
     },
     {
       "id": "power-living-ward",
       "name": "Living Ward",
-      "description": "Action · range 3. Absorb 4 damage for 2 turns.",
+      "description": "Action · range 3. 0 SP · Free hand required. Absorb up to 4 damage. Sustain for one Maneuver each following turn, up to one minute. Upkeep costs 0 SP and preserves the remaining ward.",
       "discipline": "discipline-life",
       "rank": 1,
       "minimumLevel": 1,
@@ -8908,12 +10892,15 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "sustained": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-renewal-circle",
       "name": "Renewal Circle",
-      "description": "Action · range 5 · radius 1. Create healing for 3 rounds.",
+      "description": "Action · range 5 · radius 1. 3 SP · Free hand required. Create healing for 3 rounds.",
       "discipline": "discipline-life",
       "rank": 2,
       "minimumLevel": 3,
@@ -8930,12 +10917,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 3
     },
     {
       "id": "power-cleanse-blood",
       "name": "Cleanse Blood",
-      "description": "Action · range 4. Remove 2 temporary severity: poisoned, bleeding. Outside combat, check a field dressing.",
+      "description": "Action · range 4. 0 SP · Free hand required. Remove 2 temporary severity: poisoned, bleeding. Outside combat, check a field dressing.",
       "discipline": "discipline-life",
       "rank": 1,
       "minimumLevel": 1,
@@ -8957,12 +10946,14 @@
       "field": true,
       "grants": [],
       "gamePower": true,
-      "fieldSupply": "item-field-dressing"
+      "fieldSupply": "item-field-dressing",
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-renew-flesh",
       "name": "Renew Flesh",
-      "description": "Action · range 4. Treat one recoverable wound using a restoration draught. Restore 5 HP. Supply: restoration draught.",
+      "description": "Action · range 4. 3 SP · Free hand required. Roll knowledge. Stabilize a dying companion. Remove 3 temporary severity: bleeding, poisoned, burning. Restore 2/4/6 HP. Restore 5 HP.",
       "discipline": "discipline-life",
       "rank": 3,
       "minimumLevel": 7,
@@ -8972,7 +10963,24 @@
       "range": 4,
       "effects": [
         {
-          "kind": "wound"
+          "kind": "stabilize"
+        },
+        {
+          "kind": "cleanse",
+          "keys": [
+            "bleeding",
+            "poisoned",
+            "burning"
+          ],
+          "amount": 3
+        },
+        {
+          "kind": "heal",
+          "amount": [
+            2,
+            4,
+            6
+          ]
         },
         {
           "kind": "heal",
@@ -8982,13 +10990,14 @@
       "spell": true,
       "field": true,
       "gamePower": true,
-      "supply": "item-restoration-draught",
-      "consume": true
+      "consume": true,
+      "attribute": "knowledge",
+      "spCost": 3
     },
     {
       "id": "power-vital-spark",
       "name": "Vital Spark",
-      "description": "Maneuver · range 2. Restore 2 HP. Outside combat, check a field dressing.",
+      "description": "Maneuver · range 2. 0 SP · Free hand required. Roll knowledge. Restore 2 HP. Outside combat, check a field dressing.",
       "discipline": "discipline-life",
       "rank": 1,
       "minimumLevel": 1,
@@ -9006,12 +11015,14 @@
       "field": true,
       "grants": [],
       "gamePower": true,
-      "fieldSupply": "item-field-dressing"
+      "fieldSupply": "item-field-dressing",
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-life-spring",
       "name": "Life Spring",
-      "description": "Action · range 5. Create healing for 2 rounds.",
+      "description": "Action · range 5. 0 SP · Free hand required. Create healing for 2 rounds.",
       "discipline": "discipline-life",
       "rank": 1,
       "minimumLevel": 1,
@@ -9029,7 +11040,9 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-field-care",
@@ -9234,7 +11247,7 @@
     {
       "id": "power-dawn-ray",
       "name": "Dawn Ray",
-      "description": "Action · range 5. Roll reason. 2/3/4 radiant damage.",
+      "description": "Action · range 5. 0 SP · Free hand required. Roll knowledge. 2/3/4 radiant damage.",
       "discipline": "discipline-radiance",
       "rank": 1,
       "minimumLevel": 1,
@@ -9242,7 +11255,7 @@
       "category": "main",
       "target": "enemy",
       "range": 5,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9256,12 +11269,13 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-judgments-cone",
       "name": "Judgment’s Cone",
-      "description": "Action · range 4 · cone. Roll reason. 3/4/5 radiant damage.",
+      "description": "Action · range 4 · cone. 3 SP · Free hand required. Roll knowledge. 3/4/5 radiant damage.",
       "discipline": "discipline-radiance",
       "rank": 3,
       "minimumLevel": 7,
@@ -9269,7 +11283,7 @@
       "category": "main",
       "target": "ground",
       "range": 4,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9283,12 +11297,13 @@
       ],
       "shape": "cone",
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 3
     },
     {
       "id": "power-guiding-light",
       "name": "Guiding Light",
-      "description": "Action · range 5 · radius 2. Create light for 3 rounds. Reveal the target.",
+      "description": "Action · range 5 · radius 2. 0 SP · Free hand required. Create light for 3 rounds. Reveal the target.",
       "discipline": "discipline-radiance",
       "rank": 1,
       "minimumLevel": 1,
@@ -9309,12 +11324,14 @@
       ],
       "spell": true,
       "field": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-revealing-brand",
       "name": "Revealing Brand",
-      "description": "Action · range 4. Reveal the target. Apply blinded 1. Create light for 3 rounds.",
+      "description": "Action · range 4. 0 SP · Free hand required. Reveal the target. Apply blinded 1. Create light for 3 rounds.",
       "discipline": "discipline-radiance",
       "rank": 1,
       "minimumLevel": 1,
@@ -9339,12 +11356,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-dawn-shield",
       "name": "Dawn Shield",
-      "description": "Maneuver · range 4. Absorb 6 damage for 2 turns. Remove 99 temporary severity: frightened.",
+      "description": "Maneuver · range 4. 2 SP · Free hand required. Absorb 6 damage for 2 turns. Remove 99 temporary severity: frightened.",
       "discipline": "discipline-radiance",
       "rank": 2,
       "minimumLevel": 3,
@@ -9367,12 +11386,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 2
     },
     {
       "id": "power-halo-ward",
       "name": "Halo Ward",
-      "description": "Action · radius 1. Absorb 3 damage for 2 turns.",
+      "description": "Action · radius 1. 0 SP · Free hand required. Absorb 3 damage for 2 turns.",
       "discipline": "discipline-radiance",
       "rank": 1,
       "minimumLevel": 1,
@@ -9390,12 +11411,14 @@
       "radius": 1,
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-kindle-courage",
       "name": "Kindle Courage",
-      "description": "Maneuver · range 4. Remove 1 temporary severity: frightened. defense +1 for 1 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. Remove 1 temporary severity: frightened. defense +1 for 1 turns.",
       "discipline": "discipline-radiance",
       "rank": 1,
       "minimumLevel": 1,
@@ -9422,12 +11445,14 @@
       "otherOnly": true,
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-winter-bolt",
       "name": "Winter Bolt",
-      "description": "Action · range 5. Roll knowledge. 2/3/4 cold damage. Apply slowed 1.",
+      "description": "Action · range 5. 0 SP · Free hand required. Roll knowledge. 2/3/4 cold damage. Standard or Strong · Apply slowed 1.",
       "discipline": "discipline-frost",
       "rank": 1,
       "minimumLevel": 1,
@@ -9449,16 +11474,18 @@
         {
           "kind": "condition",
           "key": "slowed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-frost-patch",
       "name": "Frost Patch",
-      "description": "Action · range 4 · radius 1. Create difficult for 3 rounds.",
+      "description": "Action · range 4 · radius 1. 0 SP · Free hand required. Create difficult for 3 rounds.",
       "discipline": "discipline-frost",
       "rank": 1,
       "minimumLevel": 1,
@@ -9476,12 +11503,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-glacial-wall",
       "name": "Glacial Wall",
-      "description": "Action · range 5 · radius 1 · wall. Create wall for 3 rounds.",
+      "description": "Action · range 5 · radius 1 · wall. 4 SP · Free hand required. Create wall for 3 rounds.",
       "discipline": "discipline-frost",
       "rank": 3,
       "minimumLevel": 7,
@@ -9499,12 +11528,14 @@
       ],
       "shape": "wall",
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 4
     },
     {
       "id": "power-brittle-armor",
       "name": "Brittle Armor",
-      "description": "Action · range 4. Apply slowed 1. dr -1 for 2 turns.",
+      "description": "Action · range 4. 0 SP · Free hand required. Apply slowed 1. dr -1 for 2 turns.",
       "discipline": "discipline-frost",
       "rank": 1,
       "minimumLevel": 1,
@@ -9528,12 +11559,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-cool-blood",
       "name": "Cool Blood",
-      "description": "Maneuver · range 2. Remove 2 temporary severity: burning.",
+      "description": "Maneuver · range 2. 0 SP · Free hand required. Remove 2 temporary severity: burning.",
       "discipline": "discipline-frost",
       "rank": 1,
       "minimumLevel": 1,
@@ -9552,12 +11585,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-dousing-rain",
       "name": "Dousing Rain",
-      "description": "Action · range 5 · radius 1. Create water for 3 rounds.",
+      "description": "Action · range 5 · radius 1. 3 SP · Free hand required. Create water for 3 rounds.",
       "discipline": "discipline-frost",
       "rank": 2,
       "minimumLevel": 3,
@@ -9574,12 +11609,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 3
     },
     {
       "id": "power-rime-shell",
       "name": "Rime Shell",
-      "description": "Maneuver. Absorb 3 damage for 2 turns.",
+      "description": "Maneuver. 0 SP · Free hand required. Absorb 3 damage for 2 turns.",
       "discipline": "discipline-frost",
       "rank": 1,
       "minimumLevel": 1,
@@ -9596,12 +11633,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-spirit-ward",
       "name": "Spirit Ward",
-      "description": "Maneuver · range 4. Absorb 4 damage for 2 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. Absorb up to 4 damage. Sustain for one Maneuver each following turn, up to one minute. Upkeep costs 0 SP and preserves the remaining ward.",
       "discipline": "discipline-calling",
       "rank": 1,
       "minimumLevel": 1,
@@ -9617,12 +11656,15 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "sustained": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-spirit-needle",
       "name": "Spirit Needle",
-      "description": "Action · range 4. Roll reason. 2/2/3 mental damage.",
+      "description": "Action · range 4. 0 SP · Free hand required. Roll knowledge. 2/2/3 mental damage.",
       "discipline": "discipline-calling",
       "rank": 1,
       "minimumLevel": 1,
@@ -9630,7 +11672,7 @@
       "category": "main",
       "target": "enemy",
       "range": 4,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9644,12 +11686,13 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-phantom-sentry",
       "name": "Phantom Sentry",
-      "description": "Action · range 5. Create trap for 3 rounds.",
+      "description": "Action · range 5. 2 SP · Free hand required. Create trap for 3 rounds.",
       "discipline": "discipline-calling",
       "rank": 2,
       "minimumLevel": 3,
@@ -9666,12 +11709,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 2
     },
     {
       "id": "power-spectral-hand",
       "name": "Spectral Hand",
-      "description": "Action · range 4. Pull 1 squares.",
+      "description": "Action · range 4. 0 SP · Free hand required. Pull 1 squares.",
       "discipline": "discipline-calling",
       "rank": 1,
       "minimumLevel": 1,
@@ -9687,12 +11732,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-spirit-crossing",
       "name": "Spirit Crossing",
-      "description": "Maneuver · range 6. Swap with a companion.",
+      "description": "Maneuver · range 6. 3 SP · Free hand required. Swap with a companion.",
       "discipline": "discipline-calling",
       "rank": 3,
       "minimumLevel": 7,
@@ -9706,12 +11753,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 3
     },
     {
       "id": "power-wisp-lantern",
       "name": "Wisp Lantern",
-      "description": "Action · range 4. Create light for 3 rounds.",
+      "description": "Action · range 4. 0 SP · Free hand required. Create light for 3 rounds.",
       "discipline": "discipline-calling",
       "rank": 1,
       "minimumLevel": 1,
@@ -9729,12 +11778,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-ancestral-guidance",
       "name": "Ancestral Guidance",
-      "description": "Maneuver · range 4. attack +1, defense +1 for 2 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. attack +1, defense +1 for 2 turns.",
       "discipline": "discipline-calling",
       "rank": 1,
       "minimumLevel": 1,
@@ -9754,12 +11805,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-mind-needle",
       "name": "Mind Needle",
-      "description": "Action · range 4. Roll reason. 2/3/4 mental damage.",
+      "description": "Action · range 4. 0 SP · Free hand required. Roll knowledge. 2/3/4 mental damage.",
       "discipline": "discipline-mind",
       "rank": 1,
       "minimumLevel": 1,
@@ -9767,7 +11820,7 @@
       "category": "main",
       "target": "enemy",
       "range": 4,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9781,12 +11834,13 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-fracture-focus",
       "name": "Fracture Focus",
-      "description": "Action · range 5. Roll reason. 1/2/3 mental damage. Apply dazed 1.",
+      "description": "Action · range 5. 0 SP · Free hand required. Roll knowledge. 1/2/3 mental damage. Standard or Strong · Apply dazed 1.",
       "discipline": "discipline-mind",
       "rank": 1,
       "minimumLevel": 1,
@@ -9794,7 +11848,7 @@
       "category": "main",
       "target": "enemy",
       "range": 5,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9808,16 +11862,18 @@
         {
           "kind": "condition",
           "key": "dazed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-telekinetic-shove",
       "name": "Telekinetic Shove",
-      "description": "Action · range 4. Push 2 squares. Apply slowed 1.",
+      "description": "Action · range 4. 0 SP · Free hand required. Push 2 squares. Apply slowed 1.",
       "discipline": "discipline-mind",
       "rank": 1,
       "minimumLevel": 1,
@@ -9838,12 +11894,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-force-hand",
       "name": "Force Hand",
-      "description": "Action · range 5. Push 3 squares.",
+      "description": "Action · range 5. 2 SP · Free hand required. Push 3 squares.",
       "discipline": "discipline-mind",
       "rank": 2,
       "minimumLevel": 3,
@@ -9858,12 +11916,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 2
     },
     {
       "id": "power-distract",
       "name": "Distract",
-      "description": "Maneuver · range 4. attack -1 for 1 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. attack -1 for 1 turns.",
       "discipline": "discipline-mind",
       "rank": 1,
       "minimumLevel": 1,
@@ -9882,12 +11942,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-mindstorm",
       "name": "Mindstorm",
-      "description": "Action · range 5 · radius 2. Roll reason. 2/3/4 mental damage. Apply dazed 1.",
+      "description": "Action · range 5 · radius 2. 4 SP · Free hand required. Roll knowledge. 2/3/4 mental damage. Standard or Strong · Apply dazed 1.",
       "discipline": "discipline-mind",
       "rank": 3,
       "minimumLevel": 7,
@@ -9895,7 +11957,7 @@
       "category": "main",
       "target": "ground",
       "range": 5,
-      "attribute": "reason",
+      "attribute": "knowledge",
       "effects": [
         {
           "kind": "damage",
@@ -9909,17 +11971,19 @@
         {
           "kind": "condition",
           "key": "dazed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "radius": 2,
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 4
     },
     {
       "id": "power-shared-focus",
       "name": "Shared Focus",
-      "description": "Maneuver · range 4. attack +1 for 2 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. attack +1 for 2 turns.",
       "discipline": "discipline-mind",
       "rank": 1,
       "minimumLevel": 1,
@@ -9938,7 +12002,9 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-vanish",
@@ -10066,7 +12132,7 @@
     {
       "id": "power-low-blow",
       "name": "Low Blow",
-      "description": "Action · range 1. Roll guile. 1/1/2 physical damage. Apply bleeding 1. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll guile. 1/1/2 physical damage. Standard or Strong · Apply bleeding 1. Requires a readied melee weapon.",
       "discipline": "discipline-subterfuge",
       "rank": 1,
       "minimumLevel": 1,
@@ -10088,7 +12154,8 @@
         {
           "kind": "condition",
           "key": "bleeding",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "melee",
@@ -10280,7 +12347,7 @@
     {
       "id": "power-static-arc",
       "name": "Static Arc",
-      "description": "Action · range 3 · cone. Roll knowledge. 1/2/2 lightning damage.",
+      "description": "Action · range 3 · cone. 0 SP · Free hand required. Roll knowledge. 1/2/2 lightning damage.",
       "discipline": "discipline-storm",
       "rank": 1,
       "minimumLevel": 1,
@@ -10303,12 +12370,13 @@
       "shape": "cone",
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-thunder-line",
       "name": "Thunder Line",
-      "description": "Action · range 7 · line. Roll knowledge. 3/4/5 lightning damage. Push 2 squares.",
+      "description": "Action · range 7 · line. 3 SP · Free hand required. Roll knowledge. 3/4/5 lightning damage. Standard or Strong · Push 2 squares.",
       "discipline": "discipline-storm",
       "rank": 3,
       "minimumLevel": 7,
@@ -10329,17 +12397,19 @@
         },
         {
           "kind": "push",
-          "amount": 2
+          "amount": 2,
+          "minimumBand": 1
         }
       ],
       "shape": "line",
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 3
     },
     {
       "id": "power-gale-bolt",
       "name": "Gale Bolt",
-      "description": "Action · range 5. Roll knowledge. 2/3/4 lightning damage. Push 1 squares.",
+      "description": "Action · range 5. 0 SP · Free hand required. Roll knowledge. 2/3/4 lightning damage. Standard or Strong · Push 1 squares.",
       "discipline": "discipline-storm",
       "rank": 1,
       "minimumLevel": 1,
@@ -10360,16 +12430,18 @@
         },
         {
           "kind": "push",
-          "amount": 1
+          "amount": 1,
+          "minimumBand": 1
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "spCost": 0
     },
     {
       "id": "power-crosswind",
       "name": "Crosswind",
-      "description": "Maneuver · range 4. route to empty ground.",
+      "description": "Maneuver · range 4. 2 SP · Free hand required. route to empty ground.",
       "discipline": "discipline-storm",
       "rank": 2,
       "minimumLevel": 3,
@@ -10384,12 +12456,14 @@
         }
       ],
       "spell": true,
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 2
     },
     {
       "id": "power-tailwind",
       "name": "Tailwind",
-      "description": "Maneuver · range 4. movement +2 for 1 turns.",
+      "description": "Maneuver · range 4. 0 SP · Free hand required. movement +2 for 1 turns.",
       "discipline": "discipline-storm",
       "rank": 1,
       "minimumLevel": 1,
@@ -10409,12 +12483,14 @@
       "otherOnly": true,
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-storm-hop",
       "name": "Storm Hop",
-      "description": "Maneuver · range 3. leap to empty ground. damage +2 for 2 turns.",
+      "description": "Maneuver · range 3. 0 SP · Free hand required. leap to empty ground. damage +2 for 2 turns.",
       "discipline": "discipline-storm",
       "rank": 1,
       "minimumLevel": 1,
@@ -10437,12 +12513,14 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "id": "power-gust-screen",
       "name": "Gust Screen",
-      "description": "Maneuver · range 5. attack -1 for 2 turns.",
+      "description": "Maneuver · range 5. 0 SP · Free hand required. attack -1 for 2 turns.",
       "discipline": "discipline-storm",
       "rank": 1,
       "minimumLevel": 1,
@@ -10461,7 +12539,9 @@
       ],
       "spell": true,
       "grants": [],
-      "gamePower": true
+      "gamePower": true,
+      "attribute": "knowledge",
+      "spCost": 0
     },
     {
       "category": "main",
@@ -10519,7 +12599,7 @@
     {
       "id": "power-driving-cut",
       "name": "Driving Cut",
-      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Push 1 squares. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Standard or Strong · Push 1 squares. Requires a readied melee weapon.",
       "discipline": "discipline-arms",
       "rank": 1,
       "minimumLevel": 1,
@@ -10540,7 +12620,8 @@
         },
         {
           "kind": "push",
-          "amount": 1
+          "amount": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "melee",
@@ -10563,13 +12644,14 @@
         },
         {
           "kind": "push",
-          "amount": 3
+          "amount": 3,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-battering-cut",
       "name": "Battering Cut",
-      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Push 3 squares. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Standard or Strong · Push 3 squares. Requires a readied melee weapon.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
@@ -10579,7 +12661,7 @@
     {
       "id": "power-hamstring",
       "name": "Hamstring",
-      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Apply slowed 1. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Standard or Strong · Apply slowed 1. Requires a readied melee weapon.",
       "discipline": "discipline-arms",
       "rank": 1,
       "minimumLevel": 1,
@@ -10601,7 +12683,8 @@
         {
           "kind": "condition",
           "key": "slowed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "melee",
@@ -10611,7 +12694,7 @@
     {
       "id": "power-pommel-rattle",
       "name": "Pommel Rattle",
-      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Apply dazed 1. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll brawn. 1/1/2 physical damage. Standard or Strong · Apply dazed 1. Requires a readied melee weapon.",
       "discipline": "discipline-arms",
       "rank": 1,
       "minimumLevel": 1,
@@ -10633,7 +12716,8 @@
         {
           "kind": "condition",
           "key": "dazed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "melee",
@@ -10643,7 +12727,7 @@
     {
       "id": "power-blade-ward",
       "name": "Blade Ward",
-      "description": "Maneuver. defense +1 for 2 turns. Prepare a melee counter using your Reaction.",
+      "description": "Maneuver. defense +1 for 2 turns. Prepare one Basic Melee counter after an adjacent physical attack. Requires a readied melee weapon and an unspent Reaction. Remains through your next turn; Shield Block spends the same Reaction.",
       "discipline": "discipline-arms",
       "rank": 1,
       "minimumLevel": 1,
@@ -10943,7 +13027,7 @@
     {
       "id": "power-retaliating-guard",
       "name": "Retaliating Guard",
-      "description": "Maneuver. Prepare a melee counter using your Reaction. Requires a readied melee weapon.",
+      "description": "Maneuver. Prepare one Basic Melee counter after an adjacent physical attack. Requires a readied melee weapon and an unspent Reaction. Remains through your next turn; Shield Block spends the same Reaction. Requires a readied melee weapon.",
       "discipline": "discipline-guard",
       "rank": 2,
       "minimumLevel": 3,
@@ -11194,7 +13278,7 @@
     {
       "id": "power-anatomists-strike",
       "name": "Anatomist’s Strike",
-      "description": "Action · range 1. Roll guile. 1/1/2 physical damage. Apply bleeding 1. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll guile. 1/1/2 physical damage. Standard or Strong · Apply bleeding 1. Requires a readied melee weapon.",
       "discipline": "discipline-scholarship",
       "rank": 1,
       "minimumLevel": 1,
@@ -11216,7 +13300,8 @@
         {
           "kind": "condition",
           "key": "bleeding",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "weapon": "melee",
@@ -11487,10 +13572,499 @@
       "gamePower": true
     },
     {
-      "category": "main",
-      "target": "enemy",
+      "id": "power-direct-thrust",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll agility. 1/2/4 physical damage. Standard or Strong · You may step up to 1 square(s) without reactions. Requires a readied melee weapon.",
+      "name": "Direct Thrust",
       "attribute": "agility",
-      "range": 4,
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            1,
+            2,
+            4
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": false,
+          "safe": true
+        }
+      ],
+      "weapon": "melee",
+      "oneHand": true
+    },
+    {
+      "id": "power-passing-thrust",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll agility. 2/3/5 physical damage. Standard or Strong · You may step up to 2 square(s) without reactions. Requires a readied melee weapon.",
+      "name": "Passing Thrust",
+      "attribute": "agility",
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            2,
+            3,
+            5
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": false,
+          "safe": true,
+          "steps": 2
+        }
+      ],
+      "weapon": "melee",
+      "oneHand": true
+    },
+    {
+      "id": "power-needle-eye",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll agility. 3/5/7 physical damage. Standard or Strong · You may step up to 2 square(s) without reactions. Requires a readied melee weapon.",
+      "name": "Needle’s Eye",
+      "attribute": "agility",
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            3,
+            5,
+            7
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": false,
+          "safe": true,
+          "steps": 2
+        }
+      ],
+      "weapon": "melee",
+      "oneHand": true
+    },
+    {
+      "id": "power-exploit-opening",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll knowledge. 1/3/4 physical damage. Standard or Strong · Choose an ally within three squares to move up to 1 square(s).",
+      "name": "Exploit the Opening",
+      "attribute": "knowledge",
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            1,
+            3,
+            4
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": true
+        }
+      ]
+    },
+    {
+      "id": "power-divide-attention",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll knowledge. 2/4/6 physical damage. Standard or Strong · Choose an ally within three squares to move up to 1 square(s). The ally gains an attack Boon against the target.",
+      "name": "Divide Their Attention",
+      "attribute": "knowledge",
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            2,
+            4,
+            6
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": true,
+          "aid": true
+        }
+      ]
+    },
+    {
+      "id": "power-spring-trap",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 1. Roll knowledge. 4/6/8 physical damage. Standard or Strong · Choose an ally within three squares to move up to 2 square(s) without a reaction from the target. The ally gains an attack Boon against the target.",
+      "name": "Spring the Trap",
+      "attribute": "knowledge",
+      "range": 1,
+      "target": "enemy",
+      "category": "main",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "physical",
+          "amount": [
+            4,
+            6,
+            8
+          ]
+        },
+        {
+          "kind": "cue",
+          "minimumBand": 1,
+          "ally": true,
+          "aid": true,
+          "ignoreTarget": true,
+          "steps": 2
+        }
+      ]
+    },
+    {
+      "id": "power-detect-magic",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Maneuver. 0 SP · Free hand required. Sense magic within 6 squares and record what the company discovers.",
+      "name": "Detect Magic",
+      "spCost": 0,
+      "range": 0,
+      "target": "self",
+      "effects": [
+        {
+          "kind": "sense",
+          "sense": "magic",
+          "range": 6
+        }
+      ],
+      "category": "maneuver",
+      "spell": true,
+      "field": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-find-traps",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Maneuver. 2 SP · Free hand required. Sense traps within 6 squares and record what the company discovers.",
+      "name": "Find Traps",
+      "spCost": 2,
+      "range": 0,
+      "target": "self",
+      "effects": [
+        {
+          "kind": "sense",
+          "sense": "traps",
+          "range": 6
+        }
+      ],
+      "category": "maneuver",
+      "spell": true,
+      "field": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-true-seeing",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Maneuver. 3 SP · Free hand required. Sense creatures within 8 squares and record what the company discovers.",
+      "name": "True Seeing",
+      "spCost": 3,
+      "range": 0,
+      "target": "self",
+      "effects": [
+        {
+          "kind": "sense",
+          "sense": "creatures",
+          "range": 8
+        }
+      ],
+      "category": "maneuver",
+      "spell": true,
+      "field": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-find-path",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Maneuver. 5 SP · Free hand required. Sense path within 16 squares and record what the company discovers.",
+      "name": "Find the Path",
+      "spCost": 5,
+      "range": 0,
+      "target": "self",
+      "effects": [
+        {
+          "kind": "sense",
+          "sense": "path",
+          "range": 16
+        }
+      ],
+      "category": "maneuver",
+      "spell": true,
+      "field": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-sight-true",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Maneuver. 6 SP · Free hand required. Sense all within 18 squares and record what the company discovers.",
+      "name": "Sight True",
+      "spCost": 6,
+      "range": 0,
+      "target": "self",
+      "effects": [
+        {
+          "kind": "sense",
+          "sense": "all",
+          "range": 18
+        }
+      ],
+      "category": "maneuver",
+      "spell": true,
+      "field": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-arcane-bolt",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 12. 0 SP · Free hand required. Roll knowledge. 2/3/5 force damage.",
+      "name": "Arcane Bolt",
+      "spCost": 0,
+      "range": 12,
+      "target": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "force",
+          "amount": [
+            2,
+            3,
+            5
+          ]
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-staying",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 6. 2 SP · Free hand required. Apply slowed 3.",
+      "name": "Staying",
+      "spCost": 2,
+      "range": 6,
+      "target": "enemy",
+      "effects": [
+        {
+          "kind": "condition",
+          "key": "slowed",
+          "rating": 3
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-shatter",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 6 · radius 1. 3 SP · Free hand required. Roll knowledge. 3/5/7 force damage.",
+      "name": "Shatter",
+      "spCost": 3,
+      "range": 6,
+      "target": "ground",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "force",
+          "amount": [
+            3,
+            5,
+            7
+          ]
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "radius": 1,
+      "allCreatures": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-force-ward",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 6. 4 SP · Free hand required. Absorb 7 damage for 2 turns.",
+      "name": "Resilient Shell",
+      "spCost": 4,
+      "range": 6,
+      "target": "ally",
+      "effects": [
+        {
+          "kind": "barrier",
+          "turns": 2,
+          "amount": 7
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-force-wall",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 6 · wall. 5 SP · Free hand required. Create wall for 3 rounds.",
+      "name": "Wall of Force",
+      "spCost": 5,
+      "range": 6,
+      "target": "ground",
+      "effects": [
+        {
+          "kind": "zone",
+          "surface": "wall",
+          "rounds": 3
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "shape": "wall",
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-force-lance",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 12. 5 SP · Free hand required. Roll knowledge. 4/6/8 force damage. Standard or Strong · Push 3 squares.",
+      "name": "Hammer Lance",
+      "spCost": 5,
+      "range": 12,
+      "target": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "force",
+          "amount": [
+            4,
+            6,
+            8
+          ]
+        },
+        {
+          "kind": "push",
+          "amount": 3,
+          "minimumBand": 1
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "attribute": "knowledge"
+    },
+    {
+      "id": "power-force-crush",
+      "gamePower": true,
+      "deedsOnly": true,
+      "forgePower": true,
+      "rank": 1,
+      "description": "Action · range 12 · radius 2. 6 SP · Free hand required. Roll knowledge. 4/6/8 force damage. Standard or Strong · Apply slowed 3.",
+      "name": "Gravitic Well",
+      "spCost": 6,
+      "range": 12,
+      "target": "ground",
+      "effects": [
+        {
+          "kind": "damage",
+          "type": "force",
+          "amount": [
+            4,
+            6,
+            8
+          ]
+        },
+        {
+          "kind": "condition",
+          "key": "slowed",
+          "rating": 3,
+          "minimumBand": 1
+        }
+      ],
+      "category": "main",
+      "spell": true,
+      "radius": 2,
+      "attribute": "knowledge"
+    },
+    {
+      "category": "main",
+      "target": "ground",
+      "attribute": "agility",
+      "range": 6,
       "effects": [
         {
           "kind": "damage",
@@ -11504,25 +14078,27 @@
         {
           "kind": "condition",
           "key": "burning",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-flaming-arrow",
       "name": "Flaming Arrow",
-      "description": "Action · range 4. Roll agility. 1/1/2 fire damage. Apply burning 2. Requires a readied bow and ammunition.",
+      "description": "Action · range 6 · radius 1. Roll agility. 1/1/2 fire damage. Standard or Strong · Apply burning 2. Requires a readied bow and ammunition.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "weapon": "ranged",
       "forgeProfile": "ranged",
-      "damageType": "fire"
+      "damageType": "fire",
+      "radius": 1
     },
     {
       "category": "main",
-      "target": "enemy",
+      "target": "ground",
       "attribute": "agility",
-      "range": 4,
+      "range": 6,
       "effects": [
         {
           "kind": "damage",
@@ -11536,23 +14112,26 @@
         {
           "kind": "condition",
           "key": "slowed",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         },
         {
           "kind": "condition",
           "key": "bleeding",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-thorn-arrow",
       "name": "Thorn Arrow",
-      "description": "Action · range 4. Roll agility. 1/1/2 physical damage. Apply slowed 2. Apply bleeding 1. Requires a readied bow and ammunition.",
+      "description": "Action · range 6 · radius 1. Roll agility. 1/1/2 physical damage. Standard or Strong · Apply slowed 2. Standard or Strong · Apply bleeding 1. Requires a readied bow and ammunition.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "weapon": "ranged",
-      "forgeProfile": "ranged"
+      "forgeProfile": "ranged",
+      "radius": 1
     },
     {
       "category": "main",
@@ -11574,12 +14153,13 @@
       "forgePower": true,
       "id": "power-forge-renewing-grove",
       "name": "Renewing Grove",
-      "description": "Action · range 5 · radius 1. Create healing for 4 rounds. Absorb 5 damage for 2 turns.",
+      "description": "Action · range 5 · radius 1. 3 SP · Free hand required. Create healing for 4 rounds. Absorb 5 damage for 2 turns.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "radius": 1,
-      "spell": true
+      "spell": true,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -11644,13 +14224,14 @@
       "forgePower": true,
       "id": "power-forge-purifying-light",
       "name": "Purifying Light",
-      "description": "Action · range 4. Roll knowledge. Restore 3/5/7 HP. Remove 2 temporary severity: dazed, frightened, poisoned. Outside combat, check a field dressing.",
+      "description": "Action · range 4. 2 SP · Free hand required. Roll knowledge. Restore 3/5/7 HP. Remove 2 temporary severity: dazed, frightened, poisoned. Outside combat, check a field dressing.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
       "field": true,
-      "fieldSupply": "item-field-dressing"
+      "fieldSupply": "item-field-dressing",
+      "spCost": 2
     },
     {
       "category": "maneuver",
@@ -11675,13 +14256,14 @@
       "forgePower": true,
       "id": "power-forge-aurora-ward",
       "name": "Aurora Ward",
-      "description": "Maneuver · range 4. Absorb 9 damage for 2 turns. Remove 3 temporary severity: burning, freezing. Outside combat, check a field dressing.",
+      "description": "Maneuver · range 4. 2 SP · Free hand required. Absorb 9 damage for 2 turns. Remove 3 temporary severity: burning, freezing. Outside combat, check a field dressing.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
       "field": true,
-      "fieldSupply": "item-field-dressing"
+      "fieldSupply": "item-field-dressing",
+      "spCost": 2
     },
     {
       "category": "main",
@@ -11701,17 +14283,19 @@
         {
           "kind": "condition",
           "key": "freezing",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-winter-spirit",
       "name": "Winter Spirit",
-      "description": "Action · range 5. Roll knowledge. 3/5/7 cold damage. Apply freezing 2.",
+      "description": "Action · range 5. 2 SP · Free hand required. Roll knowledge. 3/5/7 cold damage. Standard or Strong · Apply freezing 2.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
-      "spell": true
+      "spell": true,
+      "spCost": 2
     },
     {
       "category": "maneuver",
@@ -11737,12 +14321,13 @@
       "forgePower": true,
       "id": "power-forge-psychic-crossing",
       "name": "Psychic Crossing",
-      "description": "Maneuver · range 7. Swap with a companion. Absorb 6 damage for 2 turns. Absorb 6 damage for 2 turns.",
+      "description": "Maneuver · range 7. 2 SP · Free hand required. Swap with a companion. Absorb 6 damage for 2 turns. Absorb 6 damage for 2 turns.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
-      "otherOnly": true
+      "otherOnly": true,
+      "spCost": 2
     },
     {
       "category": "main",
@@ -11771,11 +14356,12 @@
       "forgePower": true,
       "id": "power-forge-phantom-knife",
       "name": "Phantom Knife",
-      "description": "Action · range 3. Roll knowledge. 3/5/7 mental damage. hidden enabled for 2 turns.",
+      "description": "Action · range 3. 2 SP · Free hand required. Roll knowledge. 3/5/7 mental damage. hidden enabled for 2 turns.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
-      "spell": true
+      "spell": true,
+      "spCost": 2
     },
     {
       "category": "maneuver",
@@ -11807,7 +14393,7 @@
     {
       "category": "main",
       "target": "enemy",
-      "attribute": "brawn",
+      "attribute": "knowledge",
       "range": 1,
       "effects": [
         {
@@ -11821,17 +14407,19 @@
         },
         {
           "kind": "push",
-          "amount": 4
+          "amount": 4,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-thunder-charge",
       "name": "Thunder Charge",
-      "description": "Action · range 1. Roll brawn. 3/5/7 lightning damage. Push 4 squares.",
+      "description": "Action · range 1. 2 SP · Free hand required. Roll knowledge. 3/5/7 lightning damage. Standard or Strong · Push 4 squares.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
-      "spell": true
+      "spell": true,
+      "spCost": 2
     },
     {
       "category": "main",
@@ -11851,22 +14439,25 @@
         {
           "kind": "condition",
           "key": "burning",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         },
         {
           "kind": "push",
-          "amount": 2
+          "amount": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-firestorm",
       "name": "Firestorm",
-      "description": "Action · range 5 · radius 1. Roll knowledge. 3/5/7 fire damage. Apply burning 2. Push 2 squares.",
+      "description": "Action · range 5 · radius 1. 3 SP · Free hand required. Roll knowledge. 3/5/7 fire damage. Standard or Strong · Apply burning 2. Standard or Strong · Push 2 squares.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
-      "radius": 1
+      "radius": 1,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -12046,17 +14637,19 @@
         {
           "kind": "condition",
           "key": "burning",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         },
         {
           "kind": "push",
-          "amount": 2
+          "amount": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-furnace-blade",
       "name": "Furnace Blade",
-      "description": "Action · range 1. Roll brawn. 1/1/2 fire damage. Apply burning 2. Push 2 squares. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll brawn. 1/1/2 fire damage. Standard or Strong · Apply burning 2. Standard or Strong · Push 2 squares. Requires a readied melee weapon.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
@@ -12176,13 +14769,14 @@
         {
           "kind": "condition",
           "key": "bleeding",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-clinical-precision",
       "name": "Clinical Precision",
-      "description": "Action · range 1. Roll reason. 3/5/8 physical damage. Apply bleeding 2. Requires a readied melee weapon.",
+      "description": "Action · range 1. Roll reason. 3/5/8 physical damage. Standard or Strong · Apply bleeding 2. Requires a readied melee weapon.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
@@ -12208,12 +14802,13 @@
       "forgePower": true,
       "id": "power-forge-rune-lantern",
       "name": "Rune Lantern",
-      "description": "Action · range 5 · radius 2. Create light for 6 rounds. Absorb 8 damage for 2 turns.",
+      "description": "Action · range 5 · radius 2. 3 SP · Free hand required. Create light for 6 rounds. Absorb 8 damage for 2 turns.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "radius": 2,
-      "spell": true
+      "spell": true,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -12233,13 +14828,14 @@
         {
           "kind": "condition",
           "key": "burning",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-cinder-tempest",
       "name": "Cinder Tempest",
-      "description": "Action · range 6 · line · 2 arrows. Roll agility. 1/1/2 fire damage. Apply burning 2. Requires a readied bow and ammunition.",
+      "description": "Action · range 6 · line · 2 arrows. Roll agility. 1/1/2 fire damage. Standard or Strong · Apply burning 2. Requires a readied bow and ammunition.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
@@ -12340,7 +14936,8 @@
         {
           "kind": "condition",
           "key": "dazed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         },
         {
           "kind": "buff",
@@ -12354,12 +14951,13 @@
       "forgePower": true,
       "id": "power-forge-phantom-hunt",
       "name": "Phantom Hunt",
-      "description": "Action · range 6 · radius 2. Roll knowledge. 4/6/9 mental damage. Apply dazed 1. hidden enabled for 2 turns.",
+      "description": "Action · range 6 · radius 2. 3 SP · Free hand required. Roll knowledge. 4/6/9 mental damage. Standard or Strong · Apply dazed 1. hidden enabled for 2 turns.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
-      "radius": 2
+      "radius": 2,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -12379,7 +14977,8 @@
         {
           "kind": "condition",
           "key": "freezing",
-          "rating": 2
+          "rating": 2,
+          "minimumBand": 1
         },
         {
           "kind": "zone",
@@ -12390,12 +14989,13 @@
       "forgePower": true,
       "id": "power-forge-glacial-engine",
       "name": "Glacial Engine",
-      "description": "Action · range 5 · radius 2. Roll knowledge. 4/6/9 cold damage. Apply freezing 2. Create difficult for 4 rounds.",
+      "description": "Action · range 5 · radius 2. 3 SP · Free hand required. Roll knowledge. 4/6/9 cold damage. Standard or Strong · Apply freezing 2. Create difficult for 4 rounds.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
-      "radius": 2
+      "radius": 2,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -12427,19 +15027,20 @@
       "forgePower": true,
       "id": "power-forge-sunfire-sanctuary",
       "name": "Sunfire Sanctuary",
-      "description": "Action · radius 2. Roll knowledge. Absorb 12 damage for 2 turns. Restore 4/6/9 HP. Remove 3 temporary severity: burning. Outside combat, check a field dressing.",
+      "description": "Action · radius 2. 3 SP · Free hand required. Roll knowledge. Absorb 12 damage for 2 turns. Restore 4/6/9 HP. Remove 3 temporary severity: burning. Outside combat, check a field dressing.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "radius": 2,
       "field": true,
       "fieldSupply": "item-field-dressing",
-      "spell": true
+      "spell": true,
+      "spCost": 3
     },
     {
       "category": "main",
       "target": "enemy",
-      "attribute": "brawn",
+      "attribute": "knowledge",
       "range": 1,
       "effects": [
         {
@@ -12453,19 +15054,21 @@
         },
         {
           "kind": "push",
-          "amount": 3
+          "amount": 3,
+          "minimumBand": 1
         }
       ],
       "forgePower": true,
       "id": "power-forge-thunderous-assault",
       "name": "Thunderous Assault",
-      "description": "Action · range 1 · radius 1. Roll brawn. 4/7/10 lightning damage. Push 3 squares. Requires a readied melee weapon.",
+      "description": "Action · range 1 · radius 1. 3 SP · Held focus. Roll knowledge. 4/7/10 lightning damage. Standard or Strong · Push 3 squares. Requires a readied melee weapon.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "spell": true,
       "weapon": "melee",
-      "radius": 1
+      "radius": 1,
+      "spCost": 3
     },
     {
       "category": "main",
@@ -12485,7 +15088,8 @@
         {
           "kind": "condition",
           "key": "dazed",
-          "rating": 1
+          "rating": 1,
+          "minimumBand": 1
         },
         {
           "kind": "buff",
@@ -12499,7 +15103,7 @@
       "forgePower": true,
       "id": "power-forge-silent-storm",
       "name": "Silent Storm",
-      "description": "Action · range 4 · 2 arrows. Roll agility. 1/1/2 physical damage. Apply dazed 1. hidden enabled for 2 turns. Requires a readied bow and ammunition.",
+      "description": "Action · range 4 · 2 arrows. Roll agility. 1/1/2 physical damage. Standard or Strong · Apply dazed 1. hidden enabled for 2 turns. Requires a readied bow and ammunition.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
@@ -12540,14 +15144,15 @@
       "forgePower": true,
       "id": "power-forge-fourfold-aegis",
       "name": "Fourfold Aegis",
-      "description": "Action · radius 2. Roll knowledge. Absorb 16 damage for 2 turns. Restore 5/8/12 HP. Remove 3 temporary severity: dazed, frightened, slowed, poisoned. Outside combat, check a field dressing.",
+      "description": "Action · radius 2. 3 SP · Free hand required. Roll knowledge. Absorb 16 damage for 2 turns. Restore 5/8/12 HP. Remove 3 temporary severity: dazed, frightened, slowed, poisoned. Outside combat, check a field dressing.",
       "minimumLevel": 1,
       "cost": 0,
       "gamePower": true,
       "radius": 2,
       "field": true,
       "fieldSupply": "item-field-dressing",
-      "spell": true
+      "spell": true,
+      "spCost": 3
     }
   ],
   "recipes": [
