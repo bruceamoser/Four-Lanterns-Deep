@@ -10,7 +10,7 @@ const executable = path.resolve(process.argv[2]),
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), "fld-legacy-feed-"));
 const child = spawn(
   "/usr/bin/aa-exec",
-  ["-p", "unconfined", "--", executable, "--remote-debugging-port=0"],
+  ["-p", "unconfined", "--", executable, "--remote-debugging-port=0", "--mute-audio"],
   {
     detached: true,
     stdio: ["ignore", "ignore", "pipe"],

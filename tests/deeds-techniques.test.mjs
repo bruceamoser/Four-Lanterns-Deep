@@ -178,6 +178,7 @@ test("each find has an eligible depth and an executable effect family", () => {
 
 test("new training banks excess XP and a previously trained higher level is retained", () => {
   const g = fresh();
+  assert.match(g.powerReason("power-retired-favorite", g.active), /unavailable/);
   g.awardXP("deep", xpForLevel(12), "Deep vault");
   g.trainForge(0);
   assert.equal(g.active.preview.state.level, 10);

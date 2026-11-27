@@ -50,3 +50,16 @@ Run `node scripts/deeds-balance-check.mjs` for the fixed-seed survey. Each row c
 | 10 / 20 | 2,461 | 957 | 55 | 161 | 50 | 105 / 512 |
 
 The 256 floors contained 99 optional vaults. One run's discoveries are independent of another's. This samples availability and stock turnover. Actual player preferences, perceived difficulty and whole-campaign retreat frequency require player sessions.
+
+### Combat pacing
+
+`node scripts/deeds-encounter-check.mjs` runs a four-hero doorway drill against three foes with the live action resolver, defense reactions and creature AI. It uses 16 matched dice seeds per row for each policy. Heroes hold position, accept Shield Block, decline opportunity prompts and withdraw when anyone drops. The referee stops the drill after ten rounds. The only difference between policies is whether the arcanist uses the learned Ember Lance. Both companies can use Flaming Arrow from level three.
+
+| Hero level | Opposition | Without Lance, clears / 16 | Median rounds | With Lance, clears / 16 | Median rounds |
+|---:|---|---:|---:|---:|---:|
+| 1 | Wolves | 11 | 6 | 16 | 4 |
+| 3 | Goblin Spearhands | 15 | 5 | 16 | 3.5 |
+| 7 | Barrow Guards | 16 | 6.5 | 16 | 5 |
+| 10 | Wights | 15 | 9 | 16 | 7 |
+
+Without Lance there were six withdrawals and one ten-round stop. With Lance all 64 fights cleared. Ranged magical offense earns a place in these compositions. The encounter shape favors a stationary caster. Walls, lighting, ambushes, attrition and a human player's positioning can change the result.

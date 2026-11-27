@@ -443,6 +443,7 @@ export const powerMethods = {
   },
   powerReason(id, h = this.active) {
     const p = this.powerSpec(id, h);
+    if (!p) return "This power is unavailable.";
     if (p.deedsOnly && !deedsHero(h.draft)) return "Adopt Deeds rules in Greyhaven first.";
     if (!p.universal && !this.powerIds(h).includes(id)) return "Not learned.";
     if (this.pendingCue) return "Resolve the optional tactical step first.";
