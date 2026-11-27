@@ -1,16 +1,14 @@
 # Current working progress
 
-## November 27 — Deeds implementation in progress
+## November 27 — Stable release 0.9.0
 
-Worktree `/home/bmoser/Projects/FLD-Deeds-Review`, branch `codex/deeds-conversion`. The [release plan](../deeds-conversion.md) and [implementation handoff](handoffs/2026-11-27-deeds-conversion.md) track the mechanical work. PR 208 merged the research and attribution. Save compatibility, development, drops, appraisal, Grit and care, signatures and the first optional vault are in the implementation branch. The new technique and identification interactions are integrated. An actual 0.8.8 synthetic combat save passed migration and respec. The native vault-to-market test and actual AppImage update round trip passed. A respec draft resume defect was corrected. 398 rules tests, 256 seeded floors, Forge/respec and real combat controls passed. The finished 0.9.0 packages are staged privately. PR 209 and the draft-release installer checks qualify publication. Public release 0.8.8 remains the upgrade baseline.
+[Four Lanterns Deep 0.9.0](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/tag/v0.9.0) is published as latest. Tag `v0.9.0` points to `77c45e03c18f0c3b393c82c06cdcc529084924c2`. Both Linux packages and the Windows installer passed the finished-asset workflow. The public release contains eleven assets and both updater feeds.
 
-## November 27 — Deeds rules and Moria design review
+The current edition uses Deeds development and recovery, 23 discipline origins, 77 paths, 33 confluences, tiered signatures, and 52 dungeon finds. Existing 0.8.8 heroes can adopt the rules through a Greyhaven respec. Cross-machine users should pull main. See the [release handoff](handoffs/2026-11-27-release-0.9.0.md), [qualification and balance results](../deeds-conversion.md), [implementation checkpoints](handoffs/2026-11-27-deeds-conversion.md), and [book and Moria research](../deeds-moria-review.md).
 
-The [design review](../deeds-moria-review.md) compares 0.8.8 against Deeds main and proposes a playable Moria-inspired vault. Bruce selected single-path masteries plus optional combinations, levels 1–10 first with deeper floors, run-wide potion knowledge, rare single-hero resurrection, and a respec preserving existing heroes, equipment, XP and history. Game credits use Deeds of Legend. The rules conversion is pending. See the [handoff](handoffs/2026-11-27-deeds-moria-review.md).
+## Previous — Release 0.8.8
 
-## Complete — Release 0.8.8
-
-[Four Lanterns Deep v0.8.8](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/tag/v0.8.8) is the latest stable release. It ships all 58 reviewed creature models in the Linux AppImage, amd64 Debian package, and Windows x64 installer. The halfling pilot is paused at `d2ea6f4` on `codex/halfling-wardrobe-pilot`. See the [release handoff](handoffs/2026-11-12-release-0.8.8.md).
+[Four Lanterns Deep v0.8.8](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/tag/v0.8.8) was the preceding stable release. It shipped all 58 reviewed creature models in the Linux AppImage, amd64 Debian package, and Windows x64 installer. The halfling pilot is paused at `d2ea6f4` on `codex/halfling-wardrobe-pilot`. See the [release handoff](handoffs/2026-11-12-release-0.8.8.md).
 
 ## Complete — November 12 creature review fixes
 
