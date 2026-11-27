@@ -2,7 +2,7 @@ import { icon, itemIcon, esc } from "./icons.mjs";
 import { disciplineIcon } from "./book-symbols.mjs";
 import { effectStatus, slotOf, magicItem } from "../core/treasure.mjs";
 export function enchantmentDetails(h, item) {
-  if (item.veiled) return '<p class="dormant-note">The enchantment is unidentified. Vale’s Crucible can reveal its powers and requirements.</p>';
+  if (item.veiled) return (item.facts ?? []).map(f=>"<p>"+esc(f)+"</p>").join("")+'<p class="dormant-note">The enchantment is unidentified. Vale’s Crucible can reveal its powers and requirements.</p>';
   if (item.base)
     item = {
       ...item,

@@ -24,7 +24,7 @@ export const interactionMethods = {
           ? "Ground cache"
           : c.opened && !c.items?.length
             ? "Empty coffer"
-            : "Forgotten coffer",
+            : c.grade==="iron" ? "Iron-bound coffer" : "Forgotten coffer",
         description: c.opened
           ? `${c.items?.length ?? 0} unclaimed items remain.`
           : `An old coffer holds ${c.coins} coins${c.items?.length ? ` and ${c.items.length} treasures` : ""}.`,

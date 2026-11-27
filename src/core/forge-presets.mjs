@@ -22,11 +22,11 @@ export function forgeStartingDrafts(examples, C) {
     },
     {
       classId: "class-blade",
-      classRoot: "marksmanship",
+      classRoot: "arms",
       culture: "origin-culture-forest-communities",
       cultureRoot: "wilderness",
       background: "origin-background-messenger",
-      backgroundRoot: "influence",
+      backgroundRoot: "marksmanship",
       kit: "ranger",
       nodes: [
         "marksmanship:0:0",
@@ -36,7 +36,7 @@ export function forgeStartingDrafts(examples, C) {
         "marksmanship:1:0",
         "marksmanship:1:1",
         "wilderness:0:0",
-        "influence:0:0",
+        "arms:0:0",
       ],
     },
     {
@@ -64,7 +64,7 @@ export function forgeStartingDrafts(examples, C) {
       culture: "origin-culture-learning-houses",
       cultureRoot: "scholarship",
       background: "origin-background-weather-apprentice",
-      backgroundRoot: "storm",
+      backgroundRoot: "divination",
       kit: "arcanist",
       nodes: [
         "flame:0:0",
@@ -72,8 +72,8 @@ export function forgeStartingDrafts(examples, C) {
         "flame:0:2",
         "flame:1:0",
         "flame:2:0",
-        "storm:0:0",
-        "storm:1:0",
+        "divination:0:0",
+        "divination:0:1",
         "scholarship:0:0",
       ],
     },

@@ -285,6 +285,7 @@ export const ancestryGameMethods = {
           Math.min(1, this.R.conditionSummary(h.conditions).poisoned.rating),
       );
     if (mode === "attack") {
+      if (h.opening && h.opening.enemy===target?.id) {boons++; delete h.opening;}
       bonus += this.tacticValue(h, "attack") + (target?.companyMark ?? 0);
       h.tactics = this.activeTactics(h).map((e) =>
         e.effects.charges ? { ...e, effects: { ...e.effects, attack: 0 } } : e,

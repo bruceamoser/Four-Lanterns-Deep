@@ -1,3 +1,4 @@
+import { deedsClasses, deedsOrigins, atlasStudies, fieldOf } from "./deeds-origins.mjs";
 import { DEEDS_CLASSES, deedsHero, deedsDP, deedsVitals, disciplinePrice } from "./deeds-development.mjs";
 import { bulkCatalog, encumbranceFor } from "./bulk.mjs";
 import {
@@ -72,13 +73,21 @@ export function forgeCatalog(source) {
       ];
     if (r.id === "ability-shield-block") r.universal = false;
   }
+  for (const entry of FORGE_DISCIPLINES)
+    if (!c.choices.some(r=>r.id==="discipline-"+entry.id)) c.choices.push({id:"discipline-"+entry.id,kind:"discipline",name:entry.name});
+  for (const [id,origin] of Object.entries(deedsOrigins)) {
+    let r=c.choices.find(choice=>choice.id===id);
+    if (!r) {r={id,kind:"origin",name:origin.name,pairs:[]}; c.choices.push(r);}
+    r.deedsDisciplines=atlasStudies(origin.roots);
+  }
+  for (const r of c.choices.filter(r=>r.kind==="class")) r.deedsDisciplines=atlasStudies(deedsClasses[r.id]);
   return c;
 }
 export function forgeOrigins(draft, C) {
   const cls = C.choices.find((r) => r.id === draft.classId),
     origins = [];
   const classId = draft.classDisciplines?.[0];
-  if (cls?.kind === "class" && cls.startingDisciplines.includes(classId))
+  if (cls?.kind === "class" && (deedsHero(draft) ? cls.deedsDisciplines : cls.startingDisciplines).includes(classId))
     origins.push({
       source: "Class",
       id: classId.replace("discipline-", "") + ":origin",
@@ -88,7 +97,7 @@ export function forgeOrigins(draft, C) {
       r = C.choices.find((r) => r.id === s?.id);
     if (
       r?.id.startsWith("origin-" + key + "-") &&
-      r.pairs.some((p) => p.disciplineId === s.discipline)
+      (deedsHero(draft) ? r.deedsDisciplines?.includes(s.discipline) : r.pairs.some((p) => p.disciplineId === s.discipline))
     )
       origins.push({
         source: key === "culture" ? "Culture" : "Background",
@@ -134,6 +143,7 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
     owned = forgeOwned(draft, C),
     level = draft.progression?.level ?? 1;
   if (!node) return ["Unknown forge node."];
+  if (!deedsHero(draft) && FORGE_DISCIPLINES.some(d=>d.inner===2 && d.id===node.discipline)) return ["Adopt Deeds rules in Greyhaven first."];
   if (owned.has(node.id)) return ["Already learned."];
   if (node.kind === "origin" && level < 2 && !deedsHero(draft))
     reasons.push("Learn additional disciplines from level 2.");
@@ -347,7 +357,7 @@ export function forgeCharacter(draft, C) {
     for (const stat of DEEDS_CLASSES[draft.classId]?.minimum ?? [])
       if (attr[stat] < 0) error("class", "This class requires at least 0 " + stat + ".");
     const roots = forgeOrigins(draft, C);
-    if (new Set(roots.map(root => root.id)).size < roots.length)
+    if (new Set(roots.map(root => fieldOf(root.id))).size < roots.length)
       error("origins", "Choose three distinct starting disciplines.");
   }
   const selection = ancestrySelection(draft, C.choices);
@@ -465,7 +475,7 @@ export function forgeCharacter(draft, C) {
   const summary = {
     maximumHp,
     gritGranted: 3 + Math.floor((level - 1) / 6),
-    ...(deedsHero(draft) ? deedsVitals(draft, benefits.maximumHpBonus + (b.stats.hp ?? 0)) : {}),
+    ...(deedsHero(draft) ? deedsVitals(draft, benefits.maximumHpBonus + (b.stats.hp ?? 0),b.stats.maximumSp ?? 0) : {}),
     gritSpent: 0,
     stability: benefits.stability,
     speedBase,
@@ -550,6 +560,8 @@ export function forgePower(spec, h) {
           : Math.max(1, Math.ceil(e.amount * 0.6));
   if (p.weapon === "ranged") p.range += b.stats.rangedRange ?? 0;
   for (const u of b.upgrades.filter((u) => u.power === p.id)) {
+    if (u.fixedProfile) p.effects.find(e=>e.kind==="damage").amount=[...u.fixedProfile];
+    if (u.strongSteps || u.ignoreTarget) Object.assign(p.effects.find(e=>e.kind==="cue"),{...(u.strongSteps ? {strongSteps:u.strongSteps} : {}),...(u.ignoreTarget ? {ignoreTarget:true} : {})});
     if (u.range) p.range = (p.range ?? 0) + u.range;
     for (const e of p.effects ?? []) {
       for (const key of ["damage", "heal", "barrier"])
@@ -572,6 +584,7 @@ export function forgePower(spec, h) {
       });
   }
   if (deedsHero(h.draft)) {
+    if ((p.id === "power-forge-shot" && b.owned?.includes("marksmanship:0:0")) || (p.id === "power-forge-strike" && b.owned?.includes("arms:0:0"))) p.trainingBoon=1;
     if (p.id === "power-forge-shot") {
       p.normalRange = 12 + (b.stats.rangedRange ?? 0);
       p.range = p.normalRange + 6;
@@ -594,6 +607,7 @@ export function forgePowerText(p) {
   return [
     `${{ main: "Action", maneuver: "Maneuver", reaction: "Reaction", passive: "Passive" }[p.category] ?? "Power"}${p.target === "self" ? "" : ` · range ${p.range ?? 0}`}${p.radius ? ` · radius ${p.radius}` : ""}${p.shape ? ` · ${p.shape}` : ""}${p.shots ? ` · ${p.shots} arrows` : ""}.`,
     p.spell && p.spCost != null ? p.spCost + " SP · " + (p.weapon || p.shield ? "Held focus." : "Free hand required.") : "",
+    p.trainingBoon ? "Basic strike training grants 1 Boon on this attack." : "",
     p.normalRange ? "Normal range " + p.normalRange + ". Beyond it, 1 Bane." : "",
     p.attribute && p.effects?.some((e) => ["damage", "heal"].includes(e.kind))
       ? `Roll ${p.attribute}.`
@@ -621,6 +635,8 @@ export function forgePowerText(p) {
           counter:
             "Prepare one Basic Melee counter after an adjacent physical attack. Requires a readied melee weapon and an unspent Reaction. Remains through your next turn; Shield Block spends the same Reaction.",
           survey: "Reveal the floor layout and containers, not hidden enemies.",
+          cue: (e.ally ? "Choose an ally within three squares to move" : "You may step") + " up to " + (e.steps ?? 1) + " square(s)" + (e.strongSteps ? " ("+e.strongSteps+" on Strong)" : "") + (e.safe ? " without reactions." : e.ignoreTarget ? " without a reaction from the target." : ".") + (e.aid ? " The ally gains an attack Boon against the target." : ""),
+          sense: "Sense "+e.sense+" within "+e.range+" squares and record what the company discovers.",
           wound: "Treat one recoverable wound using a restoration draught.",
           stabilize: "Stabilize a dying companion.",
           reveal: "Reveal the target.",

@@ -31,13 +31,13 @@ function high(i = 0) {
   d.forge.nodes = [];
   return d;
 }
-test("forge catalog: 18 independent origins, 72 circular paths, 33 AND-gated intersections, no dangling contacts", () => {
-  assert.equal(DISCIPLINES.length, 18);
-  assert.equal(PATHS.length, 72);
+test("forge catalog: 23 atlas origins, 77 training paths, 33 AND-gated intersections, no dangling contacts", () => {
+  assert.equal(DISCIPLINES.length, 23);
+  assert.equal(PATHS.length, 77);
   assert.equal(NODES.filter((n) => n.kind === "intersection").length, 33);
   assert.equal(new Set(NODES.map((n) => n.id)).size, NODES.length);
   for (const d of DISCIPLINES) {
-    assert.equal(PATHS.filter((p) => p.discipline === d.id).length, 4);
+    assert.equal(PATHS.filter((p) => p.discipline === d.id).length, d.inner===2 ? 1 : 4);
     assert.equal(NODE[d.id + ":origin"].requires.length, 0);
   }
   for (const n of NODES) {
@@ -70,7 +70,7 @@ test("every forge circle is reachable by a legal level-30 build within its DP bu
 });
 test("every upgrade changes the actual power effects or targeting, and every stat is a supported engine benefit", () => {
   const supported = new Set(
-    "rangedRange bleeding moveDamage impact critical flanker killMove hp capacity barrier reduction burning wildfire fire cold shatter permafrost movement heal healingWard craftSpeed craftDiscount lightning chain ambush damage venom rallyMove physical spell radiant freezing burningDamage mental killHeal dr defense attack poisoned dazed slowed".split(
+    "rangedRange bleeding moveDamage impact critical flanker killMove hp capacity barrier reduction burning wildfire fire cold shatter permafrost movement heal healingWard craftSpeed craftDiscount lightning chain ambush damage identify maximumSp venom rallyMove physical spell radiant freezing burningDamage mental killHeal dr defense attack poisoned dazed slowed".split(
       " ",
     ),
   );
@@ -95,7 +95,7 @@ test("Deeds creation, distinct origins, class prices and level awards", () => {
   assert.equal(forgeCharacter(blank, C).valid, false);
   for (const d of drafts) {
     assert.equal(forgeCharacter(d, C).valid, true);
-    assert.equal(forgeSpent(d), 8);
+    assert.equal(forgeSpent(d), d.classId==="class-arcanist" ? 9 : 8);
     assert.equal(forgeBudget(d, C), 10);
   }
   const d = structuredClone(drafts[0]);

@@ -32,7 +32,7 @@ test("bottle appearance is run-wide and inconclusive use survives as tried until
   const other = give(g,g.party[0],g.createFind("mending", "sample-two"));
   g.supplyDie = () => 4;
   assert.equal(item.appearance, other.appearance);
-  assert.equal(new Set(Object.values(bottleNames(121))).size, 12);
+  assert.equal(new Set(Object.values(bottleNames(121))).size, 22);
   g.useFind(3, item.instanceId, h.id);
   assert.deepEqual(g.discoveries().tried, ["mending"]);
   assert.deepEqual(g.discoveries().known, []);

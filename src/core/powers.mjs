@@ -2,6 +2,7 @@ import { bulkCatalog } from "./bulk.mjs";
 import { addForgePowers } from "./forge-powers.mjs";
 import { RECIPE_ITEMS } from "./recipes.mjs";
 import { addStarterPowers } from "./starter-powers.mjs";
+import { DEEDS_POWERS } from "./deeds-paths.mjs";
 import { expandSignatures, makeAtWill } from "./signature-builds.mjs";
 // Game-owned powers. These are designs for this dungeon, not transcriptions of cards.
 const strike = (attribute, type = "physical", extra = {}) => ({
@@ -802,6 +803,7 @@ definitions.push(
 // Append after the original designs so origin grants and legacy mappings stay stable.
 addStarterPowers({ power, strike, aid, buff, zone, move, condition });
 expandSignatures(definitions);
+definitions.push(...DEEDS_POWERS);
 addForgePowers(definitions);
 makeAtWill(definitions);
 export const POWERS = Object.freeze(
@@ -930,6 +932,7 @@ export function mappedPower(id, C) {
   return id;
 }
 export function isTrainable(c, C) {
+  if (POWERS[c.id]?.deedsOnly && !C.forge) return false;
   return (
     !C.gamePowers ||
     c.kind !== "ability" ||

@@ -429,6 +429,13 @@ export function characterSheet({
             view.update(game.party[index]);
             draw();
           });
+        if ((i.appearance || i.veiled) && ["town","exploration"].includes(game.mode)) {
+          const diviners=game.party.map((h,n)=>({h,n})).filter(({h})=>game.canAct(h) && game.buildStat(h,"identify"));
+          if (diviners.length) {
+            host.insertAdjacentHTML("beforeend",'<label>Diviner<select id="ritual-caster">'+diviners.map(({h,n})=>'<option value="'+n+'">'+esc(h.name)+'</option>').join("")+'</select></label><button id="ritual-identify">Identify · 3 SP · 10 minutes</button>');
+            host.querySelector("#ritual-identify").onclick=()=>attempt(()=>{game.identifyRitual(Number(host.querySelector("#ritual-caster").value),index,i.instanceId);draw();});
+          }
+        }
         if (i.kind === "find") {
           const d = DELVE_FINDS[i.find];
           const targets = game.findTargets(h, i);

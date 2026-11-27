@@ -358,7 +358,7 @@ export const powerMethods = {
     let recipients = relocating
       ? [actor]
       : spec.target === "ground" || spec.radius || spec.shape
-        ? [...(hostile ? this.enemies : this.party)].filter(
+        ? [...(spec.allCreatures ? [...this.party,...this.enemies] : hostile ? this.enemies : this.party)].filter(
             (p) => alive(p) && cellSet.has(key(p.x, p.z)),
           )
         : [point];
@@ -419,7 +419,11 @@ export const powerMethods = {
   },
   powerReason(id, h = this.active) {
     const p = this.powerSpec(id, h);
+    if (p.deedsOnly && !deedsHero(h.draft)) return "Adopt Deeds rules in Greyhaven first.";
     if (!p.universal && !this.powerIds(h).includes(id)) return "Not learned.";
+    if (this.pendingCue) return "Resolve the optional tactical step first.";
+    if (p.oneHand && this.held(h,"item-ordinary-melee-weapon")?.hands !== 1) return "Ready a melee weapon in one hand.";
+    if (p.effects.some(e=>e.kind==="sense") && this.mode==="town") return "Use this sense on a dungeon floor.";
     if (p.spell && deedsHero(h.draft)) {
       if (h.sp < p.spCost) return "Requires " + p.spCost + " SP.";
       if (!p.weapon && !p.shield && this.freeHands(h) < 1) return "Free one hand to cast.";
@@ -549,10 +553,10 @@ export const powerMethods = {
     const defenses = new Map();
     const defenseFor = (target,type) => {
       if (defenses.has(target)) return defenses.get(target);
-      const base = this.creatureDefense(target,h,{type,weapon:spec.weapon,spell:spec.spell});
+      const base = target.survival ? {boons:0,banes:0} : this.creatureDefense(target,h,{type,weapon:spec.weapon,spell:spec.spell});
       const cover = deedsHero(h.draft) ? coverBetween(this.map,h,target) : 0;
       const extreme = Number(spec.normalRange != null && distance(h,target) > spec.normalRange);
-      const defense = {...base, banes:base.banes + cover + extreme};
+      const defense = {...base,boons:base.boons+(spec.trainingBoon ?? 0), banes:base.banes + cover + extreme};
       defenses.set(target,defense);
       return defense;
     };
@@ -597,6 +601,7 @@ export const powerMethods = {
         );
         continue;
       }
+      if (effect.kind === "sense") { this.senseDungeon(h,effect.sense,effect.range); continue; }
       if (effect.kind === "survey") {
         this.addTactic(h, h, { reveal: true }, id);
         continue;
@@ -634,7 +639,7 @@ export const powerMethods = {
                 1,
                 h,
               );
-            this.buildAfterHit(h, recipient, spec, effect.type, enchantments);
+            if (!recipient.survival) this.buildAfterHit(h, recipient, spec, effect.type, enchantments);
             this.emit("attack", {
               attacker: h.id,
               target: recipient.id,
@@ -676,6 +681,12 @@ export const powerMethods = {
                 1,
                 "build-rallying-care",
               );
+            break;
+          }
+          case "cue": {
+            const cue={owner:h.id,enemy:point.id,ally:!!effect.ally,safe:!!effect.safe,ignoreTarget:!!effect.ignoreTarget,aid:!!effect.aid,
+              steps:bands.get(recipient.id)===2 ? (effect.strongSteps ?? effect.steps ?? 1) : (effect.steps ?? 1)};
+            if (this.cueOptions(cue).length) this.pendingCue=cue;
             break;
           }
           case "condition":
@@ -820,6 +831,7 @@ export const powerMethods = {
     );
     this.emit("battlefield");
     this.emit("change");
+    if (this.pendingCue) this.emit("tactical-step");
     if (this.mode === "combat") this.advance();
   },
 };

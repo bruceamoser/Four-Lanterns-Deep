@@ -1,3 +1,4 @@
+import { DELVE_FINDS, bottleNames } from "./core/delve-finds.mjs";
 import { CHALLENGES } from "./core/challenge.mjs";
 import { HudArt } from "./view/hud-art.mjs";
 import { shortcutManager } from "./ui/shortcuts.mjs";
@@ -277,6 +278,7 @@ async function init() {
   );
   await townView.load();
   game.listeners.push((type, data) => {
+    if (type === "tactical-step") queueMicrotask(showTacticalStep);
     if (type === "movement-warning") queueMicrotask(showMovementWarning);
     if (type === "camp-open") queueMicrotask(() => action("camp"));
     if (type === "feedback" && !modal.querySelector(".dungeon-camp"))
@@ -417,6 +419,7 @@ async function init() {
   }, 170);
   document.addEventListener("keydown", (e) => {
     if (!entered || supplyDialog) return;
+    if (e.key === "Escape" && game.pendingCue && !runsOpen) { e.preventDefault(); closeModal(); game.resolveCue(null); return; }
     if (e.key === "Escape" && settingsOpen) {
       settingsOpen = false;
       render();
@@ -637,7 +640,7 @@ function render() {
         : "REAL-TIME EXPLORATION";
     ui.innerHTML =
       header +
-      `<div class="hero-panel">${game.party.map((p, i) => `<button class="hero-card ${i === game.selected && (!combat || game.encounter.nextSide === "players") ? "active" : ""}" data-select="${i}" ${selectable(p) ? "" : "disabled"} aria-label="${esc(p.name)}${combat ? " · " + heroState(p) : ""}"><span class="number">0${i + 1}</span><div style="flex:1"><h3>${esc(p.name)}</h3><div class="class">${esc(className(p))} · ${p.survival.status}${combat ? ` <b class="hero-turn-state">${heroState(p)}</b>` : ""}</div><div class="bar"><span style="width:${(p.survival.hp / p.survival.maxHp) * 100}%"></span></div><div class="vitals"><span>${p.survival.hp} / ${p.survival.maxHp} HP</span>${p.sp !== undefined ? "<span>" + p.sp + "/" + p.preview.summary.maximumSp + " SP</span>" : ""}<span>${p.survival.gritAvailable} GRIT</span><span title="Current movement speed">${game.speed(p)} SPEED</span><span title="Physical damage resistance">${p.preview.resistances.physical ?? 0} DR</span></div>${xpMeter(p, true)}</div></button>`).join("")}<div class="party-hint">1–4 SELECT · CLICK GROUND TO MOVE</div></div><div class="compass">N<b>◇</b>Q ↶ &nbsp; ↷ E</div><div class="minimap" ${mapVisible ? "" : "hidden"}><canvas id="map" width="155" height="155"></canvas><footer>${c.haul} COINS IN THE PACK${c.pendingTreasureXP ? `<small>+${c.pendingTreasureXP} XP EACH ON RETURN</small>` : ""}</footer></div><aside class="eventlog" ${journalVisible ? "" : "hidden"}><div class="eyebrow">EXPEDITION JOURNAL</div>${game.log
+      `<div class="hero-panel">${game.party.map((p, i) => `<button class="hero-card ${i === game.selected && (!combat || game.encounter.nextSide === "players") ? "active" : ""}" data-select="${i}" ${selectable(p) ? "" : "disabled"} aria-label="${esc(p.name)}${combat ? " · " + heroState(p) : ""}"><span class="number">0${i + 1}</span><div style="flex:1"><h3>${esc(p.name)}</h3><div class="class">${esc(className(p))} · ${p.survival.status}${combat ? ` <b class="hero-turn-state">${heroState(p)}</b>` : ""}</div><div class="bar"><span style="width:${(p.survival.hp / p.survival.maxHp) * 100}%"></span></div><div class="vitals"><span>${p.survival.hp} / ${p.survival.maxHp} HP</span>${p.sp !== undefined ? "<span>" + p.sp + "/" + p.preview.summary.maximumSp + " SP</span>" : ""}<span>${p.survival.gritAvailable} GRIT</span><span title="Current movement speed">${game.speed(p)} SPEED</span><span title="Physical damage resistance">${p.preview.resistances.physical ?? 0} DR</span></div>${xpMeter(p, true)}</div></button>`).join("")}<div class="party-hint">1–4 SELECT · CLICK GROUND TO MOVE</div></div><div class="compass">N<b>◇</b>Q ↶ &nbsp; ↷ E</div><div class="minimap" ${mapVisible ? "" : "hidden"}><canvas id="map" width="155" height="155"></canvas><footer>${c.haul} COINS IN THE PACK${c.pendingTreasureXP ? `<small>+${c.pendingTreasureXP} XP EACH ON RETURN</small>` : ""}</footer></div><aside class="eventlog" ${journalVisible ? "" : "hidden"}><div class="eyebrow">EXPEDITION JOURNAL</div><button data-action="discovery-journal">Company discoveries</button>${game.log
         .slice(-4)
         .map((l) => `<p>${esc(l)}</p>`)
         .join(
@@ -708,6 +711,13 @@ function action(a, arrived = false) {
       mapVisible = !mapVisible;
       render();
       break;
+    case "discovery-journal": {
+      const book=game.discoveries(), names=bottleNames(book.seed);
+      const pages=[...new Set([...book.known,...book.tried])].map(k=>"<p><b>"+esc(names[k])+"</b> · "+esc(book.known.includes(k) ? DELVE_FINDS[k].name+" — "+DELVE_FINDS[k].description : "Tried · uncertain effect")+"</p>");
+      const notes=(book.notes ?? []).slice().reverse().map(n=>"<p>Depth "+n.depth+" · "+esc(n.text)+"</p>");
+      dialog("Company discoveries","<h3>Bottles</h3>"+(pages.join("") || "<p>No bottles examined yet.</p>")+"<h3>Survey notes</h3>"+(notes.join("") || "<p>No surveys recorded yet.</p>"));
+      break;
+    }
     case "toggle-journal":
       journalVisible = !journalVisible;
       render();
@@ -897,6 +907,14 @@ function clickTile(p, interactionId, event) {
     } else game.move(p);
   });
 }
+function showTacticalStep() {
+  if (!game.pendingCue || runsOpen) return;
+  const options=game.cueOptions();
+  dialog("Take the opening",'<p>Choose where to move, or hold position.</p><div class="action-list">'+options.map((o,i)=>'<button data-step-option="'+i+'">'+esc(o.label)+'</button>').join("")+'</div>', '<button id="skip-step">Hold position</button>');
+  const resolve=id=>attempt(()=>{closeModal();game.resolveCue(id);});
+  modal.querySelectorAll("[data-step-option]").forEach(b=>b.onclick=()=>resolve(options[Number(b.dataset.stepOption)].id));
+  modal.querySelector("#skip-step").onclick=modal.querySelector(".close").onclick=()=>resolve(null);
+}
 function showMovementWarning() {
   const plan = game.pendingMovement;
   if (!plan) return;
@@ -978,7 +996,7 @@ function dialog(title, content, footer = "") {
 function help() {
   dialog(
     "A light in the dark",
-    `<p>In Greyhaven, select a building and your company walks to its entrance before the service opens. <b>I</b> Lantern Inn, <b>M</b> Market Square, <b>G</b> Guildhall, <b>S</b> Ember Smithy, <b>L</b> Wayfarer Lodge, <b>H</b> Healer’s House, <b>Shift+S</b> The Shrine, <b>D</b> The Depths. These hotkeys take the same routes. Choose another destination to redirect; <b>Escape</b> cancels travel.</p><p>Lead four heroes through the crypt. Click the floor to travel together. Nearby creatures start alternating combat turns. Choose heroes with <b>1–4</b>; only the acting hero moves in combat.</p><p><b>Right-drag</b> grabs and pans the ground, <b>wheel</b> zooms, <b>middle-drag</b> or <b>Q / E</b> rotate, and <b>F</b> follows. <b>G</b> toggles exploration squares; combat always shows the tactical grid. Teal squares are reachable with your remaining movement; gold squares use the last of it. Hover a square for its cost. Allies allow passage but cannot be endpoints.</p><p><b>C / I</b> opens your hero. Ready weapons and armor in Equipment, pin favorite powers in Abilities, and customize individual looks in Appearance anywhere. In combat, choose a power then its target; Escape cancels freely. Ground powers preview their affected squares. Instant area strikes spare allies; persistent fire and hazards affect both sides. Strongest matching power buffs and debuffs apply; extra actions and healing have limits.</p><p>HP healing, stabilization and wound treatment are separate. Journey shows camp supplies or infirmary prices for treatment. Scars, wound count and spent Grit persist. Basic camp tasks replenish supplies without ingredients. The <b>advanced recipe book</b> retains special crafting requirements. Crafting and treatment advance time; food, water, torches and sleep matter.</p><p><b>Tab</b> toggles the dungeon map and <b>J</b> toggles the expedition journal. The <b>settings gear</b> holds save, runs, audio, updates, help and bestiary.</p><p><b>Runs</b> pauses and saves. Name journeys, keep separate checkpoints, or delete old saves after confirmation. Save &amp; exit returns to the library. Escape reaches it during a combat decision. The company register holds reserve heroes and the fallen hall. XP comes from exploration, encounters and recovered treasure; train in town. Six merchants supply the expedition, a Scroll of Return opens a two-way passage, and every fifth floor has a guardian.</p><p>Deeds of Legend supplies the base mechanics. This game's powers, recipes, simplified treatment and dungeon progression are explicit computer-game adaptations.</p>`,
+    `<p>In Greyhaven, select a building and your company walks to its entrance before the service opens. <b>I</b> Lantern Inn, <b>M</b> Market Square, <b>G</b> Guildhall, <b>S</b> Ember Smithy, <b>L</b> Wayfarer Lodge, <b>H</b> Healer’s House, <b>Shift+S</b> The Shrine, <b>D</b> The Depths. These hotkeys take the same routes. Choose another destination to redirect; <b>Escape</b> cancels travel.</p><p>Lead four heroes through the crypt. Click the floor to travel together. Nearby creatures start alternating combat turns. Choose heroes with <b>1–4</b>; only the acting hero moves in combat.</p><p><b>Right-drag</b> grabs and pans the ground, <b>wheel</b> zooms, <b>middle-drag</b> or <b>Q / E</b> rotate, and <b>F</b> follows. <b>G</b> toggles exploration squares; combat always shows the tactical grid. Teal squares are reachable with your remaining movement; gold squares use the last of it. Hover a square for its cost. Allies allow passage but cannot be endpoints.</p><p><b>C / I</b> opens your hero. Ready weapons and armor in Equipment, pin favorite powers in Abilities, and customize individual looks in Appearance anywhere. In combat, choose a power then its target; Escape cancels freely. Ground powers preview their affected squares. Instant area strikes spare allies; persistent fire and hazards affect both sides. Strongest matching power buffs and debuffs apply; extra actions and healing have limits.</p><p>A hero at zero HP is Dying. Stabilize them, heal them, or spend Grit to rise with half HP. Death rolls track three successes or failures. First aid takes ten minutes and a dressing. A safe, provisioned night restores HP and SP and renews first aid. Scars and spent Grit persist. Basic camp tasks replenish supplies without ingredients. The <b>advanced recipe book</b> retains special crafting requirements. Crafting and treatment advance time; food, water, torches and sleep matter.</p><p><b>Tab</b> toggles the dungeon map and <b>J</b> toggles the expedition journal. The <b>settings gear</b> holds save, runs, audio, updates, help and bestiary.</p><p><b>Runs</b> pauses and saves. Name journeys, keep separate checkpoints, or delete old saves after confirmation. Save &amp; exit returns to the library. Escape reaches it during a combat decision. The company register holds reserve heroes and the fallen hall. XP comes from exploration, encounters and recovered treasure; train in town. Six merchants supply the expedition, a Scroll of Return opens a two-way passage, and every fifth floor has a guardian.</p><p>Deeds of Legend supplies the base mechanics. This game's powers, recipes, simplified treatment and dungeon progression are explicit computer-game adaptations.</p>`,
   );
 }
 function roster(options = {}) {

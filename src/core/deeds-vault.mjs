@@ -4,7 +4,17 @@ import { ordinaryItem } from "./treasure.mjs";
 // Put the two entrances beyond the easternmost carved cell so neither can be bypassed around a corner.
 export function furnishDelve(map) {
   const rng = new Random(map.seed ^ Math.imul(map.depth, 22695477));
+  // Join two far rooms independently of the original construction chain.
+  const first = map.rooms[1], far = map.rooms.at(-2);
+  if (map.rooms.length >= 5) {
+    let x=first.cx,z=first.cz;
+    const carve=()=>{map.tiles[key(x,z)] ??= {x,z};map.tiles[key(x+1,z)] ??= {x:x+1,z};};
+    while (z!==far.cz) {carve();z+=Math.sign(far.cz-z);}
+    while (x!==far.cx) {carve();map.tiles[key(x,z+1)] ??= {x,z:z+1};x+=Math.sign(far.cx-x);}
+    carve();
+  }
   for (const [i,c] of map.chests.entries()) {
+    c.grade=map.depth>=5 && rng.next()<.22 ? "iron" : "wood";
     if (i === 0 || i === map.chests.length - 1 || rng.next() < .35) continue;
     c.dropped = true;
     c.coins = rng.int(0,5);

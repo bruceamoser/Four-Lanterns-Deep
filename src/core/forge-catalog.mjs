@@ -1,3 +1,4 @@
+import { DEEDS_PATHS } from "./deeds-paths.mjs";
 import { DISCIPLINE_FORAGING } from "./discipline-benefits.mjs";
 // Game-owned progression. A discipline is a self-contained set of circular paths;
 // intersections require every named contact, never merely a nearby discipline.
@@ -64,6 +65,7 @@ export const FORGE_DISCIPLINES = [
     1,
   ],
   ["craft", "Craft", "Recipes, devices, repairs and preparation.", 5, 1],
+  ...Object.entries({fencing:"Precise thrusts and safe steps.",tactics:"Create openings for your companions.",divination:"Sense, survey and identify dungeon finds.",force:"Move, strike and reshape the battlefield.",spellcraft:"Develop your spell reserves."}).map(([id,text],i)=>[id,id[0].toUpperCase()+id.slice(1),text,i,2]),
 ].map(([id, name, description, position, inner]) => ({
   id,
   name,
@@ -91,6 +93,7 @@ const profile = (name, key, value) => ({
   cost: 1,
 });
 const PATHS = {
+  ...DEEDS_PATHS,
   marksmanship: [
     [
       "Ballistics",
@@ -1260,7 +1263,7 @@ for (const d of FORGE_DISCIPLINES) {
     cost: 2,
     requires: [origin],
     rank: 2,
-    investment: 4,
+    investment: d.inner === 2 ? 2 : 4,
     minimumLevel: 3,
     description: `Rank II: unlock advanced ${d.name} nodes and rank-II enchantments. Requires four purchased nodes in this discipline.${disciplineBenefit}`,
     local: { x: -45, y: 60 },
@@ -1273,7 +1276,7 @@ for (const d of FORGE_DISCIPLINES) {
     cost: 3,
     requires: [`${d.id}:rank2`],
     rank: 3,
-    investment: 9,
+    investment: d.inner === 2 ? 4 : 9,
     minimumLevel: 7,
     description: `Rank III: unlock the deepest ${d.name} paths and rank-III enchantments. Requires nine purchased nodes in this discipline.${disciplineBenefit}`,
     local: { x: 45, y: 60 },
@@ -1428,6 +1431,10 @@ export const FORGE_NODE = Object.freeze(
 );
 export function disciplinePosition(id) {
   const d = FORGE_DISCIPLINES.find((d) => d.id === id);
+  if (d.inner === 2) {
+    const angle = 2*Math.PI*(d.position+0.25)/5;
+    return {x:2250*Math.cos(angle),y:2250*Math.sin(angle)};
+  }
   const angle = (d.position / (d.inner ? 6 : 12)) * Math.PI * 2;
   const radius = d.inner ? 585 : 1250;
   return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };

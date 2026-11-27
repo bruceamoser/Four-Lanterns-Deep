@@ -30,7 +30,7 @@ export const opportunityMethods = {
     const opponents = actor.survival ? this.enemies : this.party;
     const threats = opponents.filter(
       (other) =>
-        this.canOpportunity(other) &&
+        this.canOpportunity(other) && !(operation.kind==="cue-step" && operation.ignoreTarget && operation.enemy===other.id) &&
         !(
           points &&
           !actor.survival &&
@@ -117,7 +117,8 @@ export const opportunityMethods = {
     const o = p.operation;
     this.continuingProvocation = true;
     try {
-      if (o.kind === "move") this.step();
+      if (o.kind === "cue-step") this.finishCueStep(o);
+      else if (o.kind === "move") this.step();
       else if (o.kind === "ability") this.useAbility(o.id, o.target, o.options);
       else if (o.kind === "recovery") this.recoveryAbility(o.id, o.target);
       else if (o.kind === "find") this.useFind(o.index, o.item, o.target);

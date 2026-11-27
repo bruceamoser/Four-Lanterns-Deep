@@ -1,3 +1,4 @@
+import { techniqueMethods } from "./deeds-techniques.mjs";
 import { furnishDelve, vaultMethods } from "./deeds-vault.mjs";
 import { deedsDamage, coverBetween } from "./deeds-damage.mjs";
 import { deedsCareMethods, deathBand } from "./deeds-care.mjs";
@@ -192,6 +193,7 @@ export class Game {
     this.movementConsent = new Set();
     this.pendingDefense = null;
     this.pendingProvocation = null;
+    this.pendingCue = null;
     this.busy = false;
     this.selected = 0;
     this.log = [];
@@ -333,12 +335,14 @@ export class Game {
       if (actor >= 0) this.selected = actor;
     }
     this.party.forEach((h, i) => (h.selected = i === this.selected));
+    this.pendingCue = c.pendingCue ?? null;
+    if (this.pendingCue && (this.mode !== "combat" || this.pendingCue.owner !== this.encounter?.current || !this.enemies.some(e=>e.id===this.pendingCue.enemy) || !Number.isInteger(this.pendingCue.steps) || this.pendingCue.steps<1 || this.pendingCue.steps>3)) throw new Error("Invalid saved tactical step.");
     this.pendingProvocation = c.pendingProvocation ?? null;
     if (this.pendingProvocation) {
       const p = this.pendingProvocation;
       if (
         this.mode !== "combat" ||
-        p.actor !== this.encounter.current ||
+        (p.actor !== this.encounter.current && !(p.operation?.kind === "cue-step" && p.operation.owner === this.encounter.current && this.party.some(h=>h.id===p.actor))) ||
         !Array.isArray(p.attackers) ||
         !Number.isInteger(p.cursor) ||
         p.cursor < 0 ||
@@ -349,6 +353,7 @@ export class Game {
           "recovery",
           "potion",
           "find",
+          "cue-step",
           "equip",
           "stand",
           "torch",
@@ -409,7 +414,8 @@ export class Game {
         hero: this.party.find((h) => h.id === this.pendingDefense.target),
         enemy: this.enemies.find((e) => e.id === this.pendingDefense.attacker),
       });
-    } else if (this.pendingProvocation) {
+    } else if (this.pendingCue) this.emit("tactical-step");
+    else if (this.pendingProvocation) {
       this.continueProvocation();
     } else if (
       this.mode === "combat" &&
@@ -441,6 +447,7 @@ export class Game {
       budgets: this.budgets,
       pendingDefense: this.pendingDefense,
       pendingProvocation: this.pendingProvocation,
+      pendingCue:this.pendingCue,
       woundNotices: this.woundNotices ?? [],
       floor: { map: this.map, seen: this.seen, enemies: this.enemies },
     };
@@ -518,6 +525,15 @@ export class Game {
             ? this.uniqueMagic((treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth)
             : this.treasureDraw(c.vault ? "vault" : c.dropped ? "loose" : "coffer", (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth),
         ].filter(Boolean);
+        if (!saved && this.C.forge && !c.dropped) {
+          const local = new Random((treasureSeed + i*76543 + this.map.depth) >>> 0);
+          const draws = c.vault ? local.int(2,3) : c.grade==="iron" ? local.int(1,2)+local.int(1,2) : local.next()<.12 ? 0 : local.int(1,2);
+          if (!draws) c.items=[];
+          for (let j=1;j<draws;j++) {
+            const next=this.treasureDraw(c.vault ? "vault" : "coffer",local.int(0,2147483646),this.map.depth);
+            if (next) c.items.push(next);
+          }
+        }
         if (c.vault && !saved) c.items.push(this.createFind("antitoxin","vault-bottle-"+(this.map.lootSeed ?? treasureSeed)));
       });
     if (!saved && this.map.chests[0])
@@ -1000,9 +1016,10 @@ export class Game {
     if (!plan.ready)
       throw new Error("This condition combination needs a duration ruling.");
     for (const event of plan.events) {
-      e.hp = Math.max(0, e.hp - event.damage.total);
+      const damage = this.party.some(h=>deedsHero(h.draft)) ? event.damage.subtotal : event.damage.total;
+      e.hp = Math.max(0,e.hp-damage);
       this.note(
-        `${e.name}: ${event.damage.total} ${event.condition} damage at turn end.`,
+        `${e.name}: ${damage} ${event.condition} damage at turn end.`,
       );
     }
     e.conditions = plan.contributions;
@@ -1061,6 +1078,7 @@ export class Game {
         : this.creatureAction(e),
       card = this.creature(e);
     if (!opportunity) {
+      this.rememberCreature(e,"actions",action.name);
       e.aiState ??= {};
       (e.aiState.lastActions ??= {})[action.name] = e.powerTurn ?? 0;
     }
@@ -1933,6 +1951,7 @@ export class Game {
     this.encounter = this.R.chooseParticipant(this.encounter, h.id);
     h.survival = this.R.startSurvivalTurn(h.survival, h.survival.ownTurn + 1);
     h.buffs = {};
+    for (const ally of this.party) if (ally.opening?.owner===h.id) delete ally.opening;
     h.powerTurn = (h.powerTurn ?? 0) + 1;
     this.surfaceContact(h);
     this.budgets[h.id] = this.R.startTurn({
@@ -1952,6 +1971,7 @@ export class Game {
   advance() {
     if (
       this.suspended ||
+      this.pendingCue ||
       this.pendingDefense ||
       this.pendingProvocation ||
       this.mode !== "combat" ||
@@ -2397,7 +2417,7 @@ Object.assign(Game.prototype, ancestryGameMethods);
 
 Object.assign(Game.prototype, tacticMethods);
 
-Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods, deedsCareMethods, vaultMethods);
+Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods, deedsCareMethods, vaultMethods, techniqueMethods);
 
 Object.assign(Game.prototype, powerMethods, battlefieldMethods);
 Object.assign(Game.prototype, buildMethods, forgeGameMethods);

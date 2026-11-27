@@ -54,6 +54,13 @@ export function bestiaryScreen({ root, game, close, selectedId, assets }) {
       root.querySelector(".creature-model-tools").hidden = true;
       console.warn("Bestiary preview could not open", error);
     }
+    const memory=game.campaign.discoveries?.creatures?.[c.id];
+    if (memory) {
+      const record=document.createElement("section");
+      record.className="compendium-record";
+      record.innerHTML="<h3>Company field notes</h3><p>Witnessed moves · "+esc(memory.actions.join(", ") || "None recorded")+"</p><p>Recovered · "+esc(memory.drops.join(", ") || "None recorded")+"</p>";
+      root.querySelector("main").append(record);
+    }
     const list = () => {
       root.querySelector(".creature-list").innerHTML = cards
         .filter(

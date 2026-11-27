@@ -642,7 +642,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
     return {
       ...item,
       veiled: !!saved.veiled,
-      facts: saved.facts ?? 0,
+      facts: Array.isArray(saved.facts) ? [...saved.facts] : [],
       hands:
         saved.kind === "ordinary" &&
         item.definition.handChoices?.includes(saved.hands)

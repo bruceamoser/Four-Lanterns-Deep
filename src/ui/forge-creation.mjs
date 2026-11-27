@@ -255,14 +255,14 @@ export function creationScreen({
       });
     } else if (step === 2) {
       const disciplineChoices = (ids, current, key) =>
-        `<div class="forge-origin-options">${ids.map((id) => `<button data-origin-key="${key}" data-origin-discipline="${id}" class="${current === id ? "chosen" : ""}">${disciplineIcon(id)}<span>${esc(name(id))}<small>Rank I origin · opens four paths</small></span></button>`).join("")}</div>`;
+        `<div class="forge-origin-options">${ids.map((id) => `<button data-origin-key="${key}" data-origin-discipline="${id}" class="${current === id ? "chosen" : ""}">${disciplineIcon(id)}<span>${esc(name(id))}<small>Rank I origin · opens training</small></span></button>`).join("")}</div>`;
       host.innerHTML = `<p class="section-intro">Class, culture and background each grant one discipline origin. Your choices determine where you begin, never where you must finish. Choose three distinct origins.</p>${field(
         "Class starting point",
         `<select id="class">${options(
           C.choices.filter((c) => c.kind === "class"),
           draft.classId,
         )}</select>`,
-      )}${cls ? disciplineChoices(cls.startingDisciplines, draft.classDisciplines[0], "class") : ""}${[
+      )}${cls ? disciplineChoices(cls.deedsDisciplines ?? cls.startingDisciplines, draft.classDisciplines[0], "class") : ""}${[
         "culture",
         "background",
       ]
@@ -271,13 +271,13 @@ export function creationScreen({
           return `<h3 class="subheading">${k === "culture" ? "Where you grew up" : "Your former life"}</h3>${field(
             k,
             `<select data-origin="${k}">${options(
-              C.choices.filter((c) => c.id.startsWith("origin-" + k + "-")),
+              C.choices.filter((c) => c.deedsDisciplines?.length && c.id.startsWith("origin-" + k + "-")),
               draft[k].id,
             )}</select>`,
           )}${
             r
               ? disciplineChoices(
-                  r.pairs.map((p) => p.disciplineId),
+                  r.deedsDisciplines ?? r.pairs.map((p) => p.disciplineId),
                   draft[k].discipline,
                   k,
                 )
