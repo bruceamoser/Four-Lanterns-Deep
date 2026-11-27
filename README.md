@@ -1,10 +1,10 @@
 # Four Lanterns Deep
 
-A four-hero expedition beneath Greyhaven, built on Heroes of Legend.
+A four-hero expedition beneath Greyhaven, built on Deeds of Legend.
 
-A desktop, single-player, 3D isometric dungeon-delving RPG for four heroes, based on **Heroes of Legend**. Target: Linux and Windows, stylized dark fantasy, a persistent town, repeated descents and recoverable expedition losses.
+A desktop, single-player, 3D isometric dungeon-delving RPG for four heroes, based on **Deeds of Legend**. Target: Linux and Windows, stylized dark fantasy, a persistent town, repeated descents and recoverable expedition losses.
 
-**v0.8.5 — Tactical creatures and clearer camp planning.** A playable dungeon RPG with game-owned character progression over HoL combat and survival mechanics. Eighteen discipline origins, 72 circular paths and 33 combined techniques share one persistent DP budget. See [implementation coverage and limitations](docs/implementation-status.md). The high-end presentation target remains an acceptance requirement.
+**v0.8.5 — Tactical creatures and clearer camp planning.** A playable dungeon RPG with game-owned character progression over Deeds of Legend combat and survival mechanics. Eighteen discipline origins, 72 circular paths and 33 combined techniques share one persistent DP budget. See [implementation coverage and limitations](docs/implementation-status.md). The high-end presentation target remains an acceptance requirement.
 
 ## Working across local computers
 
@@ -45,7 +45,7 @@ Packaging creates Linux AppImage/Debian packages or a Windows NSIS setup executa
 - Settings gear: save, runs, audio, updates, help, bestiary and camp. Tab toggles the dungeon map; J toggles the journal.
 
 - Click ground to move; 1–4 select a hero.
-- Near opposition, movement stops and HoL alternating turns begin.
+- Near opposition, movement stops and alternating combat turns begin.
 - Bow attacks fire modeled arrows; melee swings show the held blade and its trail. Fire, frost and life spells have distinct effects.
 - Click an enemy to attack with the readied melee weapon or bow, or use Unarmed Strike with empty hands. Space ends a turn.
 - Right-drag pans the camera; Q/E rotate; wheel zooms; F recenters and resumes exploration follow. Combat movement keeps the camera fixed.
@@ -70,7 +70,7 @@ Packaging creates Linux AppImage/Debian packages or a Windows NSIS setup executa
 - Free town respec rebuilds origins and the whole tree while retaining the hero's trained level, possessions and injuries. Individual refunds remove dependent purchases and return their DP.
 - Appearance offers sex, ancestry features, build/face, hair/facial hair and skin/eye/hair/clothing colors, with live rotation and zoom. Edit looks in town.
 - The tactical grid shows real squares; teal/gold shading shows reachable/last-point movement. Hover for costs; G toggles exploration squares.
-- Powers are game-designed over HoL mechanics. Ground actions preview areas; fire, water, smoke, barriers and other surfaces affect battlefield positioning.
+- Powers are game-designed over Deeds of Legend mechanics. Ground actions preview areas; fire, water, smoke, barriers and other surfaces affect battlefield positioning.
 - Supplies shows party stocks and exact die/cost/Bulk previews, with reviewed Greyhaven restock and ingredient-free camp duties with automatic recipients and training-based success. Advanced recipes retain their special tools and ingredients. Journey offers predictable field-dressing/restoration treatment or priced town care. Wound scars and spent Grit remain. Healing potions are usable from inventory or the combat bar.
 
 Named saves live under the desktop application's user-data `runs/` directory (`~/.config/deep-dark-dungeons-hol/runs/` on this Linux installation). Development saves use browser local storage. Startup restores the active run, or opens the library if you exited it. Earlier-edition files, including an old `campaign.json`, are retained without conversion. Each slot includes its own hero repository and Hall; playing a slot autosaves only that slot. v0.6 saves use the new discipline ruleset; v0.5 journeys require the older release to play. Newly created heroes are saved immediately; final-death records trigger an immediate save.

@@ -3,7 +3,7 @@
   "version": "0.8.8",
   "private": true,
   "type": "module",
-  "description": "A four-hero Heroes of Legend dungeon RPG",
+  "description": "A four-hero Deeds of Legend dungeon RPG",
   "main": "desktop/main.cjs",
   "scripts": {
     "dev": "vite --host 127.0.0.1",

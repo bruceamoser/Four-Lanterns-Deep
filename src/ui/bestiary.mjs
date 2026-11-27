@@ -19,7 +19,7 @@ export function bestiaryScreen({ root, game, close, selectedId, assets }) {
     const c = cards.find((c) => c.id === selected),
       live = game.enemies.filter((e) => e.type === c.id && e.hp > 0),
       look = CREATURE_ROSTER[c.id];
-    root.innerHTML = `<div class="veil"><section class="bestiary-window" role="dialog" aria-label="Dungeon bestiary"><header><div><span class="eyebrow">HEROES OF LEGEND · FIELD GUIDE</span><h2>The things below</h2><p>${cards.length} dungeon creatures · Printed book statistics</p></div><button class="close icon-button" aria-label="Close">${icon("close")}</button></header><div class="bestiary-body"><aside><input id="creature-search" placeholder="Find a creature…" aria-label="Find a creature" value="${esc(query)}"><select id="creature-family" aria-label="Creature family"><option value="all">Every family</option>${[
+    root.innerHTML = `<div class="veil"><section class="bestiary-window" role="dialog" aria-label="Dungeon bestiary"><header><div><span class="eyebrow">DEEDS OF LEGEND · FIELD GUIDE</span><h2>The things below</h2><p>${cards.length} dungeon creatures · Printed book statistics</p></div><button class="close icon-button" aria-label="Close">${icon("close")}</button></header><div class="bestiary-body"><aside><input id="creature-search" placeholder="Find a creature…" aria-label="Find a creature" value="${esc(query)}"><select id="creature-family" aria-label="Creature family"><option value="all">Every family</option>${[
       ...new Set(cards.map((c) => c.family)),
     ]
       .sort()
