@@ -16,7 +16,7 @@ export function learn(draft, id) {
   const node = FORGE_NODE[id];
   if (!node) throw new Error(id);
   for (const prerequisite of node.requires) learn(draft, prerequisite);
-  if (node.minimumRank > 1)
+  if (node.minimumRank > 1 && !(draft.forge.version === 2 && node.mastery))
     learn(draft, `${node.discipline}:rank${node.minimumRank}`);
   if (node.investment) {
     while (

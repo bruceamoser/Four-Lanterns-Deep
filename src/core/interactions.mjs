@@ -5,6 +5,7 @@ import { XP_RULES } from "./experience.mjs";
 export const interactionMethods = {
   worldInteractions() {
     return [
+      ...this.vaultFixtures(),
       ...(this.map.waterSources ?? []).map((p, i) => ({
         ...p,
         id: `spring:${i}`,
@@ -19,11 +20,11 @@ export const interactionMethods = {
         ...c,
         id: `coffer:${c.id}`,
         kind: "coffer",
-        name: c.dropped
+        name: c.vault ? "Trapkeeper’s strongbox" : c.id === "vault-silver" ? "Silver ore" : c.dropped
           ? "Ground cache"
           : c.opened && !c.items?.length
             ? "Empty coffer"
-            : "Forgotten coffer",
+            : c.grade==="iron" ? "Iron-bound coffer" : "Forgotten coffer",
         description: c.opened
           ? `${c.items?.length ?? 0} unclaimed items remain.`
           : `An old coffer holds ${c.coins} coins${c.items?.length ? ` and ${c.items.length} treasures` : ""}.`,
@@ -171,6 +172,7 @@ export const interactionMethods = {
     const reason = this.interactionReason(item);
     if (reason) throw new Error(reason);
     this.pendingInteraction = null;
+    if (id.startsWith("vault:")) return this.workVault(item);
     if (item.kind === "spring") return this.emit("camp-open");
     if (item.kind === "entrance") return this.extract();
     if (item.kind === "descent") return this.deeper();

@@ -75,8 +75,10 @@ export function actionDetails(game, id, h = game.active) {
         game.held(h, `item-ordinary-${spec.weapon}-weapon`),
       ).filter((e) => e.effect === "damage"))
         notes.push(
-          `Weapon: +${game.enchantmentDamage(h, e, spec.damageType ?? spec.type ?? spec.effects?.find((e) => e.kind === "damage")?.type)} ${e.type} damage${e.condition ? `; Strong applies ${e.condition}` : ""}.`,
+          `Weapon: +${game.enchantmentDamage(h, e, spec.damageType ?? spec.type ?? spec.effects?.find((e) => e.kind === "damage")?.type)} ${e.type} damage${e.condition && !game.held(h,"item-ordinary-"+spec.weapon+"-weapon")?.veiled ? `; Strong applies ${e.condition}` : ""}.`,
         );
+    const readied = spec.weapon && game.held(h,"item-ordinary-"+spec.weapon+"-weapon");
+    if (readied && !readied.veiled) for (const effect of activeItemEffects(h,readied).filter(e=>["slay","reckless","leech"].includes(e.effect))) notes.push(effect.text);
     notes.push(
       "Damage values are Weak / Standard / Strong before target resistances. Conditional bonuses apply when their trigger is met.",
     );

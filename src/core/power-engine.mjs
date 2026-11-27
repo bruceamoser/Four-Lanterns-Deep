@@ -3,6 +3,8 @@ import {
   weaponBonus,
   protectCondition,
 } from "./equipment-bonuses.mjs";
+import { deedsHero } from "./deeds-development.mjs";
+import { deedsDamage, coverBetween } from "./deeds-damage.mjs";
 import { POWERS, mappedPower } from "./powers.mjs";
 import { distance, key, lineOfSight, pathfind } from "./dungeon.mjs";
 import { surfaceAt, wallAt } from "./battlefield.mjs";
@@ -13,6 +15,7 @@ const value = (n, tier) => (Array.isArray(n) ? n[tier] : n);
 export const powerMethods = {
   powerForceMove(actor, dir, amount, source = null) {
     if (!dir.x && !dir.z) return;
+    if (deedsHero(source?.draft)) return this.forceMove(actor, dir, amount, source);
     for (let i = 0; i < amount; i++) {
       const next = { x: actor.x + dir.x, z: actor.z + dir.z };
       const wall =
@@ -80,6 +83,27 @@ export const powerMethods = {
       Math.max(0, ...xs.map((e) => Number(e.stats[name]) || 0)) +
       Math.min(0, ...xs.map((e) => Number(e.stats[name]) || 0))
     );
+  },
+  endWard(h) {
+    if (!h?.sustainedWard) return;
+    for (const ally of this.party)
+      ally.powerEffects = (ally.powerEffects ?? []).filter(e => e.id !== "ward:" + h.id);
+    delete h.sustainedWard;
+  },
+  sustainDue(h) {
+    const ward = h?.sustainedWard;
+    if (!ward || h.survival.status !== "active" || this.encounter?.current !== h.id || this.mode !== "combat") return false;
+    return h.powerTurn === ward.due && this.clock().seconds < ward.until &&
+      this.party.some(ally => ally.powerEffects?.some(e => e.id === "ward:" + h.id && e.stats.absorb > 0));
+  },
+  sustainWard() {
+    const h = this.active;
+    if (!this.sustainDue(h) || this.busy || this.pendingProvocation || this.pendingDefense || this.pendingCue)
+      throw new Error("No ward is due for upkeep now.");
+    this.spend("maneuver", "sustain-ward");
+    h.sustainedWard.due++;
+    this.note(h.name + " sustains the ward.");
+    this.emit("change");
   },
   powerBuff(actor, target, stats, turns = 2, id = "effect") {
     target.powerEffects = (target.powerEffects ?? []).filter(
@@ -182,9 +206,12 @@ export const powerMethods = {
       { type: "physical", value: Math.max(0, Math.min(3, physical + delta)) },
     ];
   },
-  absorbPowerDamage(target, amount, type) {
+  absorbPowerDamage(target, amount, type, minimum = false) {
     if (amount <= 0) return 0;
-    let result = Math.max(0, amount - this.powerStat(target, "reduction"));
+    let result = Math.max(minimum ? 1 : 0, amount - this.powerStat(target, "reduction"));
+    for (const caster of this.party) {
+      if (caster.sustainedWard && (caster.survival.status !== "active" || this.restrictions(caster).asleep || this.restrictions(caster).unconscious || this.clock().seconds >= caster.sustainedWard.until)) this.endWard(caster);
+    }
     const shield = (target.powerEffects ?? [])
       .filter(
         (e) =>
@@ -201,9 +228,13 @@ export const powerMethods = {
     if (amount > 0) this.breakConcealment(target);
     return result;
   },
-  powerDamage(target, amount, type, actor) {
+  powerDamage(target, amount, type, actor, attack = true) {
+    return this.powerDamageComponents(target, [{type, amount:Math.max(0,amount)}], actor, attack);
+  },
+  powerDamageComponents(target, components, actor, attack = true, defense = null) {
+    const type = components[0].type;
     if (!alive(target)) return 0;
-    const resistances = target.survival
+    const resistances = defense?.resistances ?? (target.survival
       ? this.powerResistances(
           target,
           Object.entries(target.preview.resistances).map(([type, value]) => ({
@@ -211,15 +242,16 @@ export const powerMethods = {
             value,
           })),
         )
-      : this.creatureResistances(target);
-    let damage = this.R.damageEvent({
-      components: [{ type, amount: Math.max(0, amount) }],
+      : this.creatureResistances(target));
+    const modern = deedsHero(actor?.draft) || deedsHero(target.draft);
+    let damage = (modern ? deedsDamage : this.R.damageEvent)({
+      components, attack, immunities: target.survival ? [] : this.creature(target)?.immunities ?? [],
       resistances,
       weaknesses: target.survival ? [] : this.creatureWeaknesses(target),
     }).total;
-    if (target.survival) this.suffer(target, damage, type, actor);
+    if (target.survival) damage = this.suffer(target, damage, type, actor, modern && attack).applied;
     else {
-      damage = this.absorbPowerDamage(target, damage, type);
+      damage = this.absorbPowerDamage(target, damage, type, modern && attack);
       target.hp = Math.max(0, target.hp - damage);
       if (actor) this.creatureAfterHit(target, actor, { type }, damage);
       this.defeatEnemy(target);
@@ -350,7 +382,7 @@ export const powerMethods = {
     let recipients = relocating
       ? [actor]
       : spec.target === "ground" || spec.radius || spec.shape
-        ? [...(hostile ? this.enemies : this.party)].filter(
+        ? [...(spec.allCreatures ? [...this.party,...this.enemies] : hostile ? this.enemies : this.party)].filter(
             (p) => alive(p) && cellSet.has(key(p.x, p.z)),
           )
         : [point];
@@ -411,7 +443,16 @@ export const powerMethods = {
   },
   powerReason(id, h = this.active) {
     const p = this.powerSpec(id, h);
+    if (!p) return "This power is unavailable.";
+    if (p.deedsOnly && !deedsHero(h.draft)) return "Adopt Deeds rules in Greyhaven first.";
     if (!p.universal && !this.powerIds(h).includes(id)) return "Not learned.";
+    if (this.pendingCue) return "Resolve the optional tactical step first.";
+    if (p.oneHand && this.held(h,"item-ordinary-melee-weapon")?.hands !== 1) return "Ready a melee weapon in one hand.";
+    if (p.effects.some(e=>e.kind==="sense") && this.mode==="town") return "Use this sense on a dungeon floor.";
+    if (p.spell && deedsHero(h.draft)) {
+      if (h.sp < p.spCost) return "Requires " + p.spCost + " SP.";
+      if (!p.weapon && !p.shield && this.freeHands(h) < 1) return "Free one hand to cast.";
+    }
     if (p.supply && !this.supplyItem(h, p.supply))
       return (
         "Carry a usable " +
@@ -516,6 +557,7 @@ export const powerMethods = {
       )
         return;
     } else this.advanceTime(60, { provisions: true });
+    if (spec.spell && deedsHero(h.draft)) h.sp -= spec.spCost;
     h.powerUses ??= {};
     h.restPowerUses ??= {};
     if (spec.limit) h.powerUses[id] = (h.powerUses[id] ?? 0) + 1;
@@ -532,6 +574,33 @@ export const powerMethods = {
           }))
         : [effect],
     );
+    const bands = new Map(), band = result => ["weak","standard","strong"].indexOf(result.tier);
+    const defenses = new Map();
+    const defenseFor = (target,type) => {
+      if (defenses.has(target)) return defenses.get(target);
+      const base = target.survival ? {boons:0,banes:0} : this.creatureDefense(target,h,{type,weapon:spec.weapon,spell:spec.spell});
+      const cover = deedsHero(h.draft) ? coverBetween(this.map,h,target) : 0;
+      const extreme = Number(spec.normalRange != null && distance(h,target) > spec.normalRange);
+      const defense = {...base,boons:base.boons+(spec.trainingBoon ?? 0), banes:base.banes + cover + extreme};
+      defenses.set(target,defense);
+      return defense;
+    };
+    const rollAgainst = (target,type) => {
+      const d = defenseFor(target,type);
+      return band(this.heroRoll(h,spec.attribute ?? "knowledge","attack",{target,
+        spec:{...spec,push:spec.effects.some(e => e.kind === "push") ? [1] : null},
+        sources:[{kind:"boon",amount:d.boons},{kind:"bane",amount:d.banes}]}));
+    };
+    let sharedSpellTier;
+    if (spec.spell && deedsHero(h.draft) && recipients.length) {
+      const primary = spec.effects.find(e => e.kind === "damage");
+      if (primary) {
+        const least = recipients.map(target => ({target,...defenseFor(target,primary.type)}))
+          .sort((a,b) => (b.banes-b.boons)-(a.banes-a.boons))[0].target;
+        sharedSpellTier = rollAgainst(least,primary.type);
+      } else if (spec.effects.some(e => e.kind === "heal"))
+        sharedSpellTier = band(this.heroRoll(h,spec.attribute,"attribute",{spec}));
+    }
     for (const effect of resolvedEffects) {
       if (
         effect.kind === "damage" &&
@@ -557,79 +626,31 @@ export const powerMethods = {
         );
         continue;
       }
+      if (effect.kind === "sense") { this.senseDungeon(h,effect.sense,effect.range); continue; }
       if (effect.kind === "survey") {
         this.addTactic(h, h, { reveal: true }, id);
         continue;
       }
       for (const recipient of effect.self ? [h] : recipients) {
+        if (effect.minimumBand && (sharedSpellTier ?? bands.get(recipient.id) ?? 0) < effect.minimumBand) continue;
         switch (effect.kind) {
           case "damage": {
             if (!alive(recipient)) break;
-            const d = this.creatureDefense(recipient, h, {
-              type: effect.type,
-              weapon: spec.weapon,
-              spell: spec.spell,
-            });
-            const roll = this.heroRoll(
-              h,
-              spec.attribute ?? "knowledge",
-              "attack",
-              {
-                target: recipient,
-                spec: {
-                  ...spec,
-                  push: spec.effects.some((e) => e.kind === "push")
-                    ? [1]
-                    : null,
-                },
-                sources: [
-                  { kind: "boon", amount: d.boons },
-                  { kind: "bane", amount: d.banes },
-                ],
-              },
-            );
-            const tier = ["weak", "standard", "strong"].indexOf(roll.tier);
-            const damage = this.powerDamage(
-              recipient,
-              Math.max(
-                0,
-                value(effect.amount, tier) +
-                  (effect.shot ? 0 : extra) +
-                  this.buildDamage(
-                    h,
-                    recipient,
-                    spec,
-                    effect.type,
-                    tier,
-                    hidden && !effect.shot,
-                  ),
-              ),
-              effect.type,
-              h,
-            );
-            const weapon =
-              spec.weapon &&
-              this.held(h, `item-ordinary-${spec.weapon}-weapon`);
-            const enchantments = weapon
-              ? activeItemEffects(h, weapon).filter(
-                  (e) => e.effect === "damage",
-                )
-              : [];
-            for (const enchant of enchantments) {
-              this.powerDamage(
-                recipient,
-                this.enchantmentDamage(h, enchant, effect.type),
-                enchant.type,
-                h,
-              );
-              if (tier === 2 && enchant.condition)
-                this.powerCondition(
-                  recipient,
-                  enchant.condition,
-                  1 + this.buildStat(h, enchant.condition),
-                  h.id,
-                );
-            }
+            if (!spec.spell) defenses.delete(recipient);
+            const tier = sharedSpellTier ?? rollAgainst(recipient, effect.type);
+            bands.set(recipient.id,tier);
+            const weapon = spec.weapon && this.held(h, "item-ordinary-" + spec.weapon + "-weapon");
+            const enchantments = weapon ? activeItemEffects(h, weapon).filter(e => e.effect === "damage") : [];
+            const base = Math.max(0, value(effect.amount,tier) + (effect.shot ? 0 : extra) +
+              this.buildDamage(h,recipient,spec,effect.type,tier,hidden && !effect.shot));
+            const components = [{type:effect.type, amount:base}, ...enchantments.map(e => ({
+              type:e.type, amount:this.enchantmentDamage(h,e,effect.type)
+            }))];
+            const originalHp=recipient.hp;
+            const damage = this.powerDamageComponents(recipient,components,h,true,defenses.get(recipient));
+            if (tier===2 && recipient.hp<originalHp && weaponBonus(h,spec,"leech")) this.powerHeal(h,weaponBonus(h,spec,"leech"));
+            for (const enchant of enchantments) if (tier === 2 && enchant.condition)
+              this.powerCondition(recipient,enchant.condition,1+this.buildStat(h,enchant.condition),h.id);
             if (
               tier === 2 &&
               recipient.hp > 0 &&
@@ -645,7 +666,7 @@ export const powerMethods = {
                 1,
                 h,
               );
-            this.buildAfterHit(h, recipient, spec, effect.type, enchantments);
+            if (!recipient.survival) this.buildAfterHit(h, recipient, spec, effect.type, enchantments);
             this.emit("attack", {
               attacker: h.id,
               target: recipient.id,
@@ -659,11 +680,11 @@ export const powerMethods = {
             break;
           }
           case "heal": {
-            const tier = spec.attribute
+            const tier = sharedSpellTier ?? (spec.attribute
               ? ["weak", "standard", "strong"].indexOf(
                   this.heroRoll(h, spec.attribute, "attribute", { spec }).tier,
                 )
-              : 1;
+              : 1);
             this.powerHeal(
               recipient,
               Math.max(
@@ -687,6 +708,12 @@ export const powerMethods = {
                 1,
                 "build-rallying-care",
               );
+            break;
+          }
+          case "cue": {
+            const cue={owner:h.id,enemy:point.id,ally:!!effect.ally,safe:!!effect.safe,ignoreTarget:!!effect.ignoreTarget,aid:!!effect.aid,
+              steps:bands.get(recipient.id)===2 ? (effect.strongSteps ?? effect.steps ?? 1) : (effect.steps ?? 1)};
+            if (this.cueOptions(cue).length) this.pendingCue=cue;
             break;
           }
           case "condition":
@@ -721,6 +748,12 @@ export const powerMethods = {
             );
             break;
           case "barrier":
+            if (spec.sustained && this.mode === "combat") {
+              this.endWard(h);
+              this.powerBuff(h, recipient, { absorb: effect.amount + this.buildStat(h, "barrier") }, 10, "ward:" + h.id);
+              h.sustainedWard = { due: (h.powerTurn ?? 0) + 1, until: this.clock().seconds + 60 };
+              break;
+            }
             this.powerBuff(
               h,
               recipient,
@@ -831,6 +864,7 @@ export const powerMethods = {
     );
     this.emit("battlefield");
     this.emit("change");
+    if (this.pendingCue) this.emit("tactical-step");
     if (this.mode === "combat") this.advance();
   },
 };

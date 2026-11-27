@@ -1,3 +1,5 @@
+import { deedsClasses, deedsOrigins, atlasStudies, fieldOf, startingPurse } from "./deeds-origins.mjs";
+import { DEEDS_CLASSES, deedsHero, deedsDP, deedsVitals, disciplinePrice } from "./deeds-development.mjs";
 import { bulkCatalog, encumbranceFor } from "./bulk.mjs";
 import {
   FORGE_VERSION,
@@ -26,6 +28,7 @@ export function newForgeDraft() {
     traitIds: [],
     languages: { home: "common" },
     classDisciplines: [],
+    signatures: {},
     culture: {},
     background: {},
     forge: { version: FORGE_VERSION, nodes: [] },
@@ -43,7 +46,7 @@ export function forgeCatalog(source) {
   c.choices = c.choices.filter(
     (r) =>
       r.kind !== "ability" ||
-      powers.has(r.id) ||
+      POWERS[r.id]?.signature || powers.has(r.id) ||
       grants.has(r.id) ||
       (r.universal &&
         ![
@@ -57,7 +60,8 @@ export function forgeCatalog(source) {
         ].includes(r.id)),
   );
   for (const r of c.choices) {
-    if (r.kind === "class") r.signatures = {};
+    if (r.kind === "class")
+      r.signatures = Object.fromEntries([1,3,7].map(level => [level,r.signatures[level].filter(id => POWERS[id]?.signature)]));
     if (r.kind === "origin")
       r.pairs = [
         ...new Map(
@@ -69,13 +73,21 @@ export function forgeCatalog(source) {
       ];
     if (r.id === "ability-shield-block") r.universal = false;
   }
+  for (const entry of FORGE_DISCIPLINES)
+    if (!c.choices.some(r=>r.id==="discipline-"+entry.id)) c.choices.push({id:"discipline-"+entry.id,kind:"discipline",name:entry.name});
+  for (const [id,origin] of Object.entries(deedsOrigins)) {
+    let r=c.choices.find(choice=>choice.id===id);
+    if (!r) {r={id,kind:"origin",name:origin.name,pairs:[]}; c.choices.push(r);}
+    r.deedsDisciplines=atlasStudies(origin.roots);
+  }
+  for (const r of c.choices.filter(r=>r.kind==="class")) r.deedsDisciplines=atlasStudies(deedsClasses[r.id]);
   return c;
 }
 export function forgeOrigins(draft, C) {
   const cls = C.choices.find((r) => r.id === draft.classId),
     origins = [];
   const classId = draft.classDisciplines?.[0];
-  if (cls?.kind === "class" && cls.startingDisciplines.includes(classId))
+  if (cls?.kind === "class" && (deedsHero(draft) ? cls.deedsDisciplines : cls.startingDisciplines).includes(classId))
     origins.push({
       source: "Class",
       id: classId.replace("discipline-", "") + ":origin",
@@ -85,7 +97,7 @@ export function forgeOrigins(draft, C) {
       r = C.choices.find((r) => r.id === s?.id);
     if (
       r?.id.startsWith("origin-" + key + "-") &&
-      r.pairs.some((p) => p.disciplineId === s.discipline)
+      (deedsHero(draft) ? r.deedsDisciplines?.includes(s.discipline) : r.pairs.some((p) => p.disciplineId === s.discipline))
     )
       origins.push({
         source: key === "culture" ? "Culture" : "Background",
@@ -95,6 +107,7 @@ export function forgeOrigins(draft, C) {
   return origins;
 }
 export function forgeBudget(draft, C) {
+  if (deedsHero(draft)) return deedsDP(draft);
   const roots = forgeOrigins(draft, C);
   return (
     8 +
@@ -104,7 +117,7 @@ export function forgeBudget(draft, C) {
 }
 export const forgeSpent = (draft) =>
   (draft.forge?.nodes ?? []).reduce(
-    (n, id) => n + (FORGE_NODE[id]?.cost ?? 0),
+    (n, id) => n + disciplinePrice(draft, FORGE_NODE[id]),
     0,
   );
 export function forgeOwned(draft, C) {
@@ -130,16 +143,19 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
     owned = forgeOwned(draft, C),
     level = draft.progression?.level ?? 1;
   if (!node) return ["Unknown forge node."];
+  if (!deedsHero(draft) && FORGE_DISCIPLINES.some(d=>d.inner===2 && d.id===node.discipline)) return ["Adopt Deeds rules in Greyhaven first."];
   if (owned.has(node.id)) return ["Already learned."];
-  if (node.kind === "origin" && level < 2)
+  if (node.kind === "origin" && level < 2 && !deedsHero(draft))
     reasons.push("Learn additional disciplines from level 2.");
-  if (level < (node.minimumLevel ?? 1))
-    reasons.push(`Requires level ${node.minimumLevel}.`);
+  const mastery = deedsHero(draft) && node.mastery;
+  const minimumLevel = mastery ? 7 : (node.minimumLevel ?? 1);
+  if (level < minimumLevel)
+    reasons.push(`Requires level ${minimumLevel}.`);
   for (const id of node.requires ?? [])
     if (!owned.has(id)) reasons.push(`Unlock ${FORGE_NODE[id]?.name ?? id}.`);
   const ranks = forgeRanks(draft, C);
   if (
-    node.minimumRank &&
+    !mastery && node.minimumRank &&
     (ranks[`discipline-${node.discipline}`] ?? 0) < node.minimumRank
   )
     reasons.push(
@@ -156,16 +172,17 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
         `Requires ${node.investment} purchased ${node.discipline} nodes (${count}/${node.investment}).`,
       );
   }
-  if (budget && node.cost > forgeBudget(draft, C) - forgeSpent(draft))
+  const cost = disciplinePrice(draft, node);
+  if (budget && cost > forgeBudget(draft, C) - forgeSpent(draft))
     reasons.push(
-      `Need ${node.cost} DP; ${forgeBudget(draft, C) - forgeSpent(draft)} available.`,
+      `Need ${cost} DP; ${forgeBudget(draft, C) - forgeSpent(draft)} available.`,
     );
   return reasons;
 }
 export function validateForge(draft, C) {
   const errors = [];
   if (
-    draft.forge?.version !== FORGE_VERSION ||
+    ![1, FORGE_VERSION].includes(draft.forge?.version) ||
     !Array.isArray(draft.forge.nodes)
   )
     return [
@@ -205,17 +222,28 @@ export function forgeRefundPlan(draft, C, id = null) {
   return {
     draft: p,
     removed,
-    refund: removed.reduce((n, id) => n + FORGE_NODE[id].cost, 0),
+    refund: removed.reduce((n, id) => n + disciplinePrice(draft, FORGE_NODE[id]), 0),
   };
+}
+export function missingSignatures(draft) {
+  return deedsHero(draft) && draft.classId ? [1,3,7].filter(n=>n<=draft.progression.level && !draft.signatures?.[n]) : [];
 }
 export function forgeBenefits(draft, C) {
   const owned = forgeOwned(draft, C),
     stats = {},
     profiles = { melee: [1, 1, 2], ranged: [1, 1, 2] },
     upgrades = [],
-    abilities = [],
+    abilities = deedsHero(draft) ? ["power-forge-strike", "power-forge-shot", "ability-stabilize"] : [],
     recipes = [];
-  if (draft.traitIds?.includes("trait-human-far-walker")) {
+  if (deedsHero(draft)) {
+    const signatures = Object.values(draft.signatures ?? {}).map(id => POWERS[id]).filter(p => p?.signature && p.classId === draft.classId && p.minimumLevel <= draft.progression.level);
+    for (const power of signatures) {
+      abilities.push(power.id);
+      for (const [key,value] of Object.entries(power.buildStats ?? {}))
+        stats[key] = Math.max(stats[key] ?? 0,value);
+    }
+  }
+  if (!deedsHero(draft) && draft.traitIds?.includes("trait-human-far-walker")) {
     stats.movement = 1;
     stats.capacity = 2;
   }
@@ -311,13 +339,13 @@ export function forgeCharacter(draft, C) {
   const attr = draft.attributes ?? {};
   if (
     attributes.some(
-      (k) => !Number.isInteger(attr[k]) || attr[k] < 0 || attr[k] > 2,
+      (k) => !Number.isInteger(attr[k]) || attr[k] < (deedsHero(draft) ? -2 : 0) || attr[k] > 2,
     ) ||
     attributes.reduce((n, k) => n + (attr[k] ?? 0), 0) !== 3
   )
     error(
       "attributes",
-      "Distribute exactly 3 attribute points, with a maximum of 2 per attribute.",
+      "Attributes must total +3 and stay within the allowed range.",
     );
   if (
     draft.traitIds?.length !== 2 ||
@@ -325,6 +353,16 @@ export function forgeCharacter(draft, C) {
     draft.traitIds.some((id) => !ancestry?.traits.includes(id))
   )
     error("traits", "Choose two distinct ancestry traits.");
+  if (deedsHero(draft)) {
+    for (const [tier,id] of Object.entries(draft.signatures ?? {}))
+      if (!cls?.signatures?.[tier]?.includes(id) || Number(tier) > draft.progression.level)
+        error("signature","Choose a signature for this class and trained level.");
+    for (const stat of DEEDS_CLASSES[draft.classId]?.minimum ?? [])
+      if (attr[stat] < 0) error("class", "This class requires at least 0 " + stat + ".");
+    const roots = forgeOrigins(draft, C);
+    if (new Set(roots.map(root => fieldOf(root.id))).size < roots.length)
+      error("origins", "Choose three distinct starting disciplines.");
+  }
   const selection = ancestrySelection(draft, C.choices);
   errors.push(...selection.errors);
   if (forgeOrigins(draft, C).length !== 3)
@@ -343,6 +381,7 @@ export function forgeCharacter(draft, C) {
     instanceId: id === "item-travel-clothes" ? "creation-outfit" : `kit:${id}`,
     quantity: 1,
   }));
+  const purse=deedsHero(draft) ? startingPurse(draft) : 60;
   let spent = 0;
   for (const [i, s] of (draft.shopping ?? []).entries()) {
     const def = C.inventory.equipment.find((r) => r.id === s.id);
@@ -370,10 +409,10 @@ export function forgeCharacter(draft, C) {
       hands: s.hands,
     });
   }
-  if (spent > 60)
+  if (spent > purse)
     error(
       "coins",
-      `Equipment costs ${spent} coins; the starting purse contains 60.`,
+      `Equipment costs ${spent} coins; the starting purse contains ${purse}.`,
     );
   const items = receipts
     .map((r) => {
@@ -400,7 +439,7 @@ export function forgeCharacter(draft, C) {
           (r.instanceId.startsWith("kit:") &&
             !!kit?.held.includes(r.catalogId)),
         worn: armor
-          ? b.abilities.includes(`ability-wear-${armor}-armor`) &&
+          ? (deedsHero(draft) || b.abilities.includes(`ability-wear-${armor}-armor`)) &&
             (saved?.worn ?? r.instanceId.startsWith("kit:"))
           : (saved?.worn ?? r.catalogId === "item-travel-clothes"),
         inventoryDie: definition.inventoryDie,
@@ -440,6 +479,7 @@ export function forgeCharacter(draft, C) {
   const summary = {
     maximumHp,
     gritGranted: 3 + Math.floor((level - 1) / 6),
+    ...(deedsHero(draft) ? deedsVitals(draft, benefits.maximumHpBonus + (b.stats.hp ?? 0),b.stats.maximumSp ?? 0) : {}),
     gritSpent: 0,
     stability: benefits.stability,
     speedBase,
@@ -455,7 +495,7 @@ export function forgeCharacter(draft, C) {
       ruleReferences: [],
     },
     languages,
-    startingCoins: 60,
+    startingCoins: purse,
     creationAttributes: { ...attr },
   };
   const state = {
@@ -485,8 +525,8 @@ export function forgeCharacter(draft, C) {
       capacity,
       encumbrance,
       spent,
-      startingCoins: 60,
-      remainingCoins: 60 - spent,
+      startingCoins: purse,
+      remainingCoins: purse - spent,
     },
     resistances: {},
     passiveSources: [],
@@ -524,6 +564,8 @@ export function forgePower(spec, h) {
           : Math.max(1, Math.ceil(e.amount * 0.6));
   if (p.weapon === "ranged") p.range += b.stats.rangedRange ?? 0;
   for (const u of b.upgrades.filter((u) => u.power === p.id)) {
+    if (u.fixedProfile) p.effects.find(e=>e.kind==="damage").amount=[...u.fixedProfile];
+    if (u.strongSteps || u.ignoreTarget) Object.assign(p.effects.find(e=>e.kind==="cue"),{...(u.strongSteps ? {strongSteps:u.strongSteps} : {}),...(u.ignoreTarget ? {ignoreTarget:true} : {})});
     if (u.range) p.range = (p.range ?? 0) + u.range;
     for (const e of p.effects ?? []) {
       for (const key of ["damage", "heal", "barrier"])
@@ -545,22 +587,43 @@ export function forgePower(spec, h) {
         self: true,
       });
   }
+  if (deedsHero(h.draft)) {
+    if ((p.id === "power-forge-shot" && b.owned?.includes("marksmanship:0:0")) || (p.id === "power-forge-strike" && b.owned?.includes("arms:0:0"))) p.trainingBoon=1;
+    if (p.id === "power-forge-shot") {
+      p.normalRange = 12 + (b.stats.rangedRange ?? 0);
+      p.range = p.normalRange + 6;
+    }
+    if (p.spell) {
+      if (["power-spirit-ward", "power-living-ward"].includes(p.id)) p.sustained = true;
+      p.attribute = DEEDS_CLASSES[h.draft.classId]?.casting ?? "knowledge";
+      p.spCost = p.spCost ?? (p.rank <= 1 ? 0 : Math.min(5,(p.rank ?? 2) + Number(!!p.radius)));
+    }
+    if (p.effects.some(e => e.kind === "damage"))
+      for (const e of p.effects) if (["condition","push","pull"].includes(e.kind)) e.minimumBand ??= 1;
+    if (p.effects.some(e => e.kind === "wound")) {
+      p.effects = p.effects.flatMap(e => e.kind === "wound" ? [{kind:"stabilize"},{kind:"cleanse",keys:["bleeding","poisoned","burning"],amount:3},{kind:"heal",amount:[2,4,6]}] : [e]);
+      delete p.supply;
+    }
+  }
   return p;
 }
 export function forgePowerText(p) {
   const value = (v) => (Array.isArray(v) ? v.join("/") : v);
   return [
     `${{ main: "Action", maneuver: "Maneuver", reaction: "Reaction", passive: "Passive" }[p.category] ?? "Power"}${p.target === "self" ? "" : ` · range ${p.range ?? 0}`}${p.radius ? ` · radius ${p.radius}` : ""}${p.shape ? ` · ${p.shape}` : ""}${p.shots ? ` · ${p.shots} arrows` : ""}.`,
+    p.spell && p.spCost != null ? p.spCost + " SP · " + (p.weapon || p.shield ? "Held focus." : "Free hand required.") : "",
+    p.trainingBoon ? "Basic strike training grants 1 Boon on this attack." : "",
+    p.normalRange ? "Normal range " + p.normalRange + ". Beyond it, 1 Bane." : "",
     p.attribute && p.effects?.some((e) => ["damage", "heal"].includes(e.kind))
       ? `Roll ${p.attribute}.`
       : "",
     ...(p.effects ?? []).map(
-      (e) =>
+      (e) => (e.minimumBand === 1 ? "Standard or Strong · " : e.minimumBand === 2 ? "Strong · " : "") + (
         ({
           damage: `${value(e.amount)} ${e.type} damage.`,
           heal: `Restore ${value(e.amount)} HP.`,
           condition: `Apply ${e.key} ${e.rating}.`,
-          barrier: `Absorb ${e.amount} damage for ${e.turns} turns.`,
+          barrier: p.sustained ? "Absorb up to " + e.amount + " damage. Sustain for one Maneuver each following turn, up to one minute. Upkeep costs 0 SP and preserves the remaining ward." : `Absorb ${e.amount} damage for ${e.turns} turns.`,
           push: `Push ${e.amount} squares.`,
           pull: `Pull ${e.amount} squares.`,
           cleanse: `Remove ${e.amount} temporary severity: ${e.keys?.join(", ")}.`,
@@ -577,11 +640,13 @@ export function forgePowerText(p) {
           counter:
             "Prepare one Basic Melee counter after an adjacent physical attack. Requires a readied melee weapon and an unspent Reaction. Remains through your next turn; Shield Block spends the same Reaction.",
           survey: "Reveal the floor layout and containers, not hidden enemies.",
+          cue: (e.ally ? "Choose an ally within three squares to move" : "You may step") + " up to " + (e.steps ?? 1) + " square(s)" + (e.strongSteps ? " ("+e.strongSteps+" on Strong)" : "") + (e.safe ? " without reactions." : e.ignoreTarget ? " without a reaction from the target." : ".") + (e.aid ? " The ally gains an attack Boon against the target." : ""),
+          sense: "Sense "+e.sense+" within "+e.range+" squares and record what the company discovers.",
           wound: "Treat one recoverable wound using a restoration draught.",
           stabilize: "Stabilize a dying companion.",
           reveal: "Reveal the target.",
           resource: `Restore/queue one ${e.resource}.`,
-        })[e.kind] ?? e.kind,
+        })[e.kind] ?? e.kind),
     ),
     p.recipes?.length
       ? `Learn ${p.recipes.map((r) => r.replace("recipe-", "").replaceAll("-", " ")).join(", ")}.`

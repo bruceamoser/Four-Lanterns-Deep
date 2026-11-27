@@ -27,14 +27,14 @@ test("approved catalogue covers every form and excludes incompatible or unapprov
     for (const [id, e] of Object.entries(EQUIPMENT_BONUSES)) {
       if (e.allowed.includes(base)) {
         const i = magicItem(99, 8, { base, affixes: [id] });
-        assert.equal(i.revision, 3);
+        assert.equal(i.revision, 4);
         assert.equal(i.effects[0].id, id);
         assert.ok(i.effects[0].text);
       } else assert.throws(() => magicItem(99, 8, { base, affixes: [id] }));
     }
   for (const id of ["impact", "penetration", "lifebloom", "wardweaver"])
     assert.equal(EQUIPMENT_BONUSES[id], undefined);
-  assert.throws(() => magicItem(1, 1, { revision: 4 }));
+  assert.throws(() => magicItem(1, 1, { revision: 5 }));
 });
 test("legacy receipts preserve identity but translate obsolete stats into legal effects", () => {
   for (const base of [

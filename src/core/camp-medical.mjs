@@ -1,3 +1,4 @@
+import { deedsHero } from "./deeds-development.mjs";
 import { POWERS } from "./powers.mjs";
 import { ABILITIES } from "./abilities.mjs";
 import { stockForItem, materialUnits } from "./supply-stock.mjs";
@@ -58,7 +59,8 @@ export const campMedicalMethods = {
     )
       return "Choose a living, stabilized patient.";
     if (duty === "heal") {
-      if (!this.campHealSkills(h).length)
+      if (deedsHero(patient.draft) && patient.firstAidSpent) return "This patient has received first aid since the last safe night.";
+      if (!deedsHero(patient.draft) && !this.campHealSkills(h).length)
         return "This hero has no learned HP-healing skill.";
       if (patient.survival.hp >= this.healingMaximum(patient))
         return "This companion is already at available maximum HP.";
@@ -97,6 +99,12 @@ export const campMedicalMethods = {
       return;
     }
     if (duty === "heal") {
+      if (deedsHero(patient.draft)) {
+        const before = patient.survival.hp;
+        this.firstAid(h, patient, {atCamp:true});
+        this.campEvent(h.name + " provides first aid to " + patient.name + " · +" + (patient.survival.hp-before) + " HP.");
+        return;
+      }
       const skills = this.campHealSkills(h).length,
         supply = this.campMedicalSupply("item-field-dressing");
       const before = patient.survival.hp;

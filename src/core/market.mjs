@@ -91,12 +91,12 @@ export const marketMethods = {
   },
   sellPrice(h, item) {
     return Math.floor(
-      item.definition.price *
+      (item.veiled ? 20 : item.definition.price) *
         Math.max(0.5, ...this.traits(h).map((t) => t.sellRate ?? 0.5)),
     );
   },
   market() {
-    const epoch = this.campaign.expeditions,
+    const epoch = this.campaign.expeditions + 32768 * Math.floor((this.clock().day-1)/3),
       depth = this.campaign.deepest ?? this.campaign.depth;
     if (this.campaign.market?.epoch === epoch) {
       for (const entries of Object.values(this.campaign.market.stock))
@@ -130,6 +130,13 @@ export const marketMethods = {
           item: ordinaryItem(this.C, id, `stock-${seed}-${i}`),
           quantity: 8,
         }));
+      if (this.C.forge && ["alchemy","arcana"].includes(m.id)) {
+        const pool=m.id==="alchemy" ? ["mending","antitoxin","coalsalve","clotting","clarity","waking"] : ["chart","glare","mist","hazard","aura","smoke"];
+        for (let i=0;i<3;i++) {
+          const id=pool[((seed>>>0)+i)%pool.length];
+          stock[m.id].push({id:m.id+"-find-"+i,item:this.createFind(id,"stock-find-"+seed+"-"+i,{labeled:true}),quantity:2});
+        }
+      }
       if (m.scroll)
         stock[m.id].push({
           id: m.id + "-recall",

@@ -1,9 +1,11 @@
+import { trainingTarget } from "./experience.mjs";
+import { deedsHero } from "./deeds-development.mjs";
 import { FORGE_NODE, FORGE_LEVEL_CAP } from "./forge-catalog.mjs";
 import {
   forgeCharacter,
   forgeRequirements,
   forgeRefundPlan,
-  newForgeDraft,
+  newForgeDraft, missingSignatures,
 } from "./forge.mjs";
 import { gearPreview } from "./treasure.mjs";
 export const forgeGameMethods = {
@@ -11,7 +13,7 @@ export const forgeGameMethods = {
     const actions = this.availableActions(h),
       score = (c) =>
         ["power-forge-strike", "power-forge-shot"].includes(c.id)
-          ? 0
+          ? (this.held(h, c.id === "power-forge-shot" ? "item-ordinary-ranged-weapon" : "item-ordinary-melee-weapon") ? 0 : 4)
           : this.powerSpec(c.id, h)?.effects?.some((e) => e.kind === "damage")
             ? 1
             : this.powerSpec(c.id, h)?.effects?.some((e) => e.kind === "survey")
@@ -51,11 +53,14 @@ export const forgeGameMethods = {
     const h = this.party[index];
     if (expectedHeroId && h.heroId !== expectedHeroId)
       throw new Error("The party slot changed. Reopen this hero’s forge.");
+    if (respec && missingSignatures(draft).length) throw new Error("Choose all earned class signatures before confirming the respec.");
+    if (!respec) for (const [level,selected] of Object.entries(h.draft.signatures ?? {}))
+      if (selected !== draft.signatures?.[level]) throw new Error("Respec in Greyhaven to replace a chosen signature.");
     const p = forgeCharacter(draft, this.C);
     if (!p.valid) throw new Error(p.errors.map((e) => e.text).join("\n"));
     const level = p.state.level;
     if (
-      level > h.earnedLevel ||
+      level > trainingTarget(h) ||
       level < h.preview.state.level ||
       level > FORGE_LEVEL_CAP
     )
@@ -87,7 +92,10 @@ export const forgeGameMethods = {
         next.preview.summary.maximumHp -
         h.preview.summary.maximumHp,
     );
-    next.survival.hp = Math.min(h.survival.hp, next.survival.maxHp);
+    const growth = !respec && deedsHero(draft) && level > h.preview.state.level && h.survival.hp > 0
+      ? Math.max(0, next.survival.maxHp - h.survival.maxHp) : 0;
+    next.survival.hp = Math.min(h.survival.hp + growth, next.survival.maxHp);
+    if (deedsHero(draft)) next.sp = Math.min(h.sp ?? next.preview.summary.maximumSp, next.preview.summary.maximumSp);
     next.respecGritSpent = Math.max(
       h.respecGritSpent ?? 0,
       h.preview.summary.gritGranted - h.survival.gritAvailable,
@@ -117,10 +125,18 @@ export const forgeGameMethods = {
         /item-ordinary-(light|medium|heavy)-armor/,
       )?.[1];
       if (
-        tier &&
+        tier && !deedsHero(draft) &&
         !next.preview.state.abilities.includes(`ability-wear-${tier}-armor`)
       )
         item.worn = false;
+    }
+    if (respec && deedsHero(draft) && !deedsHero(h.draft)) {
+      next.scars = [...(h.scars ?? []), ...h.wounds.map(w => ({text:w.record.injury, source:w.id, depth:this.campaign.depth}))];
+      next.injuryHistory = [...(h.injuryHistory ?? []), ...structuredClone(h.wounds)];
+      next.conditions = next.conditions.filter(c => !c.woundId);
+      next.wounds = [];
+      next.survival.wounds = next.scars.length;
+      delete next.survival.recovery;
     }
     next.preview = gearPreview(this.R, this.C, next);
     this.R.validateSurvival(next.survival);
@@ -158,7 +174,7 @@ export const forgeGameMethods = {
   trainForge(index) {
     const h = this.party[index],
       draft = structuredClone(h.draft);
-    draft.progression.level = Math.min(FORGE_LEVEL_CAP, h.earnedLevel);
+    draft.progression.level = trainingTarget(h);
     if (draft.progression.level <= h.preview.state.level)
       throw new Error("No untrained level is available.");
     return this.forgeCommit(index, draft);

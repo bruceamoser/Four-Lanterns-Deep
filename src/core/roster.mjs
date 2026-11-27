@@ -1,3 +1,4 @@
+import {missingSignatures} from "./forge.mjs";
 import { xpForLevel, levelForXP, legacyXPForLevel } from "./experience.mjs";
 
 export function storedHero(hero) {
@@ -39,20 +40,21 @@ export function validateRoster(campaign) {
   const heroes = [...campaign.party, ...campaign.reserve];
   if (new Set(heroes.map((h) => h.heroId)).size !== heroes.length)
     throw new Error("A hero cannot occupy more than one roster position.");
-  const fallen = new Set();
+  const fallen = new Set(), memorialIds = new Set();
   for (const entry of campaign.fallenHeroes) {
     if (
       !entry?.hero ||
       entry.heroId !== entry.hero.heroId ||
       entry.hero.survival.status !== "dead" ||
-      fallen.has(entry.heroId) ||
+      memorialIds.has(entry.heroId) ||
       !Number.isSafeInteger(entry.depth) ||
       entry.depth < 1 ||
       !Number.isSafeInteger(entry.expedition) ||
       entry.expedition < 0
     )
       throw new Error("Invalid fallen hero record.");
-    fallen.add(entry.heroId);
+    memorialIds.add(entry.heroId);
+    if (entry.returnedAt == null) fallen.add(entry.heroId);
   }
   for (const h of [...heroes, ...campaign.fallenHeroes.map((e) => e.hero)]) {
     if (
@@ -84,10 +86,16 @@ export const rosterMethods = {
     for (const h of [...this.party, ...this.campaign.reserve]) {
       if (
         h.survival.status !== "dead" ||
-        this.campaign.fallenHeroes.some((e) => e.heroId === h.heroId)
+        this.campaign.fallenHeroes.some((e) => e.heroId === h.heroId && e.returnedAt == null)
       )
         continue;
+      const earlier = this.campaign.fallenHeroes.find(e => e.heroId === h.heroId);
+      if (earlier) {
+        earlier.previousDeath = { depth: earlier.depth, expedition: earlier.expedition, cause: earlier.cause, returnedAt: earlier.returnedAt };
+        this.campaign.fallenHeroes.splice(this.campaign.fallenHeroes.indexOf(earlier), 1);
+      }
       this.campaign.fallenHeroes.push({
+        ...(earlier ? { previousDeath: earlier.previousDeath } : {}),
         heroId: h.heroId,
         hero: storedHero(h),
         name: h.name,
@@ -101,7 +109,45 @@ export const rosterMethods = {
       (h) => h.survival.status !== "dead",
     );
   },
+  returnRite(heroId, perform = false) {
+    const entry = this.campaign.fallenHeroes.find(e => e.heroId === heroId);
+    if (this.mode !== "town") return "Visit the Shrine in Greyhaven.";
+    if (!entry || entry.returnedAt != null || entry.hero.returnedOnce) return "This hero has already returned once.";
+    const ingredients = ["pearl", "revenant"].map(key => {
+      for (const hero of this.livingRoster()) {
+        const item = hero.treasure?.find(i => i.carried && i.find === key);
+        if (item) return { hero, item };
+      }
+    });
+    if (ingredients.some(i => !i)) return "Requires a Grave pearl and Ash of the Last Witness.";
+    if (!perform) return "";
+    const position = this.party.findIndex(h => h.heroId === heroId);
+    const h = structuredClone(position >= 0 ? this.party[position] : entry.hero);
+    h.returnedOnce = true;
+    h.survival = this.R.survivalState({ hp: 1, maxHp: h.survival.maxHp, gritAvailable: h.survival.gritAvailable, wounds: h.survival.wounds });
+    h.conditions = [];
+    h.buffs = {};
+    h.powerEffects = [];
+    h.sp = h.draft.forge?.version === 2 ? 0 : h.sp;
+    this.refreshHero(h);
+    for (const {hero,item} of ingredients) {
+      this.removePortableItem(hero, item.instanceId);
+      this.refreshHero(hero);
+    }
+    entry.returnedAt = this.clock().seconds;
+    if (position >= 0) this.party[position] = h;
+    else {
+      h.id = "reserve-" + h.heroId;
+      h.selected = false;
+      this.campaign.reserve.push(h);
+    }
+    this.note(h.name + " returns from the Hall at 1 HP. Both offerings are consumed.");
+    this.emit("party");
+    this.emit("change");
+    return "";
+  },
   createRecruit(draft) {
+    if (missingSignatures(draft).length) throw new Error("Choose a class signature before registering this hero.");
     if (!["town", "defeat"].includes(this.mode))
       throw new Error("Create heroes in Greyhaven.");
     if ((draft.progression?.level ?? 1) !== 1)
@@ -122,7 +168,7 @@ export const rosterMethods = {
     if (!Number.isInteger(index) || !this.party[index])
       throw new Error("Choose one of the four party slots.");
     const h = this.livingRoster().find((hero) => hero.heroId === heroId);
-    if (!h || this.campaign.fallenHeroes.some((e) => e.heroId === heroId))
+    if (!h || this.campaign.fallenHeroes.some((e) => e.heroId === heroId && e.returnedAt == null))
       throw new Error("That hero is no longer available.");
     this.recordFallen();
     const previous = this.party[index],

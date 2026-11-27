@@ -60,8 +60,9 @@ export function populateEncounters(
             BOSSES[Math.min(BOSSES.length - 1, Math.floor(map.depth / 5) - 1)],
         )
       : null;
-    const chosen = boss ? [boss] : [];
-    let total = boss?.cv ?? 0;
+    const keeper = room.vault && records.find(c=>c.id==="creature-kobold-trapkeeper");
+    const chosen = boss ? [boss] : keeper ? [keeper] : [];
+    let total = chosen[0]?.cv ?? 0;
     while (chosen.length < setting.count) {
       const choices = pool.filter(
         (c) =>
@@ -107,6 +108,7 @@ export function populateEncounters(
           maxHp: c.hp.max,
           cv: c.cv,
           boss: !!boss && j === 0,
+          ...(keeper && j===0 ? {vaultKeeper:true} : {}),
           stability: c.defenses.stability,
           conditions: [],
           ammunition: 6,

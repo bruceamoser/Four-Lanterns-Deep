@@ -89,7 +89,8 @@ function wound(g, h, exceptional = false) {
 
 test("new training uses game designs while originals and legacy heroes remain valid", () => {
   const g = fresh();
-  assert.equal(Object.keys(POWERS).length, 265);
+  assert.equal(Object.values(POWERS).filter(p=>!p.deedsOnly).length,265);
+  assert.equal(Object.values(POWERS).filter(p=>p.deedsOnly).length,18);
   assert.equal(
     C.choices.some((c) => c.gamePower),
     false,
@@ -114,7 +115,7 @@ test("new training uses game designs while originals and legacy heroes remain va
 });
 test("every active game power validates a target and executes its declared effects", () => {
   for (const p of Object.values(POWERS).filter(
-    (p) => p.category !== "passive",
+    (p) => !p.deedsOnly && p.category !== "passive",
   )) {
     const g = arena(),
       h = g.active,

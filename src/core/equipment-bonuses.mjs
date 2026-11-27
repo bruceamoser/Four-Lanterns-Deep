@@ -248,6 +248,12 @@ add(
   [...forms.weapon, ...forms.armor, "shield", "brooch", "cloak", "hat", "kit"],
   "Light source: toggle magical illumination within 3 squares while equipped; uses no fuel.",
 );
+for (const [id,name,themes] of [
+  ["gravebane","Gravebane",["crypt","haunted"]],["packbreaker","Packbreaker",["beasts","vermin"]],
+  ["emberquench","Emberquench",["infernal","elementals"]],["wardhunter","Wardhunter",["kobolds","goblins"]],
+]) add(id,name,"slay",forms.weapon,"+2 damage against "+themes.join(" and ")+" creatures.",{themes,value:2,edition:4});
+add("bloodglass","Bloodglass","reckless",forms.weapon,"+2 weapon damage. While this weapon is readied, suffer 1 Bane on defense.",{value:2,edition:4});
+add("lifeleech","Thirsting","leech",forms.weapon,"Restore 2 HP on a Strong weapon hit that removes enemy HP.",{value:2,edition:4,discipline:"life",rank:1});
 export function strongest(h, effect, predicate = () => true) {
   return Math.max(
     0,
@@ -293,7 +299,7 @@ export function protectCondition(h, key, rating) {
 export function equipmentRollBonus(h, context = {}) {
   const spec = context.spec,
     mode = context.mode;
-  let result = 0;
+  let result = mode==="defense" && strongest(h,"reckless") ? -1 : 0;
   if (mode === "attack" && spec?.weapon)
     result += Math.max(
       weaponBonus(h, spec, "accuracy"),

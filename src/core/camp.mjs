@@ -1,3 +1,4 @@
+import { deedsHero } from "./deeds-development.mjs";
 import { challenge } from "./challenge.mjs";
 import {
   campSnapshot,
@@ -90,7 +91,7 @@ export function campPeriod(
       ? (assignments[worker.heroId]?.[Math.floor(period / 4) % 2] ?? "guard")
       : null,
     sleepers: party.filter(
-      (h) => h !== worker && h.survival.status === "active",
+      (h) => h !== worker && (h.survival.status === "active" || (deedsHero(h.draft) && h.survival.status === "stable")),
     ),
   };
 }
@@ -186,6 +187,7 @@ export const campMethods = {
     );
   },
   campRecoveryHours(assignments, order) {
+    if (this.party.every(h => deedsHero(h.draft))) return 8;
     const need = new Map(
       this.party
         .filter((h) => h.survival.status === "active")
@@ -393,7 +395,7 @@ export const campMethods = {
     });
     for (const h of period.sleepers) {
       const before = h.survival.hp;
-      h.survival = this.R.receiveHealing(h.survival, 2);
+      if (!deedsHero(h.draft)) h.survival = this.R.receiveHealing(h.survival, 2);
       h.survival.hp = Math.max(
         before,
         Math.min(h.survival.hp, this.healingMaximum(h)),
@@ -408,7 +410,7 @@ export const campMethods = {
         c.targets?.[period.worker.heroId]?.[Math.floor(c.elapsed / 4) % 2],
       );
     if (c.report)
-      for (const h of this.party) {
+      for (const h of this.party.filter(h => !deedsHero(h.draft))) {
         const hp = before.find((p) => p.id === h.heroId)?.hp ?? h.survival.hp;
         c.report.healed[h.heroId] =
           (c.report.healed[h.heroId] ?? 0) + Math.max(0, h.survival.hp - hp);
@@ -434,6 +436,8 @@ export const campMethods = {
         const detected = reverie || (roll && roll.tier !== "weak");
         this.enemies.push(...enemies);
         c.status = "interrupted";
+        c.safeHours = 0;
+        c.safeSleep = {};
         this.campEvent(
           `${period.worker?.name ?? "Nobody"} is on watch${reverie ? "; wakeful reverie warns the camp" : ""}. ${detected ? "The approaching creatures are spotted; the company takes the opening." : "Ambush! The creatures take the opening."}`,
         );
@@ -446,6 +450,20 @@ export const campMethods = {
           watch: period.worker?.heroId,
         };
       }
+    }
+    c.safeHours = (c.safeHours ?? 0) + 1;
+    c.safeSleep ??= {};
+    for (const h of period.sleepers) {
+      c.safeSleep[h.heroId] = (c.safeSleep[h.heroId] ?? 0) + 1;
+      if (this.recoverBrief(h)) this.campEvent(h.name + " completes a brief rest.");
+    }
+    if (c.safeHours >= 8) for (const h of this.party) {
+      if ((c.safeSleep[h.heroId] ?? 0) >= 6 && this.recoverNight(h))
+        this.campEvent(h.name + " completes a provisioned night’s rest.");
+    }
+    if (c.report) for (const h of this.party.filter(h => deedsHero(h.draft))) {
+      const old = before.find(p => p.id === h.heroId);
+      c.report.healed[h.heroId] = (c.report.healed[h.heroId] ?? 0) + Math.max(0, h.survival.hp - (old?.hp ?? h.survival.hp));
     }
     if (c.elapsed >= c.total) {
       c.status = "complete";

@@ -1,3 +1,5 @@
+import { deedsHero } from "./deeds-development.mjs";
+import { delveFind } from "./delve-finds.mjs";
 import { EQUIPMENT_BONUSES, strongest } from "./equipment-bonuses.mjs";
 import { combineSupplyDice, collapseSupplyDice } from "./supply-dice.mjs";
 import { MATERIAL_STOCKS, stockForItem } from "./supply-stock.mjs";
@@ -269,8 +271,8 @@ const basesForDepth = (d) =>
     (k) => (k !== "medium" || d >= 3) && (k !== "heavy" || d >= 7),
   );
 export function magicItem(seed, depth = 1, options = {}) {
-  if ((options.revision ?? 3) === 3)
-    return approvedMagicItem(seed, depth, options);
+  if ([3, 4].includes(options.revision ?? 4))
+    return approvedMagicItem(seed, depth, { ...options, revision: options.revision ?? 4 });
   const old = legacyMagicItem(seed, depth, options);
   const alternatives = {
     ram: ["push", "capacity", "protect-dazed", "armorward"],
@@ -458,7 +460,7 @@ function approvedMagicItem(seed, depth, options) {
     def = ITEM_BASES[base];
   if (!def) throw new Error("Unknown treasure form.");
   const pool = Object.keys(EQUIPMENT_BONUSES).filter((k) =>
-    EQUIPMENT_BONUSES[k].allowed.includes(base),
+    EQUIPMENT_BONUSES[k].allowed.includes(base) && (EQUIPMENT_BONUSES[k].edition ?? 1) <= (options.revision ?? 3),
   );
   const relicAffixes = {
     "cinder-crown": ["armorward", "competence-flame"],
@@ -475,7 +477,7 @@ function approvedMagicItem(seed, depth, options) {
     : (options.power ?? (depth >= 7 && rng.next() < 0.35 ? 2 : 1));
   const first = pool[rng.int(0, pool.length - 1)],
     rest = pool.filter((k) => k !== first);
-  const affixes = relic
+  let affixes = relic
     ? relicAffixes[options.relic]
     : (options.affixes ??
       (depth >= 3 && rng.next() < 0.55
@@ -490,10 +492,15 @@ function approvedMagicItem(seed, depth, options) {
     affixes.some((k) => !pool.includes(k))
   )
     throw new Error("Invalid enchantment for this form.");
+  if (options.revision === 4 && power === 2 && affixes.length === 1) {
+    const compatible = pool.filter(id => id !== affixes[0] && EQUIPMENT_BONUSES[id].effect !== EQUIPMENT_BONUSES[affixes[0]].effect);
+    if (compatible.length) affixes = [...affixes, compatible[rng.int(0, compatible.length - 1)]];
+  }
   const effects = affixes.map((id) => {
     const { allowed, ...e } = EQUIPMENT_BONUSES[id];
     return {
       ...e,
+      ...(options.revision === 4 && ENCHANTMENTS[id]?.discipline && e.effect === "damage" ? { discipline: ENCHANTMENTS[id].discipline, rank: 1 } : {}),
       text:
         e.text +
         (base === "kit" && e.effect === "competence"
@@ -513,7 +520,7 @@ function approvedMagicItem(seed, depth, options) {
     icon: def.icon,
     seed,
     depth,
-    revision: 3,
+    revision: options.revision ?? 3,
     relic: options.relic ?? null,
     power,
     affixes,
@@ -620,6 +627,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
     const item =
       saved.kind === "ordinary"
         ? ordinaryItem(C, saved.catalogId, saved.instanceId)
+        : saved.kind === "find" ? delveFind(saved.find, saved.instanceId, saved.appearance)
         : saved.kind === "scroll"
           ? recallScroll(saved.seed, saved.instanceId)
           : magicItem(saved.seed, saved.depth, {
@@ -633,6 +641,8 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
       throw new Error("Invalid saved treasure identity.");
     return {
       ...item,
+      veiled: !!saved.veiled,
+      facts: Array.isArray(saved.facts) ? [...saved.facts] : [],
       hands:
         saved.kind === "ordinary" &&
         item.definition.handChoices?.includes(saved.hands)
@@ -708,7 +718,11 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
     const tier = armor.catalogId.match(
       /item-ordinary-(light|medium|heavy)-armor/,
     )?.[1];
-    if (tier && p.state.abilities.includes(`ability-wear-${tier}-armor`))
+    if (tier && deedsHero(draft) && !p.state.abilities.includes(`ability-wear-${tier}-armor`)) {
+      const penalty = {light:1,medium:2,heavy:3}[tier];
+      p.attributes.agility -= penalty;
+    }
+    if (tier && (deedsHero(draft) || p.state.abilities.includes(`ability-wear-${tier}-armor`)))
       p.resistances.physical = Math.max(
         p.resistances.physical ?? 0,
         { light: 1, medium: 2, heavy: 3 }[tier],
@@ -721,7 +735,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
   );
   p.resistances.physical = Math.min(
     3,
-    (p.resistances.physical ?? 0) + physicalBonus,
+    deedsHero(draft) ? Math.max(p.resistances.physical ?? 0, physicalBonus) : (p.resistances.physical ?? 0) + physicalBonus,
   );
   for (const e of p.equipmentEffects.filter(
     (e) => e.effect === "resistance" && e.type !== "physical",
@@ -747,7 +761,7 @@ export function gearPreview(R, C, hero, draft = hero.draft) {
   );
   p.summary.speed = Math.max(
     0,
-    p.summary.unencumberedSpeed -
+    p.summary.unencumberedSpeed + (deedsHero(draft) ? p.attributes.agility - draft.attributes.agility : 0) -
       p.inventory.encumbrance +
       Math.max(
         0,
@@ -817,7 +831,8 @@ export const treasureMethods = {
       ),
     ];
     for (const i of existing.filter((i) => i.base)) {
-      seen.add(i.definition.name);
+      seen.add(i.appraisedName ?? i.definition.name);
+      if (!i.relic && i.affixes?.length) seen.add("powers:"+i.base+":"+[...i.affixes].sort().join("+"));
       seen.add(`item:${i.instanceId}`);
       if (i.relic) seen.add(`relic:${i.relic}`);
     }
@@ -830,12 +845,15 @@ export const treasureMethods = {
     }
     for (let n = 0; n < 1024; n++) {
       const item = magicItem((seed + n * 104729) >>> 0, depth, options);
+      const combination = "powers:" + item.base + ":" + [...item.affixes].sort().join("+");
+      if (!item.relic && seen.has(combination)) continue;
       if (
         seen.has(item.definition.name) ||
         seen.has(`item:${item.instanceId}`) ||
         (item.relic && seen.has(`relic:${item.relic}`))
       )
         continue;
+      seen.add(combination);
       seen.add(item.definition.name);
       seen.add(`item:${item.instanceId}`);
       if (item.relic) seen.add(`relic:${item.relic}`);

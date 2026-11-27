@@ -54,12 +54,12 @@ test("camp saves resume the next period without repeating healing or rewards, re
   assert.equal(copy.campaign.camp.elapsed, 1);
   assert.deepEqual(
     copy.party.map((h) => h.survival.hp),
-    [1, 3, 3, 3],
+    [1, 7, 7, 7],
   );
   copy.campHour();
   assert.deepEqual(
     copy.party.map((h) => h.survival.hp),
-    [3, 3, 5, 5],
+    [7, 7, 7, 7],
   );
   const bad = structuredClone(copy.snapshot());
   bad.camp.assignments[bad.party[0].heroId] = ["guard", "cheat"];
@@ -140,19 +140,18 @@ function medical(g) {
   healer.preview.inventory.items.push(dressing);
   return { healer, dressing };
 }
-test("HP care adds four per learned healing skill, requires dressings and pays a supply check", () => {
+test("Deeds first aid uses the Knowledge band and a dressing, and is limited per patient", () => {
   const g = quiet(),
     { healer, dressing } = medical(g),
     patient = g.party[0];
   g.startCamp(plan(g));
   patient.survival.hp = 1;
-  const skills = g.campHealSkills(healer).length;
-  assert.ok(skills >= 2);
+  g.heroRoll = () => ({ tier: "standard" });
   g.supplyDie = () => 1;
   g.campMedicalDuty(healer, "heal", { heroId: patient.heroId });
   assert.equal(
     patient.survival.hp,
-    Math.min(patient.survival.maxHp, 1 + 4 * skills),
+    Math.min(patient.survival.maxHp, 1 + 4),
   );
   assert.equal(healer.supplies[dressing.instanceId], 0);
   const hp = patient.survival.hp;
@@ -160,7 +159,7 @@ test("HP care adds four per learned healing skill, requires dressings and pays a
   assert.equal(patient.survival.hp, hp);
   assert.match(
     g.campMedicalReason(g.party[1], "heal", { heroId: patient.heroId }),
-    /no learned/,
+    /received first aid/,
   );
 });
 test("normal wounds use recovery rolls, one attempt per day across healers, and persist across save/reload", () => {
@@ -263,8 +262,8 @@ test("completed camp reports retain actual foraging and healing through save/loa
   for (let i = 0; i < 8; i++) g.campHour();
   const report = g.campaign.camp.report;
   assert.equal(report.start[0].hp, 1);
-  assert.equal(report.end[0].hp, 13);
-  assert.equal(report.healed[g.party[0].heroId], 12);
+  assert.equal(report.end[0].hp, g.party[0].survival.maxHp);
+  assert.equal(report.healed[g.party[0].heroId], g.party[0].survival.maxHp - 1);
   assert.equal(
     report.events.filter((e) => e.includes("replenished dressings")).length,
     4,
@@ -317,7 +316,7 @@ test("chosen camp order drives work, forecasts and save/load without reordering 
   assert.equal(campPeriod(g.party, duties, 0, order).worker.heroId, order[0]);
   g.campHour();
   assert.equal(g.party[3].survival.hp, 1);
-  assert.equal(g.party[0].survival.hp, 3);
+  assert.equal(g.party[0].survival.hp, 7);
   const copy = new Game(R, C);
   copy.load(structuredClone(g.snapshot()), { resume: false });
   assert.deepEqual(copy.campaign.camp.order, order);

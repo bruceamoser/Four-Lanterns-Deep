@@ -1,4 +1,4 @@
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export function serialize(campaign) {
   return JSON.stringify({
     version: SAVE_VERSION,
@@ -12,7 +12,7 @@ export function deserialize(text) {
   const s = JSON.parse(text),
     c = s.campaign;
   if (
-    s.version !== SAVE_VERSION ||
+    ![2, SAVE_VERSION].includes(s.version) ||
     !c ||
     !Array.isArray(c.party) ||
     c.party.length !== 4 ||

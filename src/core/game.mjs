@@ -1,3 +1,9 @@
+import { techniqueMethods } from "./deeds-techniques.mjs";
+import { furnishDelve, vaultMethods } from "./deeds-vault.mjs";
+import { deedsDamage, coverBetween } from "./deeds-damage.mjs";
+import { deedsCareMethods, deathBand } from "./deeds-care.mjs";
+import { deedsHero } from "./deeds-development.mjs";
+import { discoveryMethods } from "./discoveries.mjs";
 import { strongest, weaponBonus } from "./equipment-bonuses.mjs";
 import { creatureAiMethods } from "./creature-ai.mjs";
 import { migrateSimpleStocks } from "./supply-stock.mjs";
@@ -75,6 +81,13 @@ export class Game {
     this.R = catalogs.forge
       ? { ...rules, workshopCharacter: forgeCharacter }
       : rules;
+    if (catalogs.forge) {
+      for (const method of ["stabilize", "receiveHealing"]) this.R[method] = (...args) => {
+        const next = rules[method](...args);
+        if (next.successes !== undefined && next.status !== "dying") next.successes = 0;
+        return next;
+      };
+    }
     this.C = bulkCatalog(catalogs);
     this.notify = notify;
     this.listeners = [];
@@ -134,6 +147,7 @@ export class Game {
         maxHp: preview.summary.maximumHp,
         gritAvailable: preview.summary.gritGranted,
       }),
+      ...(preview.summary.maximumSp !== undefined ? { sp: preview.summary.maximumSp } : {}),
       wounds: [],
       conditions: [],
       buffs: {},
@@ -179,6 +193,7 @@ export class Game {
     this.movementConsent = new Set();
     this.pendingDefense = null;
     this.pendingProvocation = null;
+    this.pendingCue = null;
     this.busy = false;
     this.selected = 0;
     this.log = [];
@@ -233,6 +248,9 @@ export class Game {
       const p = gearPreview(this.R, this.C, h);
       if (!p.valid)
         throw new Error("A saved hero no longer passes character validation.");
+      if (p.summary.maximumSp !== undefined &&
+          (!Number.isSafeInteger(h.sp) || h.sp < 0 || h.sp > p.summary.maximumSp))
+        throw new Error("Saved Spell Points are outside this hero's capacity.");
       h.preview = p;
       h.conditions ??= [];
       h.buffs ??= {};
@@ -275,6 +293,8 @@ export class Game {
         }
       }
       this.R.validateSurvival(h.survival);
+      if (deedsHero(h.draft) && (!Number.isInteger(h.survival.successes ?? 0) || (h.survival.successes ?? 0) < 0 || (h.survival.successes ?? 0) > 2 || (h.avertDeath != null && typeof h.avertDeath !== "boolean")))
+        throw new Error("Invalid Deeds survival record.");
       this.R.validateContributions(h.conditions);
       if (
         !Number.isInteger(h.earnedLevel) ||
@@ -315,12 +335,14 @@ export class Game {
       if (actor >= 0) this.selected = actor;
     }
     this.party.forEach((h, i) => (h.selected = i === this.selected));
+    this.pendingCue = c.pendingCue ?? null;
+    if (this.pendingCue && (this.mode !== "combat" || this.pendingCue.owner !== this.encounter?.current || !this.enemies.some(e=>e.id===this.pendingCue.enemy) || !Number.isInteger(this.pendingCue.steps) || this.pendingCue.steps<1 || this.pendingCue.steps>3)) throw new Error("Invalid saved tactical step.");
     this.pendingProvocation = c.pendingProvocation ?? null;
     if (this.pendingProvocation) {
       const p = this.pendingProvocation;
       if (
         this.mode !== "combat" ||
-        p.actor !== this.encounter.current ||
+        (p.actor !== this.encounter.current && !(p.operation?.kind === "cue-step" && p.operation.owner === this.encounter.current && this.party.some(h=>h.id===p.actor))) ||
         !Array.isArray(p.attackers) ||
         !Number.isInteger(p.cursor) ||
         p.cursor < 0 ||
@@ -330,6 +352,8 @@ export class Game {
           "ability",
           "recovery",
           "potion",
+          "find",
+          "cue-step",
           "equip",
           "stand",
           "torch",
@@ -390,7 +414,8 @@ export class Game {
         hero: this.party.find((h) => h.id === this.pendingDefense.target),
         enemy: this.enemies.find((e) => e.id === this.pendingDefense.attacker),
       });
-    } else if (this.pendingProvocation) {
+    } else if (this.pendingCue) this.emit("tactical-step");
+    else if (this.pendingProvocation) {
       this.continueProvocation();
     } else if (
       this.mode === "combat" &&
@@ -422,6 +447,7 @@ export class Game {
       budgets: this.budgets,
       pendingDefense: this.pendingDefense,
       pendingProvocation: this.pendingProvocation,
+      pendingCue:this.pendingCue,
       woundNotices: this.woundNotices ?? [],
       floor: { map: this.map, seen: this.seen, enemies: this.enemies },
     };
@@ -435,6 +461,7 @@ export class Game {
     );
     this.pendingInteraction = null;
     this.map = saved?.map ?? generate(this.campaign.seed, this.campaign.depth);
+    if (!saved && this.C.forge) furnishDelve(this.map);
     prepareLighting(this.map);
     if (!this.map.waterSources) {
       const room = this.map.rooms[1] ?? this.map.rooms[0] ?? this.map.start;
@@ -457,6 +484,7 @@ export class Game {
       this.campaign.lootGeneration = (this.campaign.lootGeneration ?? 0) + 1;
     const treasureSeed =
       this.campaign.seed + (this.campaign.lootGeneration ?? 0) * 32452843;
+    if (!saved && this.C.forge) this.map.lootSeed = treasureSeed >>> 0;
     if (!this.map.xpClaims) {
       this.map.xpClaims = saved
         ? [
@@ -493,11 +521,20 @@ export class Game {
       this.map.chests.forEach((c, i) => {
         if (saved && (c.opened || c.items !== undefined)) return;
         c.items = [
-          this.uniqueMagic(
-            (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0,
-            this.campaign.depth,
-          ),
+          this.map.lootSeed === undefined
+            ? this.uniqueMagic((treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth)
+            : this.treasureDraw(c.vault ? "vault" : c.dropped ? "loose" : "coffer", (treasureSeed + this.campaign.depth * 98317 + i * 131) >>> 0, this.campaign.depth),
         ].filter(Boolean);
+        if (!saved && this.C.forge && !c.dropped) {
+          const local = new Random((treasureSeed + i*76543 + this.map.depth) >>> 0);
+          const draws = c.vault ? local.int(2,3) : c.grade==="iron" ? local.int(1,2)+local.int(1,2) : local.next()<.12 ? 0 : local.int(1,2);
+          if (!draws) c.items=[];
+          for (let j=1;j<draws;j++) {
+            const next=this.treasureDraw(c.vault ? "vault" : "coffer",local.int(0,2147483646),this.map.depth);
+            if (next) c.items.push(next);
+          }
+        }
+        if (c.vault && !saved) c.items.push(this.createFind("antitoxin","vault-bottle-"+(this.map.lootSeed ?? treasureSeed)));
       });
     if (!saved && this.map.chests[0])
       this.map.chests[0].items.push(
@@ -816,7 +853,8 @@ export class Game {
       const enchantments = weapon
         ? activeItemEffects(h, weapon).filter((e) => e.effect === "damage")
         : [];
-      const damage = this.R.damageEvent({
+      const damage = (deedsHero(h.draft) ? deedsDamage : this.R.damageEvent)({
+        immunities: this.creature(target)?.immunities ?? [],
         components: [
           {
             type: spec.type,
@@ -843,7 +881,7 @@ export class Game {
         weaknesses: this.creatureWeaknesses(target),
       });
       this.breakConcealment(h);
-      damage.total = this.absorbPowerDamage(target, damage.total, spec.type);
+      damage.total = this.absorbPowerDamage(target, damage.total, spec.type, deedsHero(h.draft));
       target.hp = Math.max(0, target.hp - damage.total);
       target.conditions ??= [];
       for (const [condition, rating] of [
@@ -925,6 +963,7 @@ export class Game {
   }
   defeatEnemy(e) {
     if (e.hp <= 0) {
+      this.creatureTreasure(e);
       const zones = this.map.zones ?? [];
       this.map.zones = zones.filter(
         (z) => !(z.source === e.id && z.npcUntilTurn !== undefined),
@@ -978,9 +1017,10 @@ export class Game {
     if (!plan.ready)
       throw new Error("This condition combination needs a duration ruling.");
     for (const event of plan.events) {
-      e.hp = Math.max(0, e.hp - event.damage.total);
+      const damage = this.party.some(h=>deedsHero(h.draft)) ? event.damage.subtotal : event.damage.total;
+      e.hp = Math.max(0,e.hp-damage);
       this.note(
-        `${e.name}: ${event.damage.total} ${event.condition} damage at turn end.`,
+        `${e.name}: ${damage} ${event.condition} damage at turn end.`,
       );
     }
     e.conditions = plan.contributions;
@@ -1039,6 +1079,7 @@ export class Game {
         : this.creatureAction(e),
       card = this.creature(e);
     if (!opportunity) {
+      this.rememberCreature(e,"actions",action.name);
       e.aiState ??= {};
       (e.aiState.lastActions ??= {})[action.name] = e.powerTurn ?? 0;
     }
@@ -1076,7 +1117,7 @@ export class Game {
       this.attribute(h, "knowledge") > this.attribute(h, action.attribute)
         ? "knowledge"
         : action.attribute;
-    const result = this.rollFor(h, defenseAttribute, boons, banes, {
+    const result = this.rollFor(h, defenseAttribute, boons + (deedsHero(h.draft) ? coverBetween(this.map,e,h) : 0), banes, {
       mode: "defense",
       target: e,
       type: action.type,
@@ -1089,7 +1130,7 @@ export class Game {
       projectile: !!action.ammunition,
     });
     const outcome = action.outcomes[result.tier];
-    const damage = this.R.damageEvent({
+    const damage = (deedsHero(h.draft) ? deedsDamage : this.R.damageEvent)({
       components: [
         {
           type: action.type,
@@ -1107,7 +1148,7 @@ export class Game {
         })),
       ),
     });
-    this.suffer(h, damage.total, action.type, e);
+    damage.total = this.suffer(h, damage.total, action.type, e, deedsHero(h.draft)).applied;
     for (const m of outcome.matchAll(
       /(Burning|Freezing|Bleeding|Poisoned|Slowed|Dazed|Paralyzed|Frightened|Blinded|Deafened|Grappled) (\d+)/gi,
     ))
@@ -1279,7 +1320,7 @@ export class Game {
         return "Choose wearable equipment.";
       if (
         operation === "wear" &&
-        tier &&
+        tier && !deedsHero(h.draft) &&
         !h.preview.state.abilities.includes(`ability-wear-${tier}-armor`)
       )
         return `Requires ${tier} armor training.`;
@@ -1860,6 +1901,7 @@ export class Game {
       h.powerUses = {};
       h.powerResourceUsed = [];
       h.powerPendingManeuver = false;
+      delete h.sustainedWard;
       h.powerTurn = 0;
     });
     for (const e of opposition) {
@@ -1911,6 +1953,7 @@ export class Game {
     this.encounter = this.R.chooseParticipant(this.encounter, h.id);
     h.survival = this.R.startSurvivalTurn(h.survival, h.survival.ownTurn + 1);
     h.buffs = {};
+    for (const ally of this.party) if (ally.opening?.owner===h.id) delete ally.opening;
     h.powerTurn = (h.powerTurn ?? 0) + 1;
     this.surfaceContact(h);
     this.budgets[h.id] = this.R.startTurn({
@@ -1930,6 +1973,7 @@ export class Game {
   advance() {
     if (
       this.suspended ||
+      this.pendingCue ||
       this.pendingDefense ||
       this.pendingProvocation ||
       this.mode !== "combat" ||
@@ -1966,6 +2010,8 @@ export class Game {
             )),
       )
     ) {
+      for (const h of this.party) this.endWard(h);
+      this.recordScars();
       this.awardEncounterXP(
         this.encounter.roster
           .filter((r) => r.side === "opposition")
@@ -2086,6 +2132,10 @@ export class Game {
     e.powerTurn = (e.powerTurn ?? 0) + 1;
     this.surfaceContact(e);
     this.enemyManeuver(e);
+    if (e.vaultKeeper && this.enemyCapable(e) && e.retained.includes("main") && distance(e,this.map.vault.bell) <= 1 &&
+        !e.conditions.some(c => ["grappled","paralyzed","slowed","dazed"].includes(c.key)) && this.ringVault()) {
+      this.finishEnemyTurn(e); return;
+    }
     const h = this.enemyTarget(e);
     e.aiState ??= {};
     if (h) {
@@ -2208,6 +2258,17 @@ export class Game {
 
   survivalChoice(kind) {
     const h = this.active;
+    if (deedsHero(h.draft)) {
+      if (kind === "grit") return this.useGrit(h);
+      if (kind !== "roll" || h.survival.status !== "dying" || h.survival.due !== h.survival.ownTurn)
+        throw new Error("No death roll is due.");
+      h.survival = deathBand(h.survival, this.heroRoll(h,"fortitude","death").tier, h.avertDeath !== false);
+      h.survival.due = null;
+      h.survival.choice = { kind:"roll", turn:h.survival.ownTurn, resolved:true };
+      this.note(h.name + " · " + this.deathSummary(h));
+      this.emit("change");
+      return;
+    }
     const result =
       kind === "roll" ? this.heroRoll(h, "fortitude", "death") : null;
     h.survival = this.R.resolveSurvival(
@@ -2359,7 +2420,7 @@ Object.assign(Game.prototype, ancestryGameMethods);
 
 Object.assign(Game.prototype, tacticMethods);
 
-Object.assign(Game.prototype, retrainingMethods, respecMethods);
+Object.assign(Game.prototype, retrainingMethods, respecMethods, discoveryMethods, deedsCareMethods, vaultMethods, techniqueMethods);
 
 Object.assign(Game.prototype, powerMethods, battlefieldMethods);
 Object.assign(Game.prototype, buildMethods, forgeGameMethods);

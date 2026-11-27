@@ -90,7 +90,7 @@ export const battlefieldMethods = {
           actor,
           z.kind === "fire" ? 2 : 5,
           z.kind === "fire" ? "fire" : "mental",
-          this.party.find((h) => h.id === z.source),
+          this.party.find((h) => h.id === z.source), false,
         );
         if (z.kind === "fire")
           this.powerCondition(actor, "burning", 1, z.source);

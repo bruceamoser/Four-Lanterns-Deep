@@ -39,6 +39,8 @@ export async function fillForgeHero(
   await page.locator('[data-trait="trait-dwarf-carved-history"]').click();
   await page.locator('[data-step="2"]').click();
   await page.locator("#class").selectOption("class-protector");
+  for (const select of await page.locator("[data-signature-tier]").all())
+    await select.selectOption({index:1});
   await page
     .locator(
       '[data-origin-key="class"][data-origin-discipline="discipline-guard"]',
@@ -79,7 +81,7 @@ export async function verifyForgeUI(page) {
     ).toBeVisible();
     await expect(page.locator(".forge-svg")).toBeVisible();
     await expect(page.locator(".forge-path-view")).toBeHidden();
-    await expect(page.locator(".forge-node")).toHaveCount(377);
+    await expect(page.locator(".forge-node")).toHaveCount(427);
     await page.screenshot({ path: "test-results/forge-atlas.png" });
     await chooseNode(page, "wilderness:origin", { buy: false });
     await expect(page.locator(".forge-inspector")).toContainText(
@@ -161,11 +163,11 @@ export async function verifyForgeUI(page) {
       "Heavy edge",
     );
     await page.locator("[data-confirm-refund]").click();
-    await expect(page.locator(".forge-currency b")).toHaveText("2");
+    await expect(page.locator(".forge-currency b")).toHaveText("4");
     await chooseNode(page, "arms:0:1");
-    await expect(page.locator(".forge-currency b")).toHaveText("1");
+    await expect(page.locator(".forge-currency b")).toHaveText("3");
     await chooseNode(page, "arms:0:2");
-    await expect(page.locator(".forge-currency b")).toHaveText("0");
+    await expect(page.locator(".forge-currency b")).toHaveText("2");
     await page.locator(".forge-close").click();
     await page.keyboard.press("Escape");
     await page.evaluate(() =>
@@ -175,7 +177,7 @@ export async function verifyForgeUI(page) {
     await page.locator("#sheet-training").click();
     await page.locator(".forge-train").click();
     await expect(page.locator(".forge-currency")).toContainText("LEVEL 3");
-    await expect(page.locator(".forge-currency b")).toHaveText("8");
+    await expect(page.locator(".forge-currency b")).toHaveText("19");
     await chooseNode(page, "marksmanship:origin");
     await chooseNode(page, "marksmanship:0:0");
     await chooseNode(page, "marksmanship:0:1");
@@ -193,7 +195,7 @@ export async function verifyForgeUI(page) {
       ),
     ).toEqual([2, 3, 5]);
     const d = structuredClone(drafts[0]);
-    d.progression.level = 30;
+    d.progression.level = 10;
     d.forge.nodes = [];
     learn(d, "intersection:cinder-tempest");
     d.forge.nodes = d.forge.nodes.filter(
@@ -203,7 +205,7 @@ export async function verifyForgeUI(page) {
       const g = window.__ddd.game;
       g.awardXP("forge-gate", xp, "Gate trial");
       g.forgeCommit(0, d);
-    }, {d,xp:xpForLevel(30)});
+    }, {d,xp:xpForLevel(10)});
     await page.locator('[data-hero="0"]').click();
     await page.locator("#sheet-training").click();
     await chooseNode(page, "intersection:cinder-tempest", { buy: false });

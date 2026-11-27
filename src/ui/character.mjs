@@ -1,3 +1,5 @@
+import { trainingTarget } from "../core/experience.mjs";
+import { DELVE_FINDS } from "../core/delve-finds.mjs";
 import { appearancePreviewHero } from "../core/appearance-preview.mjs";
 import { FORGE_NODES } from "../core/forge-catalog.mjs";
 import { appearanceControls } from "./appearance.mjs";
@@ -87,7 +89,7 @@ export function characterSheet({
      )
      .join(
        "",
-     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}<button id="sheet-training" class="primary">${h.earnedLevel > p.state.level ? `Level up → ${h.earnedLevel}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">Respec from beginning</button><div class="dossier-footer"></div></aside>
+     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}${h.draft.forge?.version === 2 ? `<div class="cost-note">${h.sp}/${p.summary.maximumSp} SP · ${h.survival.gritAvailable} Grit</div>${["town","exploration"].includes(game.mode) && h.survival.hp < h.survival.maxHp ? '<button id="give-first-aid">First aid · 10 min</button>' : ""}<label><input id="avert-death" type="checkbox" ${h.avertDeath !== false ? "checked" : ""}> Spend Grit on a fatal death roll</label>${["stable","dying"].includes(h.survival.status) && h.survival.gritAvailable ? '<button id="use-grit">Spend Grit now</button>' : ""}` : ""}<button id="sheet-training" class="primary">${trainingTarget(h) > p.state.level ? `Level up → ${trainingTarget(h)}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">${h.draft.forge?.version === 1 ? "Adopt Deeds rules · respec" : "Respec from beginning"}</button><div class="dossier-footer"></div></aside>
    <main class="character-details"><nav class="sheet-tabs" aria-label="Character sections">${[
      ["equipment", "pack", "Equipment"],
      ["abilities", "bolt", "Abilities"],
@@ -101,13 +103,16 @@ export function characterSheet({
      )}</nav><div class="sheet-content"></div></main></div><footer class="character-footer"><span><kbd>Esc</kbd> Close <i>·</i> Changes are saved automatically</span><span class="sheet-timing"></span></footer></section></div>`;
     root.querySelector(".close").onclick = close;
     root.querySelector("#sheet-shortcuts").onclick = () => shortcuts(index);
+    root.querySelector("#avert-death")?.addEventListener("change", e => { h.avertDeath = e.target.checked; game.emit("change"); });
+    root.querySelector("#give-first-aid")?.addEventListener("click", () => attempt(() => { game.firstAid(game.active, h); draw(); }));
+    root.querySelector("#use-grit")?.addEventListener("click", () => attempt(() => { game.useGrit(h); draw(); }));
     root.querySelector("#sheet-respec").onclick = () => respec(index);
     root.querySelector("#sheet-training").onclick = () => {
       if (game.mode !== "town")
         return game.notify(
           "Return to Greyhaven to train. Your XP and earned levels are saved.",
         );
-      if (h.earnedLevel > p.state.level || p.development.current > 0)
+      if (trainingTarget(h) > p.state.level || p.development.current > 0)
         train(index);
       else {
         tab = "build";
@@ -312,7 +317,7 @@ export function characterSheet({
             : "";
         const plan = game.gearPlan(index, i.instanceId, operation),
           replaces = items.filter((i) => plan.stow.includes(i.instanceId));
-        host.innerHTML = `<div class="inspector-icon">${icon(itemIcon(i))}</div><span class="eyebrow">${i.held ? "IN HAND" : i.worn ? "EQUIPPED" : "IN YOUR PACK"}</span><h3>${esc(i.definition.name)}</h3>${i.weaponType ? `<p class="cost-note">Weapon form: ${esc(i.definition.name.includes("Longbow") ? "Longbow" : i.weaponType)} · fixed enchanted item.</p>` : ""}<div class="item-facts"><span>Bulk<b>${i.bulk}</b></span>${i.hands ? `<span>Hands<b>${i.hands}</b></span>` : ""}${i.inventoryDie ? `<span>Supply<b>${h.supplies[i.instanceId] === 0 ? "Empty" : "d" + (h.supplies[i.instanceId] ?? i.inventoryDie)}</b></span>` : ""}</div><p>${isArmor ? "Requires the matching armor training. Worn armor contributes its printed resistance." : i.hands === 2 ? "Two-handed equipment occupies both hands." : /shield/.test(i.catalogId) ? "Hold to use Shield Block when an enemy attacks." : /melee/.test(i.catalogId) ? "Ready for melee attacks and weapon techniques." : /ranged/.test(i.catalogId) ? "A ranged weapon needs usable ammunition." : "Carried equipment and supplies contribute to bulk."}</p>${replaces.length ? `<p class="swap-note">Stows: ${replaces.map((x) => esc(x.definition.name)).join(", ")}</p>` : ""}${canHandle ? `<button data-gear="${operation}" class="primary equip-button" ${reason ? "disabled" : ""}>${icon(operation === "ready" ? "hand" : itemIcon(i))}${{ ready: "Ready weapon / gear", stow: "Stow in pack", wear: isArmor ? "Wear armor" : "Equip item", remove: "Remove item" }[operation]}</button><p class="cost-note">${esc(reason || (game.mode === "combat" ? `Costs ${plan.cost} Maneuver${plan.cost === 1 ? "" : "s"}` : "No combat action required"))}</p>` : '<p class="cost-note">Supply checks occur after successful use.</p>'}`;
+        host.innerHTML = `<div class="inspector-icon">${icon(itemIcon(i))}</div><span class="eyebrow">${i.held ? "IN HAND" : i.worn ? "EQUIPPED" : "IN YOUR PACK"}</span><h3>${esc(i.definition.name)}</h3>${i.weaponType ? `<p class="cost-note">Weapon form: ${esc(i.definition.name.includes("Longbow") ? "Longbow" : i.weaponType)} · fixed enchanted item.</p>` : ""}<div class="item-facts"><span>Bulk<b>${i.bulk}</b></span>${i.hands ? `<span>Hands<b>${i.hands}</b></span>` : ""}${i.inventoryDie ? `<span>Supply<b>${h.supplies[i.instanceId] === 0 ? "Empty" : "d" + (h.supplies[i.instanceId] ?? i.inventoryDie)}</b></span>` : ""}</div><p>${isArmor ? "Worn armor grants physical resistance. Under Deeds rules, wearing untrained armor reduces Agility by its rating." : i.hands === 2 ? "Two-handed equipment occupies both hands." : /shield/.test(i.catalogId) ? "Hold to use Shield Block when an enemy attacks." : /melee/.test(i.catalogId) ? "Ready for melee attacks and weapon techniques." : /ranged/.test(i.catalogId) ? "A ranged weapon needs usable ammunition." : "Carried equipment and supplies contribute to bulk."}</p>${replaces.length ? `<p class="swap-note">Stows: ${replaces.map((x) => esc(x.definition.name)).join(", ")}</p>` : ""}${canHandle ? `<button data-gear="${operation}" class="primary equip-button" ${reason ? "disabled" : ""}>${icon(operation === "ready" ? "hand" : itemIcon(i))}${{ ready: "Ready weapon / gear", stow: "Stow in pack", wear: isArmor ? "Wear armor" : "Equip item", remove: "Remove item" }[operation]}</button><p class="cost-note">${esc(reason || (game.mode === "combat" ? `Costs ${plan.cost} Maneuver${plan.cost === 1 ? "" : "s"}` : "No combat action required"))}</p>` : '<p class="cost-note">Supply checks occur after successful use.</p>'}`;
         if (i.inventoryDie) {
           const remaining = [
             game.supplyValue(h, i),
@@ -375,7 +380,7 @@ export function characterSheet({
               `<details class="equipment-compare"><summary>Compare equipped item</summary>${itemComparison(h, i)}</details>`,
             );
         }
-        if (i.effects?.some((e) => e.effect === "illumination")) {
+        if (!i.veiled && i.effects?.some((e) => e.effect === "illumination")) {
           host.insertAdjacentHTML(
             "beforeend",
             `<button id="item-light">${i.lightEnabled === false ? "Enable" : "Disable"} magical light</button><p class="cost-note">Fuel-free · 3 squares · active only while equipped.</p>`,
@@ -425,6 +430,24 @@ export function characterSheet({
             view.update(game.party[index]);
             draw();
           });
+        if ((i.appearance || i.veiled) && ["town","exploration"].includes(game.mode)) {
+          const diviners=game.party.map((h,n)=>({h,n})).filter(({h})=>game.canAct(h) && game.buildStat(h,"identify"));
+          if (diviners.length) {
+            host.insertAdjacentHTML("beforeend",'<label>Diviner<select id="ritual-caster">'+diviners.map(({h,n})=>'<option value="'+n+'">'+esc(h.name)+'</option>').join("")+'</select></label><button id="ritual-identify">Identify · 3 SP · 10 minutes</button>');
+            host.querySelector("#ritual-identify").onclick=()=>attempt(()=>{game.identifyRitual(Number(host.querySelector("#ritual-caster").value),index,i.instanceId);draw();});
+          }
+        }
+        if (i.kind === "find") {
+          const d = DELVE_FINDS[i.find];
+          const targets = game.findTargets(h, i);
+          const text = i.appearance ? (game.discoveries().tried.includes(i.find) ? "Tried. Its effect is still unknown." : "Its effect is unknown. Try it or pay for identification in Greyhaven.") : d.description;
+          host.insertAdjacentHTML("beforeend", `<p>${esc(text)}</p>${d.family === "reagent" ? "" : `<label class="creator-field"><span>Target</span><select id="find-target">${targets.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join("")}</select></label><button class="primary" id="use-find" ${!targets.length ? "disabled" : ""}>${d.family === "potion" ? "Drink" : d.family === "scroll" ? "Read" : "Use"}</button>`}`);
+          host.querySelector("#use-find")?.addEventListener("click", () => attempt(() => {
+            game.useFind(index, i.instanceId, host.querySelector("#find-target").value);
+            if (game.pendingDefense || game.pendingProvocation) return;
+            draw();
+          }));
+        }
         if (i.kind === "scroll") {
           const reason = game.recallReason(index);
           host.insertAdjacentHTML(
@@ -556,7 +579,7 @@ export function characterSheet({
         },
       });
     } else {
-      content.innerHTML = `<div class="section-heading"><div><span class="eyebrow">A LIFE BEFORE THE DARK</span><h3>Journey & development</h3></div><b class="level-medallion">${p.state.level}</b></div><div class="journey-grid"><div><span class="eyebrow">ORIGINS</span><h3>${esc(name(h.draft.culture.id))}</h3><p>${esc(name(h.draft.background.id))}</p><p>${esc(p.summary.languages.map((l) => l.name).join(" · "))}</p></div><div><span class="eyebrow">TRAINING</span><h3>${p.development.current} DP available</h3><p>Earned level ${h.earnedLevel} · ${p.development.spent} DP spent</p><p>Gain XP from discovery, encounters and treasure. Apply earned levels by training here.</p>${game.mode === "town" ? '<button id="train-hero" class="primary">Develop this hero</button>' : '<span class="cost-note">Return to Greyhaven to train.</span>'}</div></div>${experienceDetails(h, game.campaign.depth)}<h3 class="subheading">Disciplines</h3><div class="discipline-grid">${Object.entries(
+      content.innerHTML = `<div class="section-heading"><div><span class="eyebrow">A LIFE BEFORE THE DARK</span><h3>Journey & development</h3></div><b class="level-medallion">${p.state.level}</b></div><div class="journey-grid"><div><span class="eyebrow">ORIGINS</span><h3>${esc(name(h.draft.culture.id))}</h3><p>${esc(name(h.draft.background.id))}</p><p>${esc(p.summary.languages.map((l) => l.name).join(" · "))}</p></div><div><span class="eyebrow">TRAINING</span><h3>${p.development.current} DP available</h3><p>Earned level ${trainingTarget(h)} · ${p.development.spent} DP spent</p><p>Gain XP from discovery, encounters and treasure. Apply earned levels by training here.</p>${game.mode === "town" ? '<button id="train-hero" class="primary">Develop this hero</button>' : '<span class="cost-note">Return to Greyhaven to train.</span>'}</div></div>${experienceDetails(h, game.campaign.depth)}<h3 class="subheading">Disciplines</h3><div class="discipline-grid">${Object.entries(
         p.state.ranks,
       )
         .map(
@@ -565,7 +588,7 @@ export function characterSheet({
         )
         .join(
           "",
-        )}</div><h3 class="subheading">Condition & injuries</h3><p>${esc(h.survival.status)} · ${h.survival.marks} death marks · ${h.wounds.length} wounds</p><div class="condition-tags">${h.conditions.map((c) => `<span>${esc(c.key)} ${c.rating ?? ""}</span>`).join("") || "<span>No active conditions</span>"}</div>${h.wounds
+        )}</div>${h.scars?.length ? `<h3 class="subheading">Scars</h3>${h.scars.map(s => "<p>" + esc(s.text) + "</p>").join("")}` : ""}<h3 class="subheading">Condition & injuries</h3><p>${esc(h.survival.status)} · ${h.survival.marks} death marks · ${h.wounds.length} wounds</p><div class="condition-tags">${h.conditions.map((c) => `<span>${esc(c.key)} ${c.rating ?? ""}</span>`).join("") || "<span>No active conditions</span>"}</div>${h.wounds
         .map(
           (w) =>
             `<article class="wound"><h3>${esc(w.record.injury)}</h3><p>${esc(w.record.remedy)}</p><p class="cost-note">${w.record.recoveryValue ? `Recovery ${w.treatment?.progress ?? 0}/${w.record.recoveryValue}${w.treatment?.completed ? " · Treated; scar remains" : ""}` : "Requires the printed exceptional remedy."}</p>${

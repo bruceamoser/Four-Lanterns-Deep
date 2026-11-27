@@ -116,7 +116,7 @@ export async function verifyDungeonCamp(page) {
       await page.evaluate(() =>
         window.__ddd.game.party.map((h) => h.survival.hp),
       ),
-    ).toEqual(before.map((hp, i) => hp + (i === 0 ? 0 : 2)));
+    ).toEqual(before.map((hp, i) => hp + (i === 0 ? 0 : 6)));
     const worker = await page.evaluate(() => window.__ddd.game.party[1].heroId);
     await page
       .locator(`[data-camp-hero="${worker}"][data-camp-slot="0"]`)
@@ -164,7 +164,7 @@ export async function verifyDungeonCamp(page) {
     await page.screenshot({ path: "test-results/dungeon-camp-complete.png" });
     await page.keyboard.press("Escape");
     console.log(
-      "Native dungeon camp planning, animation, hourly sleep healing, pause/save/reload, six-hour rota and unchanged Grit passed.",
+      "Native dungeon camp planning, animation, Deeds brief-rest healing, pause/save/reload, six-hour rota and unchanged Grit passed.",
     );
   } catch (error) {
     console.error(

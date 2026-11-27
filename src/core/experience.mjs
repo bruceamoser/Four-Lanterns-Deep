@@ -17,6 +17,10 @@ export function legacyXPForLevel(level) { const n=Math.max(0,Math.min(30,level)-
 export function levelForXP(xp, threshold=xpForLevel) {
   let level=1;while(level<30 && xp>=threshold(level+1)) level++;return level;
 }
+export function trainingTarget(hero) {
+  const trained = hero.preview?.state.level ?? hero.draft?.progression?.level ?? 1;
+  return hero.draft?.forge?.version === 2 ? Math.max(trained, Math.min(10, hero.earnedLevel)) : hero.earnedLevel;
+}
 export function xpProgress(hero) {
   const level = Math.max(hero.earnedLevel, levelForXP(hero.xp ?? 0));
   const floor = xpForLevel(level),
@@ -46,11 +50,11 @@ export const experienceMethods = {
     if (!recipients.length) return false;
     this.map.xpClaims.push(claim);
     for (const h of recipients) {
-      const previous = h.earnedLevel;
+      const previous = trainingTarget(h);
       h.xp = (h.xp ?? xpForLevel(h.earnedLevel)) + amount;
       h.earnedLevel = Math.max(h.earnedLevel, levelForXP(h.xp));
-      if (h.earnedLevel > previous)
-        this.emit("level-ready", { hero: h, level: h.earnedLevel });
+      if (trainingTarget(h) > previous)
+        this.emit("level-ready", { hero: h, level: trainingTarget(h) });
       h.xpHistory ??= [];
       h.xpHistory.push({
         amount,

@@ -1,3 +1,5 @@
+import { trainingTarget } from "../core/experience.mjs";
+import { deedsDP, deedsHero, disciplinePrice } from "../core/deeds-development.mjs";
 import {
   viewNodePosition,
   viewDisciplinePosition as disciplinePosition,
@@ -54,7 +56,7 @@ export function forgeScreen({
   const live = () => !onChange,
     readOnly = () => (live() ? game.forgeReason(index) : ""),
     owned = () => forgeOwned(draft, C);
-  root.innerHTML = `<div class="veil forge-veil"><section class="forge-window" role="dialog" aria-modal="true" aria-label="Discipline forge"><header class="forge-header"><div><span class="eyebrow">THE DISCIPLINE FORGE</span><h2>${esc(draft.name || "Your unwritten legend")}</h2></div><div class="forge-currency"></div><button class="icon-button forge-close" aria-label="Close forge">${icon("close")}</button></header><div class="forge-layout"><aside class="forge-library"><label class="forge-search"><span class="eyebrow">FIND A PATH</span><input type="search" placeholder="Search nodes or disciplines" aria-label="Search forge"></label><div class="forge-results"></div><nav class="forge-disciplines"></nav></aside><main class="forge-canvas"><div class="forge-map-tools"><button data-view="fit">Whole atlas</button><button data-view="owned">My disciplines</button><button data-view="columns">Column view</button><button data-view="in" aria-label="Zoom in">+</button><button data-view="out" aria-label="Zoom out">−</button><span class="forge-zoom"></span></div><svg class="forge-svg" aria-label="Discipline paths" role="img"><defs><radialGradient id="forge-disc-glow"><stop stop-color="#c6a054" stop-opacity=".09"/><stop offset="1" stop-color="#c6a054" stop-opacity="0"/></radialGradient></defs><g class="forge-world"></g></svg><div class="forge-path-view" hidden></div><div class="forge-map-caption"><strong>18 DISCIPLINES · 72 PATHS · 33 CONFLUENCES</strong><span>Drag to explore · Wheel to zoom · Select a circle to inspect</span></div><div class="forge-legend"><span class="learned">◆ Learned</span><span class="available">○ Available</span><span>○ Locked</span><span>◎ All border contacts required</span></div></main><aside class="forge-inspector"></aside></div><footer class="forge-footer"><span class="forge-status"></span><button class="forge-reset">Refund purchased nodes</button></footer></section></div>`;
+  root.innerHTML = `<div class="veil forge-veil"><section class="forge-window" role="dialog" aria-modal="true" aria-label="Discipline forge"><header class="forge-header"><div><span class="eyebrow">THE DISCIPLINE FORGE</span><h2>${esc(draft.name || "Your unwritten legend")}</h2></div><div class="forge-currency"></div><button class="icon-button forge-close" aria-label="Close forge">${icon("close")}</button></header><div class="forge-layout"><aside class="forge-library"><label class="forge-search"><span class="eyebrow">FIND A PATH</span><input type="search" placeholder="Search nodes or disciplines" aria-label="Search forge"></label><div class="forge-signatures"></div><div class="forge-results"></div><nav class="forge-disciplines"></nav></aside><main class="forge-canvas"><div class="forge-map-tools"><button data-view="fit">Whole atlas</button><button data-view="owned">My disciplines</button><button data-view="columns">Column view</button><button data-view="in" aria-label="Zoom in">+</button><button data-view="out" aria-label="Zoom out">−</button><span class="forge-zoom"></span></div><svg class="forge-svg" aria-label="Discipline paths" role="img"><defs><radialGradient id="forge-disc-glow"><stop stop-color="#c6a054" stop-opacity=".09"/><stop offset="1" stop-color="#c6a054" stop-opacity="0"/></radialGradient></defs><g class="forge-world"></g></svg><div class="forge-path-view" hidden></div><div class="forge-map-caption"><strong>${DISCIPLINES.length} ORIGINS · ${PATHS.length} PATHS · ${NODES.filter(n=>n.kind==="intersection").length} CONFLUENCES</strong><span>Drag to explore · Wheel to zoom · Select a circle to inspect</span></div><div class="forge-legend"><span class="learned">◆ Learned</span><span class="available">○ Available</span><span>○ Locked</span><span>◎ All border contacts required</span></div></main><aside class="forge-inspector"></aside></div><footer class="forge-footer"><span class="forge-status"></span><button class="forge-reset">Refund purchased nodes</button></footer></section></div>`;
   const svg = root.querySelector(".forge-svg"),
     world = root.querySelector(".forge-world"),
     inspector = root.querySelector(".forge-inspector"),
@@ -168,18 +170,40 @@ export function forgeScreen({
       remaining = forgeBudget(draft, C) - forgeSpent(draft),
       h = live() ? game.party[index] : null;
     root.querySelector(".forge-currency").innerHTML =
-      `<span>LEVEL ${draft.progression.level}</span><b>${remaining}</b><span>DP AVAILABLE</span>${h && h.earnedLevel > h.preview.state.level ? `<button class="primary forge-train" ${readOnly() ? "disabled" : ""}>Train level ${h.earnedLevel} · +${(h.earnedLevel - h.preview.state.level) * 4} DP</button>` : ""}`;
+      `<span>LEVEL ${draft.progression.level}</span><b>${remaining}</b><span>DP AVAILABLE</span>${h && trainingTarget(h) > h.preview.state.level ? `<button class="primary forge-train" ${readOnly() ? "disabled" : ""}>Train level ${trainingTarget(h)} · +${deedsHero(draft) ? deedsDP(draft, trainingTarget(h)) - deedsDP(draft) : (trainingTarget(h) - h.preview.state.level) * 4} DP</button>` : ""}`;
     root
       .querySelector(".forge-train")
       ?.addEventListener("click", () => perform(() => game.trainForge(index)));
+    const signatureList = root.querySelector(".forge-signatures");
+    signatureList.replaceChildren();
+    const cls = C.choices.find(r => r.id === draft.classId);
+    if (deedsHero(draft) && cls) for (const level of [1,3,7].filter(n => n <= draft.progression.level)) {
+      const label = document.createElement("label"), select = document.createElement("select");
+      label.textContent = "Level " + level + " signature";
+      select.append(new Option("Choose a signature",""));
+      for (const id of cls.signatures[level]) select.append(new Option(POWERS[id].name,id));
+      select.value = draft.signatures?.[level] ?? "";
+      const details = document.createElement("small");
+      details.textContent = select.value ? forgePowerText(forgePower(POWERS[select.value],{draft,preview:forgeCharacter(draft,C)})) : "";
+      select.disabled = !!readOnly() || (live() && !!select.value);
+      select.onchange = () => perform(() => {
+        if (!select.value) return;
+        const next = structuredClone(draft);
+        (next.signatures ??= {})[level] = select.value;
+        if (live()) game.forgeCommit(index,next);
+        else draft = next;
+      });
+      label.append(select,details);
+      signatureList.append(label);
+    }
     root.querySelector(".forge-status").textContent =
       readOnly() ||
-      "8 starting DP · +4 per level · Unspent DP carries forward · Free refunds in Greyhaven";
+      (deedsHero(draft) ? "Development grows with each level · Free refunds in Greyhaven" : "Legacy training · Respec in Greyhaven to adopt Deeds development");
     root.querySelector(".forge-reset").disabled =
       !!readOnly() || !draft.forge.nodes.length;
     root.querySelector(".forge-disciplines").innerHTML = DISCIPLINES.map(
       (d) =>
-        `<button data-discipline="${d.id}" class="${ranks["discipline-" + d.id] ? "owned" : ""} ${focus === d.id ? "chosen" : ""}">${disciplineIcon(d.id)}<span>${d.name}<small>${ranks["discipline-" + d.id] ? "RANK " + roman[ranks["discipline-" + d.id]] : "UNLEARNED · 3 DP"}</small></span></button>`,
+        `<button data-discipline="${d.id}" class="${ranks["discipline-" + d.id] ? "owned" : ""} ${focus === d.id ? "chosen" : ""}">${disciplineIcon(d.id)}<span>${d.name}<small>${ranks["discipline-" + d.id] ? "RANK " + roman[ranks["discipline-" + d.id]] : "UNLEARNED · " + disciplinePrice(draft,NODE[d.id+":origin"]) + " DP"}</small></span></button>`,
     ).join("");
     root.querySelectorAll("[data-discipline]").forEach(
       (b) =>
@@ -286,7 +310,7 @@ export function forgeScreen({
             { main: "A", maneuver: "M", reaction: "R", passive: "P" }[
               category
             ] ?? "◆";
-        return `<g role="button" tabindex="0" aria-label="${esc(n.name)} · ${stateClass(n, set)}" data-node="${n.id}" data-state="${stateClass(n, set)}" class="forge-node ${n.kind} ${stateClass(n, set)} ${selected === n.id ? "selected" : ""} ${related.has(n.id) ? "related" : ""}" transform="translate(${p.x} ${p.y})"><line class="forge-label-leader" x1="0" y1="0" x2="0" y2="0"/><circle class="node-halo" r="${r + 5}"/><circle class="node-body" r="${r}"/>${n.kind === "origin" ? `<image href="/vendor/hol/assets/${n.discipline}.webp" x="-20" y="-20" width="40" height="40"/>` : `<text y="5">${n.rank ? roman[n.rank] : n.kind === "intersection" ? "✦" : n.power ? letter : set.has(n.id) ? "✓" : "·"}</text>`}<text class="forge-node-label" y="${n.kind === "intersection" ? 92 : r + 20}">${esc(n.name)}</text><title>${esc(n.name)} · ${n.cost} DP · ${stateClass(n, set)}</title></g>`;
+        return `<g role="button" tabindex="0" aria-label="${esc(n.name)} · ${stateClass(n, set)}" data-node="${n.id}" data-state="${stateClass(n, set)}" class="forge-node ${n.kind} ${stateClass(n, set)} ${selected === n.id ? "selected" : ""} ${related.has(n.id) ? "related" : ""}" transform="translate(${p.x} ${p.y})"><line class="forge-label-leader" x1="0" y1="0" x2="0" y2="0"/><circle class="node-halo" r="${r + 5}"/><circle class="node-body" r="${r}"/>${n.kind === "origin" ? `<image href="/vendor/hol/assets/${n.discipline}.webp" x="-20" y="-20" width="40" height="40"/>` : `<text y="5">${n.rank ? roman[n.rank] : n.kind === "intersection" ? "✦" : n.power ? letter : set.has(n.id) ? "✓" : "·"}</text>`}<text class="forge-node-label" y="${n.kind === "intersection" ? 92 : r + 20}">${esc(n.name)}</text><title>${esc(n.name)} · ${disciplinePrice(draft, n)} DP · ${stateClass(n, set)}</title></g>`;
       }).join("");
     world.querySelectorAll("[data-node]").forEach((el) => {
       el.onclick = () => {
@@ -307,7 +331,7 @@ export function forgeScreen({
     const d = DISCIPLINES.find((d) => d.id === focus),
       current = NODE[selected];
     const card = (n) =>
-      `<button data-node="${n.id}" data-state="${stateClass(n, set)}" aria-label="${esc(n.name)} · ${stateClass(n, set)}" class="forge-node forge-flow-node ${stateClass(n, set)} ${selected === n.id ? "selected" : ""} ${current?.requires.includes(n.id) ? "required" : ""}"><b>${esc(n.name)}</b><span>${set.has(n.id) ? "✓ Learned" : stateClass(n, set) === "available" ? "Available" : "Locked"}<small>${n.cost} DP · Rank ${roman[n.rank ?? n.minimumRank ?? 1]}</small></span></button>`;
+      `<button data-node="${n.id}" data-state="${stateClass(n, set)}" aria-label="${esc(n.name)} · ${stateClass(n, set)}" class="forge-node forge-flow-node ${stateClass(n, set)} ${selected === n.id ? "selected" : ""} ${current?.requires.includes(n.id) ? "required" : ""}"><b>${esc(n.name)}</b><span>${set.has(n.id) ? "✓ Learned" : stateClass(n, set) === "available" ? "Available" : "Locked"}<small>${disciplinePrice(draft, n)} DP · Rank ${roman[n.rank ?? n.minimumRank ?? 1]}</small></span></button>`;
     pathView.innerHTML = `<div class="forge-path-heading">${disciplineIcon(focus)}<div><span class="eyebrow">OPTIONAL COLUMN VIEW · SAME CONNECTED TREE</span><h3>${esc(d.name)}</h3></div></div><div class="forge-rank-row">${[":origin", ":rank2", ":rank3"].map((id) => card(NODE[focus + id])).join("")}</div><div class="forge-path-columns">${PATHS.filter(
       (p) => p.discipline === focus,
     )
@@ -346,7 +370,7 @@ export function forgeScreen({
         ).slice(0, 30)
       : [];
     root.querySelector(".forge-results").innerHTML = search
-      ? `<small>${results.length ? results.length + " matches" : "No matching nodes"}</small>${results.map((n) => `<button data-result="${n.id}"><span>${esc(n.name)}</span><small>${owned().has(n.id) ? "LEARNED" : n.cost + " DP"} · ${esc(n.discipline ?? "CONFLUENCE")}</small></button>`).join("")}`
+      ? `<small>${results.length ? results.length + " matches" : "No matching nodes"}</small>${results.map((n) => `<button data-result="${n.id}"><span>${esc(n.name)}</span><small>${owned().has(n.id) ? "LEARNED" : disciplinePrice(draft, n) + " DP"} · ${esc(n.discipline ?? "CONFLUENCE")}</small></button>`).join("")}`
       : "";
     root.querySelector(".forge-disciplines").hidden = !!search;
     root
@@ -367,7 +391,7 @@ export function forgeScreen({
     }
     const n = NODE[selected];
     if (!n) {
-      inspector.innerHTML = `<span class="eyebrow">AN ATLAS OF POSSIBILITIES</span><h3>Make your own legend.</h3><p>Each discipline is an origin surrounded by four circular paths. Select a discipline to explore its branches.</p><div class="forge-instructions"><p><b>Follow the circles</b><br>Learn connected nodes with DP. Small circles improve your build. Lettered circles unlock powers.</p><p><b>Bring down the border</b><br>A confluence combines disciplines. Every circle touching its border must be learned before you can buy the central skill.</p><p><b>Broaden your build</b><br>From level 2, spend 3 DP to open another discipline anywhere on the atlas. Rank II unlocks from level 3; rank III from level 7.</p><p><b>A · M · R · P</b><br>Action · Maneuver · Reaction · Passive</p></div>`;
+      inspector.innerHTML = `<span class="eyebrow">AN ATLAS OF POSSIBILITIES</span><h3>Make your own legend.</h3><p>Each discipline is an origin with connected training paths. Select a discipline to explore its branches.</p><div class="forge-instructions"><p><b>Follow the circles</b><br>Learn connected nodes with DP. Small circles improve your build. Lettered circles unlock powers.</p><p><b>Bring down the border</b><br>A confluence combines disciplines. Every circle touching its border must be learned before you can buy the central skill.</p><p><b>Broaden your build</b><br>From level 2, spend 3 DP to open another discipline anywhere on the atlas. Rank II unlocks from level 3; rank III from level 7.</p><p><b>A · M · R · P</b><br>Action · Maneuver · Reaction · Passive</p></div>`;
       return;
     }
     const set = owned(),
@@ -378,7 +402,7 @@ export function forgeScreen({
     const description =
       (spec ? forgePowerText(spec) : n.description) +
       (n.bonusText ? " " + n.bonusText : "");
-    inspector.innerHTML = `<span class="eyebrow">${n.kind === "intersection" ? n.tier + " DISCIPLINES · CONFLUENCE" : esc(n.discipline.toUpperCase() + " · " + (n.pathName ?? (n.kind === "origin" ? "ORIGIN" : "DISCIPLINE RANK")))}</span><div class="forge-node-heading">${n.discipline ? disciplineIcon(n.discipline) : '<span class="confluence-sigil">✦</span>'}<h3>${esc(n.name)}</h3></div>${spec ? abilityType({ id: spec.id }, spec) : ""}<p class="forge-effect">${esc(description ?? "")}</p>${n.kind === "intersection" ? '<p class="cost-note">Every touching prerequisite is required. Opening the border makes this skill available to purchase.</p>' : ""}<div class="forge-node-price"><b>${n.cost}</b> DP ${learned ? "<span>◆ LEARNED</span>" : ""}</div>${n.requires.length ? `<h4>${n.kind === "intersection" ? "Border contacts" : "Connected from"}</h4><div class="forge-prerequisites">${n.requires.map((id) => `<button data-prerequisite="${id}" class="${set.has(id) ? "learned" : ""}"><span>${set.has(id) ? "✓" : "○"} ${esc(NODE[id].name)}</span><small>${esc(NODE[id].discipline)} · ${NODE[id].pathName ?? "Origin"}</small></button>`).join("")}</div>` : ""}${!learned && reasons.length ? `<ul class="forge-reasons">${reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}${learned ? `<button data-refund-node ${readOnly() || !draft.forge.nodes.includes(n.id) ? "disabled" : ""}>${draft.forge.nodes.includes(n.id) ? "Preview refund" : "Starting discipline · granted"}</button>` : `<button data-buy-node="${n.id}" class="primary" ${reasons.length || readOnly() ? "disabled" : ""}>Learn ${esc(n.name)} · ${n.cost} DP</button>`}${readOnly() ? `<p class="cost-note">${esc(readOnly())}</p>` : ""}${n.power ? '<p class="cost-note">At will. Action, equipment, positioning and supply requirements still apply. Values include this technique’s upgrades. Traits, gear and situational bonuses also apply.</p>' : ""}`;
+    inspector.innerHTML = `<span class="eyebrow">${n.kind === "intersection" ? n.tier + " DISCIPLINES · CONFLUENCE" : esc(n.discipline.toUpperCase() + " · " + (n.mastery && deedsHero(draft) ? n.pathName + " MASTERY · LEVEL 7" : n.pathName ?? (n.kind === "origin" ? "ORIGIN" : "DISCIPLINE RANK")))}</span><div class="forge-node-heading">${n.discipline ? disciplineIcon(n.discipline) : '<span class="confluence-sigil">✦</span>'}<h3>${esc(n.name)}</h3></div>${spec ? abilityType({ id: spec.id }, spec) : ""}<p class="forge-effect">${esc(description ?? "")}</p>${n.kind === "intersection" ? '<p class="cost-note">Every touching prerequisite is required. Opening the border makes this skill available to purchase.</p>' : ""}<div class="forge-node-price"><b>${disciplinePrice(draft, n)}</b> DP ${learned ? "<span>◆ LEARNED</span>" : ""}</div>${n.requires.length ? `<h4>${n.kind === "intersection" ? "Border contacts" : "Connected from"}</h4><div class="forge-prerequisites">${n.requires.map((id) => `<button data-prerequisite="${id}" class="${set.has(id) ? "learned" : ""}"><span>${set.has(id) ? "✓" : "○"} ${esc(NODE[id].name)}</span><small>${esc(NODE[id].discipline)} · ${NODE[id].pathName ?? "Origin"}</small></button>`).join("")}</div>` : ""}${!learned && reasons.length ? `<ul class="forge-reasons">${reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}${learned ? `<button data-refund-node ${readOnly() || !draft.forge.nodes.includes(n.id) ? "disabled" : ""}>${draft.forge.nodes.includes(n.id) ? "Preview refund" : "Starting discipline · granted"}</button>` : `<button data-buy-node="${n.id}" class="primary" ${reasons.length || readOnly() ? "disabled" : ""}>Learn ${esc(n.name)} · ${disciplinePrice(draft, n)} DP</button>`}${readOnly() ? `<p class="cost-note">${esc(readOnly())}</p>` : ""}${n.power ? '<p class="cost-note">At will. Action, equipment, positioning and supply requirements still apply. Values include this technique’s upgrades. Traits, gear and situational bonuses also apply.</p>' : ""}`;
     const unlocks = NODES.filter(
       (next) =>
         next.requires.includes(n.id) ||

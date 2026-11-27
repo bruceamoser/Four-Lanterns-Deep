@@ -229,6 +229,7 @@ export function lineOfSight(map, a, b) {
     };
     if (
       wallAt(map, p.x, p.z) ||
+      (map.vault && distance(p,b) > 0 && [map.vault.door,map.vault.seam].some(g => !g.open && g.x===p.x && g.z===p.z)) ||
       (distance(a, b) > 1 && surfaceAt(map, p, "smoke"))
     )
       return false;
