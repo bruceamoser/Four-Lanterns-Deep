@@ -1,5 +1,9 @@
 # Current working progress
 
+## November 27 — Deeds implementation in progress
+
+Worktree `/home/bmoser/Projects/FLD-Deeds-Review`, branch `codex/deeds-conversion`. The [release plan](../deeds-conversion.md) and [implementation handoff](handoffs/2026-11-27-deeds-conversion.md) track the mechanical work. PR 208 merged the research and attribution. Public release 0.8.8 remains the upgrade baseline.
+
 ## November 27 — Deeds rules and Moria design review
 
 The [design review](../deeds-moria-review.md) compares 0.8.8 against Deeds main and proposes a playable Moria-inspired vault. Bruce selected single-path masteries plus optional combinations, levels 1–10 first with deeper floors, run-wide potion knowledge, rare single-hero resurrection, and a respec preserving existing heroes, equipment, XP and history. Game credits use Deeds of Legend. The rules conversion is pending. See the [handoff](handoffs/2026-11-27-deeds-moria-review.md).

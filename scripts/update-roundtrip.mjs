@@ -215,7 +215,7 @@ try {
       await newPage.evaluate(
         () => window.__ddd.game.active.draft.forge.version,
       ),
-    ).toBe(1);
+    ).toBe(2);
     expect(
       await fs.readFile(
         path.join(userData, "runs", priorSlot + ".json"),

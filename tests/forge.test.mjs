@@ -87,36 +87,30 @@ test("every upgrade changes the actual power effects or targeting, and every sta
     }
   }
 });
-test("blank creation, origins, nonexpiring DP, level gates, duplicate refunds and rank investments", () => {
+test("Deeds creation, distinct origins, class prices and level awards", () => {
   const blank = newForgeDraft();
   assert.equal(blank.name, "");
-  assert.equal(blank.forge.nodes.length, 0);
+  assert.deepEqual(blank.forge.nodes, []);
   assert.equal(forgeCharacter(blank, C).valid, false);
   for (const d of drafts) {
     assert.equal(forgeCharacter(d, C).valid, true);
     assert.equal(forgeSpent(d), 8);
-    assert.equal(forgeBudget(d, C), 8);
+    assert.equal(forgeBudget(d, C), 10);
   }
   const d = structuredClone(drafts[0]);
-  assert.match(
-    forgeRequirements(NODE["flame:origin"], d, C).join(" "),
-    /level 2/,
-  );
   d.progression.level = 2;
-  assert.equal(forgeBudget(d, C), 12);
-  assert.deepEqual(forgeRequirements(NODE["flame:origin"], d, C), []);
+  assert.equal(forgeBudget(d, C), 18);
   learn(d, "flame:origin");
-  assert.match(
-    forgeRequirements(NODE["arms:rank2"], d, C).join(" "),
-    /level 3/,
-  );
+  assert.equal(forgeSpent(d), 11);
+  assert.match(forgeRequirements(NODE["arms:rank2"], d, C).join(" "), /level 3/);
   d.progression.level = 3;
-  assert.equal(forgeBudget(d, C) - forgeSpent(d), 5);
+  assert.equal(forgeBudget(d, C) - forgeSpent(d), 16);
   learn(d, "arms:rank2");
-  const duplicate = high();
-  duplicate.classDisciplines = ["discipline-armor"];
-  assert.equal(forgeBudget(duplicate, C), 127);
-  assert.equal(forgeCharacter(duplicate, C).state.ranks["discipline-armor"], 1);
+  d.classDisciplines = ["discipline-armor"];
+  assert.ok(forgeCharacter(d, C).errors.some(e => e.code === "origins"));
+  assert.equal(forgeBudget(d, C), 27);
+  d.forge.version = 1;
+  assert.equal(forgeBudget(d, C), 19);
   assert.equal(levelForXP(xpForLevel(30) + 1e9), 30);
 });
 test("confluences require exact touching nodes, including all three or four disciplines; rank alone never bypasses a gate", () => {
@@ -284,9 +278,10 @@ test("training and full respec preserve inventory, missing HP, spent Grit, XP an
     hp = h.survival.hp;
   g.trainForge(0);
   assert.equal(g.active.preview.state.level, 7);
-  assert.equal(g.active.preview.development.current, 24);
-  assert.equal(g.active.survival.hp, hp);
-  assert.equal(g.active.survival.gritAvailable, 3);
+  assert.equal(g.active.preview.development.current, 65);
+  const trainedHP = g.active.survival.hp;
+  assert.equal(trainedHP, hp + 6 * 6);
+  assert.equal(g.active.survival.gritAvailable, 2);
   const d = g.newRespecDraft(0);
   assert.equal(d.forge.nodes.length, 0);
   Object.assign(d, structuredClone(drafts[1]), {
@@ -299,11 +294,11 @@ test("training and full respec preserve inventory, missing HP, spent Grit, XP an
     g.active.preview.inventory.items.map((i) => i.instanceId),
     items,
   );
-  assert.ok(g.active.survival.hp <= hp);
+  assert.ok(g.active.survival.hp <= trainedHP);
   const next = fresh();
   next.load(deserialize(serialize(g.snapshot())));
   assert.deepEqual(next.active.draft.forge, g.active.draft.forge);
-  assert.equal(next.active.preview.development.current, 24);
+  assert.equal(next.active.preview.development.current, 65);
 });
 test("invalid purchases are atomic and older-edition saves are rejected without rewriting their data", () => {
   const g = fresh(),

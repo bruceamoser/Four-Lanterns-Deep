@@ -134,6 +134,7 @@ export class Game {
         maxHp: preview.summary.maximumHp,
         gritAvailable: preview.summary.gritGranted,
       }),
+      ...(preview.summary.maximumSp !== undefined ? { sp: preview.summary.maximumSp } : {}),
       wounds: [],
       conditions: [],
       buffs: {},
@@ -233,6 +234,9 @@ export class Game {
       const p = gearPreview(this.R, this.C, h);
       if (!p.valid)
         throw new Error("A saved hero no longer passes character validation.");
+      if (p.summary.maximumSp !== undefined &&
+          (!Number.isSafeInteger(h.sp) || h.sp < 0 || h.sp > p.summary.maximumSp))
+        throw new Error("Saved Spell Points are outside this hero's capacity.");
       h.preview = p;
       h.conditions ??= [];
       h.buffs ??= {};

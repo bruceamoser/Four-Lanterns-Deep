@@ -1,7 +1,7 @@
 import { DISCIPLINE_FORAGING } from "./discipline-benefits.mjs";
 // Game-owned progression. A discipline is a self-contained set of circular paths;
 // intersections require every named contact, never merely a nearby discipline.
-export const FORGE_VERSION = 1;
+export const FORGE_VERSION = 2;
 export const FORGE_LEVEL_CAP = 30;
 export const FORGE_DISCIPLINES = [
   ["flame", "Flame", "Ignition, spreading fire and battlefield heat.", 0, 0],

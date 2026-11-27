@@ -156,12 +156,12 @@ export function creationScreen({
       }
     });
     if (step === 0) {
-      host.innerHTML = `${resume ? `<button id="resume-recruit" class="resume-draft">Resume saved draft · ${esc(resume.name || "Unnamed adventurer")}</button>` : ""}<p class="section-intro">A new hero begins with a blank slate. Distribute 3 attribute points, up to 2 in any attribute.</p>${field("Hero name", `<input id="hero-name" maxlength="64" value="${esc(draft.name)}" placeholder="A name for the register">`)}<div class="attribute-allocation">${Object.entries(
+      host.innerHTML = `${resume ? `<button id="resume-recruit" class="resume-draft">Resume saved draft · ${esc(resume.name || "Unnamed adventurer")}</button>` : ""}<p class="section-intro">A new hero begins with a blank slate. Set attributes between −2 and +2 for a total of +3.</p>${field("Hero name", `<input id="hero-name" maxlength="64" value="${esc(draft.name)}" placeholder="A name for the register">`)}<div class="attribute-allocation">${Object.entries(
         draft.attributes,
       )
         .map(
           ([k, v]) =>
-            `<label class="creator-field"><span>${k[0].toUpperCase() + k.slice(1)}</span><select data-attribute="${k}" aria-label="${k}">${[0, 1, 2].map((n) => `<option ${v === n ? "selected" : ""} value="${n}">+${n}</option>`).join("")}</select></label>`,
+            `<label class="creator-field"><span>${k[0].toUpperCase() + k.slice(1)}</span><select data-attribute="${k}" aria-label="${k}">${[-2, -1, 0, 1, 2].map((n) => `<option ${v === n ? "selected" : ""} value="${n}">${n > 0 ? "+" : ""}${n}</option>`).join("")}</select></label>`,
         )
         .join(
           "",
@@ -256,7 +256,7 @@ export function creationScreen({
     } else if (step === 2) {
       const disciplineChoices = (ids, current, key) =>
         `<div class="forge-origin-options">${ids.map((id) => `<button data-origin-key="${key}" data-origin-discipline="${id}" class="${current === id ? "chosen" : ""}">${disciplineIcon(id)}<span>${esc(name(id))}<small>Rank I origin · opens four paths</small></span></button>`).join("")}</div>`;
-      host.innerHTML = `<p class="section-intro">Class, culture and background each grant one discipline origin. Your choices determine where you begin, never where you must finish. Duplicate origins return 3 DP each.</p>${field(
+      host.innerHTML = `<p class="section-intro">Class, culture and background each grant one discipline origin. Your choices determine where you begin, never where you must finish. Choose three distinct origins.</p>${field(
         "Class starting point",
         `<select id="class">${options(
           C.choices.filter((c) => c.kind === "class"),
@@ -366,7 +366,7 @@ export function creationScreen({
       };
       shop();
     } else {
-      host.innerHTML = `<h3>${esc(draft.name || "Unnamed adventurer")}</h3><p class="section-intro">${esc(name(draft.ancestryId))} · ${esc(name(draft.classId))} · Level ${draft.progression.level}</p>${disciplineStrip(p.state, C.choices)}<div class="forge-stats"><span>Health<b>${p.summary.maximumHp}</b></span><span>Melee profile<b>${p.forge.profiles.melee.join("/")}</b></span><span>Bow profile<b>${p.forge.profiles.ranged.join("/")}</b></span><span>DP carried forward<b>${remaining}</b></span></div>${p.valid ? '<p class="forge-origin-help">Your hero is ready. Open the company register after saving to assign them to a party slot.</p>' : `<h3 class="subheading">Complete these choices</h3><ul class="creation-errors">${p.errors.map((e) => `<li>${esc(e.text)}</li>`).join("")}</ul>`}${!draft.forge.nodes.some((id) => FORGE_NODE[id].power) ? '<p class="cost-note">You have not learned any powers. Visit the forge to learn attacks or spells before descending.</p>' : ""}${respec ? '<p class="cost-note">Maximum HP may change, but current HP never increases from rebuilding. Grit already spent, wounds, possessions and XP are retained.</p>' : ""}`;
+      host.innerHTML = `<h3>${esc(draft.name || "Unnamed adventurer")}</h3><p class="section-intro">${esc(name(draft.ancestryId))} · ${esc(name(draft.classId))} · Level ${draft.progression.level}</p>${disciplineStrip(p.state, C.choices)}<div class="forge-stats"><span>Health<b>${p.summary.maximumHp}</b></span><span>Melee profile<b>${p.forge.profiles.melee.join("/")}</b></span><span>Bow profile<b>${p.forge.profiles.ranged.join("/")}</b></span><span>DP carried forward<b>${remaining}</b></span></div>${p.valid ? '<p class="forge-origin-help">Your hero is ready. Open the company register after saving to assign them to a party slot.</p>' : `<h3 class="subheading">Complete these choices</h3><ul class="creation-errors">${p.errors.map((e) => `<li>${esc(e.text)}</li>`).join("")}</ul>`}${!draft.forge.nodes.some((id) => FORGE_NODE[id].power) ? '<p class="cost-note">Melee and ranged basics are available with a ready weapon. Spend DP to specialize.</p>' : ""}${respec ? '<p class="cost-note">Maximum HP may change, but current HP never increases from rebuilding. Grit already spent, wounds, possessions and XP are retained.</p>' : ""}`;
     }
   }
   draw();

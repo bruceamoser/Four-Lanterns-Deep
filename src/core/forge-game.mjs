@@ -1,3 +1,4 @@
+import { deedsHero } from "./deeds-development.mjs";
 import { FORGE_NODE, FORGE_LEVEL_CAP } from "./forge-catalog.mjs";
 import {
   forgeCharacter,
@@ -11,7 +12,7 @@ export const forgeGameMethods = {
     const actions = this.availableActions(h),
       score = (c) =>
         ["power-forge-strike", "power-forge-shot"].includes(c.id)
-          ? 0
+          ? (this.held(h, c.id === "power-forge-shot" ? "item-ordinary-ranged-weapon" : "item-ordinary-melee-weapon") ? 0 : 4)
           : this.powerSpec(c.id, h)?.effects?.some((e) => e.kind === "damage")
             ? 1
             : this.powerSpec(c.id, h)?.effects?.some((e) => e.kind === "survey")
@@ -87,7 +88,10 @@ export const forgeGameMethods = {
         next.preview.summary.maximumHp -
         h.preview.summary.maximumHp,
     );
-    next.survival.hp = Math.min(h.survival.hp, next.survival.maxHp);
+    const growth = !respec && deedsHero(draft) && level > h.preview.state.level && h.survival.hp > 0
+      ? Math.max(0, next.survival.maxHp - h.survival.maxHp) : 0;
+    next.survival.hp = Math.min(h.survival.hp + growth, next.survival.maxHp);
+    if (deedsHero(draft)) next.sp = Math.min(h.sp ?? next.preview.summary.maximumSp, next.preview.summary.maximumSp);
     next.respecGritSpent = Math.max(
       h.respecGritSpent ?? 0,
       h.preview.summary.gritGranted - h.survival.gritAvailable,

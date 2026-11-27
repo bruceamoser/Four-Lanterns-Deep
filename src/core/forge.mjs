@@ -1,3 +1,4 @@
+import { DEEDS_CLASSES, deedsHero, deedsDP, deedsVitals, disciplinePrice } from "./deeds-development.mjs";
 import { bulkCatalog, encumbranceFor } from "./bulk.mjs";
 import {
   FORGE_VERSION,
@@ -95,6 +96,7 @@ export function forgeOrigins(draft, C) {
   return origins;
 }
 export function forgeBudget(draft, C) {
+  if (deedsHero(draft)) return deedsDP(draft);
   const roots = forgeOrigins(draft, C);
   return (
     8 +
@@ -104,7 +106,7 @@ export function forgeBudget(draft, C) {
 }
 export const forgeSpent = (draft) =>
   (draft.forge?.nodes ?? []).reduce(
-    (n, id) => n + (FORGE_NODE[id]?.cost ?? 0),
+    (n, id) => n + disciplinePrice(draft, FORGE_NODE[id]),
     0,
   );
 export function forgeOwned(draft, C) {
@@ -131,7 +133,7 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
     level = draft.progression?.level ?? 1;
   if (!node) return ["Unknown forge node."];
   if (owned.has(node.id)) return ["Already learned."];
-  if (node.kind === "origin" && level < 2)
+  if (node.kind === "origin" && level < 2 && !deedsHero(draft))
     reasons.push("Learn additional disciplines from level 2.");
   if (level < (node.minimumLevel ?? 1))
     reasons.push(`Requires level ${node.minimumLevel}.`);
@@ -156,16 +158,17 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
         `Requires ${node.investment} purchased ${node.discipline} nodes (${count}/${node.investment}).`,
       );
   }
-  if (budget && node.cost > forgeBudget(draft, C) - forgeSpent(draft))
+  const cost = disciplinePrice(draft, node);
+  if (budget && cost > forgeBudget(draft, C) - forgeSpent(draft))
     reasons.push(
-      `Need ${node.cost} DP; ${forgeBudget(draft, C) - forgeSpent(draft)} available.`,
+      `Need ${cost} DP; ${forgeBudget(draft, C) - forgeSpent(draft)} available.`,
     );
   return reasons;
 }
 export function validateForge(draft, C) {
   const errors = [];
   if (
-    draft.forge?.version !== FORGE_VERSION ||
+    ![1, FORGE_VERSION].includes(draft.forge?.version) ||
     !Array.isArray(draft.forge.nodes)
   )
     return [
@@ -205,7 +208,7 @@ export function forgeRefundPlan(draft, C, id = null) {
   return {
     draft: p,
     removed,
-    refund: removed.reduce((n, id) => n + FORGE_NODE[id].cost, 0),
+    refund: removed.reduce((n, id) => n + disciplinePrice(draft, FORGE_NODE[id]), 0),
   };
 }
 export function forgeBenefits(draft, C) {
@@ -213,9 +216,9 @@ export function forgeBenefits(draft, C) {
     stats = {},
     profiles = { melee: [1, 1, 2], ranged: [1, 1, 2] },
     upgrades = [],
-    abilities = [],
+    abilities = deedsHero(draft) ? ["power-forge-strike", "power-forge-shot", "ability-stabilize"] : [],
     recipes = [];
-  if (draft.traitIds?.includes("trait-human-far-walker")) {
+  if (!deedsHero(draft) && draft.traitIds?.includes("trait-human-far-walker")) {
     stats.movement = 1;
     stats.capacity = 2;
   }
@@ -311,13 +314,13 @@ export function forgeCharacter(draft, C) {
   const attr = draft.attributes ?? {};
   if (
     attributes.some(
-      (k) => !Number.isInteger(attr[k]) || attr[k] < 0 || attr[k] > 2,
+      (k) => !Number.isInteger(attr[k]) || attr[k] < (deedsHero(draft) ? -2 : 0) || attr[k] > 2,
     ) ||
     attributes.reduce((n, k) => n + (attr[k] ?? 0), 0) !== 3
   )
     error(
       "attributes",
-      "Distribute exactly 3 attribute points, with a maximum of 2 per attribute.",
+      "Attributes must total +3 and stay within the allowed range.",
     );
   if (
     draft.traitIds?.length !== 2 ||
@@ -325,6 +328,13 @@ export function forgeCharacter(draft, C) {
     draft.traitIds.some((id) => !ancestry?.traits.includes(id))
   )
     error("traits", "Choose two distinct ancestry traits.");
+  if (deedsHero(draft)) {
+    for (const stat of DEEDS_CLASSES[draft.classId]?.minimum ?? [])
+      if (attr[stat] < 0) error("class", "This class requires at least 0 " + stat + ".");
+    const roots = forgeOrigins(draft, C);
+    if (new Set(roots.map(root => root.id)).size < roots.length)
+      error("origins", "Choose three distinct starting disciplines.");
+  }
   const selection = ancestrySelection(draft, C.choices);
   errors.push(...selection.errors);
   if (forgeOrigins(draft, C).length !== 3)
@@ -440,6 +450,7 @@ export function forgeCharacter(draft, C) {
   const summary = {
     maximumHp,
     gritGranted: 3 + Math.floor((level - 1) / 6),
+    ...(deedsHero(draft) ? deedsVitals(draft, benefits.maximumHpBonus + (b.stats.hp ?? 0)) : {}),
     gritSpent: 0,
     stability: benefits.stability,
     speedBase,
