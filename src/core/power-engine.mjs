@@ -84,6 +84,27 @@ export const powerMethods = {
       Math.min(0, ...xs.map((e) => Number(e.stats[name]) || 0))
     );
   },
+  endWard(h) {
+    if (!h?.sustainedWard) return;
+    for (const ally of this.party)
+      ally.powerEffects = (ally.powerEffects ?? []).filter(e => e.id !== "ward:" + h.id);
+    delete h.sustainedWard;
+  },
+  sustainDue(h) {
+    const ward = h?.sustainedWard;
+    if (!ward || h.survival.status !== "active" || this.encounter?.current !== h.id || this.mode !== "combat") return false;
+    return h.powerTurn === ward.due && this.clock().seconds < ward.until &&
+      this.party.some(ally => ally.powerEffects?.some(e => e.id === "ward:" + h.id && e.stats.absorb > 0));
+  },
+  sustainWard() {
+    const h = this.active;
+    if (!this.sustainDue(h) || this.busy || this.pendingProvocation || this.pendingDefense || this.pendingCue)
+      throw new Error("No ward is due for upkeep now.");
+    this.spend("maneuver", "sustain-ward");
+    h.sustainedWard.due++;
+    this.note(h.name + " sustains the ward.");
+    this.emit("change");
+  },
   powerBuff(actor, target, stats, turns = 2, id = "effect") {
     target.powerEffects = (target.powerEffects ?? []).filter(
       (e) => e.id !== id,
@@ -188,6 +209,9 @@ export const powerMethods = {
   absorbPowerDamage(target, amount, type, minimum = false) {
     if (amount <= 0) return 0;
     let result = Math.max(minimum ? 1 : 0, amount - this.powerStat(target, "reduction"));
+    for (const caster of this.party) {
+      if (caster.sustainedWard && (caster.survival.status !== "active" || this.restrictions(caster).asleep || this.restrictions(caster).unconscious || this.clock().seconds >= caster.sustainedWard.until)) this.endWard(caster);
+    }
     const shield = (target.powerEffects ?? [])
       .filter(
         (e) =>
@@ -723,6 +747,12 @@ export const powerMethods = {
             );
             break;
           case "barrier":
+            if (spec.sustained && this.mode === "combat") {
+              this.endWard(h);
+              this.powerBuff(h, recipient, { absorb: effect.amount + this.buildStat(h, "barrier") }, 10, "ward:" + h.id);
+              h.sustainedWard = { due: (h.powerTurn ?? 0) + 1, until: this.clock().seconds + 60 };
+              break;
+            }
             this.powerBuff(
               h,
               recipient,

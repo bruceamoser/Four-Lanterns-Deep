@@ -1,7 +1,7 @@
 **v0.9.0 — Deeds in the Deep**
 
 - Build a hero with three distinct starting disciplines, class-priced studies, and signature choices at levels 1, 3 and 7. Master one path or connect disciplines for techniques such as Flaming Arrow. Pointwork, Openings, Detection, Telekinesis and Soul Capacity join the Forge.
-- Read damage by type, aim around cover and choose when to spend SP and Grit. A Standard result activates many tactical effects. A party can stabilize a dying hero, give first aid and carry scars home.
+- Read damage by type, aim around cover and choose when to spend SP and Grit. A Standard result activates many tactical effects. Sustain Living Ward or Spirit Ward with a Maneuver on following turns. A party can stabilize a dying hero, give first aid and carry scars home.
 - Discover 52 dungeon finds across potions, scrolls, wands, implements and ritual offerings. Experiment with a bottle or pay for identification in Greyhaven. The whole run remembers what the company learns.
 - Magic gear can respond to its wearer before appraisal. Inspect an identified piece for its effects and training requirements. Different creatures carry different spoils. Find guarded vaults with alarm bells, a strongbox and a second way in.
 - The Shrine can return one chosen fallen hero when the company brings both rare offerings. Hero training is balanced through level 10. Dungeon depth and accumulated experience continue.

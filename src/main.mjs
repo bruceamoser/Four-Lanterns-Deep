@@ -646,7 +646,7 @@ function render() {
         .map((l) => `<p>${esc(l)}</p>`)
         .join(
           "",
-        )}</aside><div class="bottom ${combat ? "combat-bottom" : ""}"><div class="phase ${combat ? "combat" : ""}">${phase}</div>${combat ? combatDock() : ""}<div class="actionbar">${button("Character", "sheet", "ABILITIES & GEAR")}${button("Formation", "formation", esc(FORMATIONS[c.formation].name))}${combat ? button("Actions", "actions", "CARDS & TARGETS") + button("Move farther", "convert", "MANEUVER → MOVE") + button("End turn", "end", b ? `${b.remaining.main} MAIN · ${b.remaining.maneuver} MANEUVER · ${game.movementLeft()} MOVE` : "SPACE", true) : button("Supplies", "supplies", "STOCKS & PREPARATION") + button("Make camp", "camp", "SLEEP & RECOVER") + button("Return", "extract", "ENTRANCE STAIRS") + button("Descend", "deeper", "FAR STAIRS", true)}</div><div class="hint">${combat ? (selectedAction ? `TARGETING: ${esc(C.choices.find((c) => c.id === selectedAction.id).name)} · Click a target · Esc cancels` : `${esc(h.name)} acts alone · Teal squares: movement range · Gold: last movement · Right-drag pans`) : "Right-drag to pan · Wheel to zoom · Q / E rotate · F follow · G grid · Tab map · J journal · Formation sets marching order"}</div></div>`;
+        )}</aside><div class="bottom ${combat ? "combat-bottom" : ""}"><div class="phase ${combat ? "combat" : ""}">${phase}</div>${combat ? combatDock() : ""}<div class="actionbar">${button("Character", "sheet", "ABILITIES & GEAR")}${button("Formation", "formation", esc(FORMATIONS[c.formation].name))}${combat ? button("Actions", "actions", "CARDS & TARGETS") + button("Move farther", "convert", "MANEUVER → MOVE") + (game.sustainDue(game.active) ? button("Sustain ward", "sustain-ward", "1 MANEUVER · 0 SP") : "") + button("End turn", "end", b ? `${b.remaining.main} MAIN · ${b.remaining.maneuver} MANEUVER · ${game.movementLeft()} MOVE` : "SPACE", true) : button("Supplies", "supplies", "STOCKS & PREPARATION") + button("Make camp", "camp", "SLEEP & RECOVER") + button("Return", "extract", "ENTRANCE STAIRS") + button("Descend", "deeper", "FAR STAIRS", true)}</div><div class="hint">${combat ? (selectedAction ? `TARGETING: ${esc(C.choices.find((c) => c.id === selectedAction.id).name)} · Click a target · Esc cancels` : `${esc(h.name)} acts alone · Teal squares: movement range · Gold: last movement · Right-drag pans`) : "Right-drag to pan · Wheel to zoom · Q / E rotate · F follow · G grid · Tab map · J journal · Formation sets marching order"}</div></div>`;
     drawMap();
   }
   bind();
@@ -804,6 +804,10 @@ function action(a, arrived = false) {
       break;
     case "confirm-self":
       commitTarget(game.active.id);
+      break;
+    case "sustain-ward":
+      cancelTargeting(false);
+      game.sustainWard();
       break;
     case "end":
       cancelTargeting(false);

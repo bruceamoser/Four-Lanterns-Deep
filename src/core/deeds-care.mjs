@@ -50,6 +50,7 @@ export const deedsCareMethods = {
           due: null,
           choice: null,
         });
+        this.endWard(h);
         h.pendingScar ??= h.lastHarm ?? "Survived " + type + " harm";
         if (!h.conditions.some((c) => c.key === "prone"))
           this.powerCondition(h, "prone", 1, h.id);

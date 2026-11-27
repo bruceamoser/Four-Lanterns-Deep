@@ -96,6 +96,7 @@ export function validateGameState(campaign) {
       throw new Error("Saved portable equipment is invalid.");
   }
   for (const h of heroes) {
+    if (h.sustainedWard != null && (!nonnegative(h.sustainedWard.due) || !nonnegative(h.sustainedWard.until))) throw new Error("Invalid saved sustained ward.");
     for (const f of ["foodDue", "waterDue"])
       if (h.needs?.[f] !== undefined && typeof h.needs[f] !== "boolean")
         throw new Error("Saved provision need is invalid.");

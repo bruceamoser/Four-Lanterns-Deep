@@ -42,6 +42,8 @@ for (const [level, depth] of [
     carriers: 0,
     magic: 0,
     loot: 0,
+    sampledPickups: 0,
+    immediateSales: 0,
   };
   const families = new Set(),
     identities = new Set(),
@@ -80,6 +82,39 @@ for (const [level, depth] of [
         }
         if (item.kind === "ordinary") families.add("supplies");
       }
+    // Compare a fixed purchasing policy separately from the generator totals. Keep
+    // enchantments and unidentified items. Sell duplicate labeled supplies to town.
+    const sample = g.map.chests
+      .filter((c) => !c.guardBossId)
+      .flatMap((c) => (c.items ?? []).map((item) => ({ c, item })))
+      .slice(0, 8);
+    const owned = new Set(
+      g.party.flatMap((h) =>
+        h.preview.inventory.items
+          .filter((i) => i.carried)
+          .map((i) => i.catalogId),
+      ),
+    );
+    for (const [index, { c, item }] of sample.entries()) {
+      const slot = index % 4,
+        h = g.party[slot];
+      g.mode = "exploration";
+      Object.assign(h, { x: c.x, z: c.z });
+      g.takeTreasure("coffer:" + c.id, item.instanceId, slot);
+      counts.sampledPickups++;
+      if (
+        item.kind === "ordinary" &&
+        owned.has(item.catalogId) &&
+        item.definition.price > 0
+      ) {
+        g.mode = "town";
+        g.sell("alchemy", slot, item.instanceId);
+        counts.immediateSales++;
+      }
+      owned.add(item.catalogId);
+    }
+    // The next seed represents a new company with the same builds and starter kit.
+    g.campaign.party = builds.map((d, i) => g.hero(d, i));
     min = Math.min(min, g.enemies.length);
     max = Math.max(max, g.enemies.length);
   }

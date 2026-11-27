@@ -594,6 +594,7 @@ export function forgePower(spec, h) {
       p.range = p.normalRange + 6;
     }
     if (p.spell) {
+      if (["power-spirit-ward", "power-living-ward"].includes(p.id)) p.sustained = true;
       p.attribute = DEEDS_CLASSES[h.draft.classId]?.casting ?? "knowledge";
       p.spCost = p.spCost ?? (p.rank <= 1 ? 0 : Math.min(5,(p.rank ?? 2) + Number(!!p.radius)));
     }
@@ -622,7 +623,7 @@ export function forgePowerText(p) {
           damage: `${value(e.amount)} ${e.type} damage.`,
           heal: `Restore ${value(e.amount)} HP.`,
           condition: `Apply ${e.key} ${e.rating}.`,
-          barrier: `Absorb ${e.amount} damage for ${e.turns} turns.`,
+          barrier: p.sustained ? "Absorb up to " + e.amount + " damage. Sustain for one Maneuver each following turn, up to one minute. Upkeep costs 0 SP and preserves the remaining ward." : `Absorb ${e.amount} damage for ${e.turns} turns.`,
           push: `Push ${e.amount} squares.`,
           pull: `Pull ${e.amount} squares.`,
           cleanse: `Remove ${e.amount} temporary severity: ${e.keys?.join(", ")}.`,

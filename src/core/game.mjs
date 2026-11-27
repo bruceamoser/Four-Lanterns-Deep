@@ -1901,6 +1901,7 @@ export class Game {
       h.powerUses = {};
       h.powerResourceUsed = [];
       h.powerPendingManeuver = false;
+      delete h.sustainedWard;
       h.powerTurn = 0;
     });
     for (const e of opposition) {
@@ -2009,6 +2010,7 @@ export class Game {
             )),
       )
     ) {
+      for (const h of this.party) this.endWard(h);
       this.recordScars();
       this.awardEncounterXP(
         this.encounter.roster

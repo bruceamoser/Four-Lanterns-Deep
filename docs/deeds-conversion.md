@@ -33,3 +33,20 @@ The original VMS death routine first checks what the species carries, then indep
 A floor makes a room-only ordinary object pass centered on seven placements, an eligible-floor object pass centered on two, and a separate gold pass centered on two. Each uses a standard deviation of three. A normal item draw selects a catalog row eligible for the depth. One draw in twenty opens the full pool. For chests this yields approximately 0.087% of ordinary object draws at depth 1, 0.766% at depth 7, 1.23% at depth 25 and 1.74% at depth 50. These are per draw. Generating a chest and obtaining its contents are separate events. A surviving small wooden chest can be empty (4.51%) or pay twice. A surviving large steel chest pays 2d2 times. Traps resolve before contents and an explosion can destroy the chest. [Floor allocation](https://github.com/dungeons-of-moria/vms-moria/blob/adce6c8/source/include/generate.inc#L851-L866) · [base draw](https://github.com/dungeons-of-moria/vms-moria/blob/adce6c8/source/include/misc.inc#L1723-L1775) · [opening a chest](https://github.com/dungeons-of-moria/vms-moria/blob/adce6c8/source/include/moria.inc#L2710-L2758)
 
 FLD should separately roll source, number of rewards, category, eligible item and power. Recoverable creature tools should match the creature's role. Give treasure rooms a reason to explore, preserve essential market stock, and record claims before XP or further encounters can process the same kill again.
+
+## 0.9.0 qualification
+
+The executable Forge contains 427 circles in 23 displayed discipline origins, with 77 paths, 33 confluences and three class signature choices at each of three tiers for each of ten classes. The five new paths have seven sections. Existing dungeon paths retain their authored lengths. The original source review records deferred tabletop and narrative abilities. The 52 dungeon finds comprise 22 potions, nine scrolls, 13 wands, six implements and two ritual offerings. The separate return scroll keeps its existing passage behavior.
+
+Run `node scripts/deeds-migration-check.mjs` with the 0.8.8 tag fetched. It runs the tagged engine to make an old combat save, loads it in the current engine, extracts, rebuilds a hero and reloads the result. Assertions cover an active encounter, reserve, Hall, return passage, original hero ID, possessions, XP, spent Grit and injury history. Both stages use a synthetic company and temporary storage.
+
+Run `node scripts/deeds-balance-check.mjs` for the fixed-seed survey. Each row covers 64 independently generated floors for a four-hero company. From level three it includes a legal Flaming Arrow hybrid. From level seven the party also contains a dedicated Arms mastery. Each floor resolves the carrying roll for every generated creature. The merchant exercise takes the first eight accessible non-guardian items, keeps all magical finds and sells duplicate ordinary supplies with a positive price. The final column describes that scripted company's choices.
+
+| Hero level / depth | Creatures | Carriers with loot | Carriers with two items | Enchanted pieces | Distinct dungeon finds | Pickups sold / sampled |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 / 1 | 1,609 | 597 | 0 | 75 | 26 | 112 / 512 |
+| 3 / 6 | 2,302 | 876 | 45 | 162 | 51 | 117 / 512 |
+| 7 / 12 | 2,458 | 916 | 60 | 139 | 50 | 107 / 512 |
+| 10 / 20 | 2,461 | 957 | 55 | 161 | 50 | 105 / 512 |
+
+The 256 floors contained 99 optional vaults. One run's discoveries are independent of another's. This samples availability and stock turnover. Actual player preferences, perceived difficulty and whole-campaign retreat frequency require player sessions.

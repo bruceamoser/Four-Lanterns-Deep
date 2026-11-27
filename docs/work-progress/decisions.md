@@ -6,6 +6,12 @@ Bruce wants development to execute on each local computer. Use the repository to
 
 `AGENTS.md` is the shared agent entry point. `docs/work-progress/current.md` is the current handoff index, with dated session records and this decision log. Keep detailed game rules and asset/release policies in their existing docs.
 
+## 2026-11-27 — Deeds and dungeon discoveries
+
+Deeds heroes train through level ten and bank further XP. Already trained levels survive a respec. Level-seven masteries complete a single path. Two-discipline techniques connect before mastery from level three. Three- and four-discipline techniques use the terminal contacts. Confirmed class signatures are locked until a town respec. Sustained protection costs a Maneuver each subsequent turn and keeps its remaining absorption.
+
+Dungeon potion discoveries belong to one saved company, including future heroes. Vale’s Crucible identifies recovered items for 20 coins. Training gates apply immediately and independently of appraisal. A former party member can return once through the Shrine when both rare offerings have been found.
+
 ## Existing boundaries
 
 - Bruce is the final design authority. The game is Four Lanterns Deep; Greyhaven is its town.

@@ -1,3 +1,5 @@
+import { xpForLevel, trainingTarget } from "../src/core/experience.mjs";
+import { equipmentRollBonus } from "../src/core/equipment-bonuses.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fresh, arena, drafts, learn, C } from "./forge-fixture.mjs";
@@ -172,4 +174,71 @@ test("each find has an eligible depth and an executable effect family", () => {
     Object.fromEntries(Object.entries(families).map(([k, v]) => [k, v.length])),
     { potion: 22, scroll: 9, implement: 6, wand: 13, reagent: 2 },
   );
+});
+
+test("new training banks excess XP and a previously trained higher level is retained", () => {
+  const g = fresh();
+  g.awardXP("deep", xpForLevel(12), "Deep vault");
+  g.trainForge(0);
+  assert.equal(g.active.preview.state.level, 10);
+  assert.equal(g.active.xp, xpForLevel(12));
+  assert.throws(() => g.trainForge(0), /No untrained/);
+  assert.equal(
+    trainingTarget({ ...g.active, preview: { state: { level: 12 } } }),
+    12,
+  );
+});
+test("a sustained ward costs one maneuver on following turns, never refills and ends on missed upkeep", () => {
+  const g = arena(build("life:1:0", 3, 2)),
+    h = g.active,
+    ally = g.party[1];
+  g.provoke = () => false;
+  g.usePower("power-living-ward", ally.id);
+  assert.ok(h.sustainedWard);
+  assert.equal(g.sustainDue(h), false);
+  const ward = ally.powerEffects.find((e) => e.id === "ward:" + h.id);
+  assert.ok(ward.stats.absorb > 2);
+  const initial = ward.stats.absorb;
+  assert.equal(g.absorbPowerDamage(ally, 2, "physical"), 0);
+  assert.equal(ward.stats.absorb, initial - 2);
+  const sp = h.sp;
+  h.powerTurn++;
+  g.budget.remaining.maneuver = 1;
+  assert.equal(g.sustainDue(h), true);
+  g.sustainWard();
+  assert.equal(g.budget.remaining.maneuver, 0);
+  assert.equal(h.sp, sp);
+  assert.equal(ward.stats.absorb, initial - 2);
+  assert.throws(() => g.sustainWard(), /No ward/);
+  h.powerTurn++;
+  g.finishCombatTurn();
+  assert.equal(h.sustainedWard, undefined);
+  assert.ok(!ally.powerEffects.includes(ward));
+});
+test("role-specific slaying and the Bloodglass drawback apply only with the readied weapon", () => {
+  const g = arena(),
+    h = g.active;
+  g.mode = "town";
+  for (const i of h.preview.inventory.items.filter((i) => i.held))
+    g.equip(0, i.instanceId, "stow");
+  const spec = { weapon: "melee" };
+  for (const affix of ["gravebane", "bloodglass"]) {
+    const blade = magicItem(99, 7, { base: "blade", affixes: [affix] });
+    h.treasure = [blade];
+    g.refreshHero(h);
+    const foe = { type: "creature-barrow-guard" },
+      other = { type: "creature-road-bandit" };
+    const get = (target) => g.buildDamage(h, target, spec, "physical", 1);
+    const base = get(foe),
+      def = equipmentRollBonus(h, { mode: "defense", type: "physical" });
+    g.equip(0, blade.instanceId, "ready");
+    assert.equal(get(foe), base + 2);
+    assert.equal(get(other), affix === "gravebane" ? base : base + 2);
+    assert.equal(
+      equipmentRollBonus(h, { mode: "defense", type: "physical" }),
+      def - Number(affix === "bloodglass"),
+    );
+    g.equip(0, blade.instanceId, "stow");
+    assert.equal(get(foe), base);
+  }
 });

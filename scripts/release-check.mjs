@@ -1,3 +1,4 @@
+import { FORGE_NODES } from "../src/core/forge-catalog.mjs";
 import { verifyCreatureAI } from "./creature-ai-check.mjs";
 import { enterGame, settingsAction } from "./ui-session.mjs";
 // Smoke-test the actual AppImage or installed Windows executable, with real IPC,
@@ -105,7 +106,8 @@ try {
     page.getByRole("dialog", { name: "Discipline forge" }),
   ).toBeVisible();
   await expect(page.locator(".forge-svg")).toBeVisible();
-  await expect(page.locator(".forge-node")).toHaveCount(377);
+  await expect(page.locator(".forge-node")).toHaveCount(FORGE_NODES.length);
+  await expect(page.locator('[data-discipline="fencing"]')).toBeVisible();
   await page.locator('[data-discipline="arms"]').click();
   await page.screenshot({
     path: `test-results/release-forge-${process.platform}.png`,

@@ -216,6 +216,8 @@ export const expeditionMethods = {
     if (changed && !silent) this.emit("light");
   },
   finishCombatTurn() {
+    const caster = this.party.find(h => h.id === this.encounter.current);
+    if (caster?.sustainedWard && (caster.powerTurn >= caster.sustainedWard.due || caster.survival.status !== "active")) this.endWard(caster);
     const round = this.encounter.round;
     this.encounter = this.R.finishTurn(this.encounter);
     if (this.encounter.round !== round)
