@@ -118,3 +118,8 @@ Local AppImage/deb and main checkout release/linux-unpacked updated with Scrappe
 ## November12 — desktop agent NoNewPrivs and native qualification
 
 This session's shell reports `NoNewPrivs: 1`, which prevents the trusted SUID Chromium helper from elevating; `aa-exec -p unconfined` alone cannot remove that inherited restriction. The normal desktop systemd user manager reports `NoNewPrivs: 0`. Run native QA through a transient user service with the task worktree as WorkingDirectory. The harness still directly invokes `launch-game.sh` under `aa-exec -p unconfined`, uses `--mute-audio`, isolated temporary saves and verifies renderer Seccomp2. Do not add `--no-sandbox`, change global AppArmor settings or alter personal sound preferences. Native performance evidence in `FLD-Creature-Production/test-results/roster-performance/`; final delivery report records completion separately.
+
+
+## November 27 research checkouts
+
+The renamed local rules repository is `/home/bmoser/repos/deeds-of-legend`. Its working branch can differ from published or remote main. Review pinned Git objects without switching the author's checkout. Full standalone clones of the six [Dungeons of Moria repositories](https://github.com/dungeons-of-moria) live under `/home/bmoser/repos/dungeons-of-moria/` on this machine. Reviewed heads were vms-moria `adce6c8`, umoria `3bf8abc`, imoria `61d9360`, icmoria `c2d5b29`, moria-ub `b2745ce` and boss-beyond-moria `ac54894`. Clone from the organization on another machine as needed.

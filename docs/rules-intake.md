@@ -1,6 +1,8 @@
-# HoL rules intake
+# Deeds of Legend rules intake
 
-## Located sources
+For the current book and the proposed game migration, see the [Deeds and Moria review](deeds-moria-review.md). The intake below documents the older rules that still ship in 0.8.8.
+
+## Original intake sources
 
 - Authoritative book checkout: `/home/bmoser/repos/heroes-of-legend`.
 - Existing implementation: `/home/bmoser/repos/heroes-of-legend-foundry`.

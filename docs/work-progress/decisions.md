@@ -163,3 +163,8 @@ Bruce explicitly corrected stopping at 15/58: continue the roster without ending
 ## 2026-11-11 — Bold creature surfaces and focal details
 
 Bruce approved the Ghoul and Ghast looks and asked for similarly bold decisions across the roster. Push silhouette, material relief and deliberate color contrast so signature details are recognizable from the dungeon camera. The Ghoul uses enlarged wine-purple pits and amber eyes. The Ghast uses charcoal sockets, green eyes and concentrated dirt on worn finery. Use TextureCraft presets, masks and baked maps where they support that creature's own identity. Review the finished design from the play camera and through its clips.
+
+
+## 2026-11-27 — Deeds conversion and Moria discovery
+
+Bruce chose Deeds single-path level-seven masteries alongside optional cross-discipline combinations. Balance levels 1–10 first and continue dungeon depth. Share potion discoveries throughout a saved run and with its replacement heroes. Unknown potions normally come from the dungeon. Surface vendors sell identified stock and offer paid identification of finds. Extremely rare required resources can bring one selected fallen hero back from the grave. Preserve existing heroes, equipment, XP and history when migrating and respec the old build choices. See the [review](../deeds-moria-review.md) for source rules, proposed adaptations and implementation order.

@@ -1,6 +1,6 @@
 # Four Lanterns Deep
 
-Bruce is the final design authority. Build a desktop single-player 3D isometric four-hero dungeon RPG, using fantasy Heroes of Legend. High-end presentation is a requirement, not optional polish.
+Bruce is the final design authority. Build a desktop single-player 3D isometric four-hero dungeon RPG, using fantasy Deeds of Legend. High-end presentation is a requirement, not optional polish.
 
 Use the personal GitHub account with `/home/bmoser/.local/bin/gh-project` or `gh-personal`; never switch shared authentication.
 
