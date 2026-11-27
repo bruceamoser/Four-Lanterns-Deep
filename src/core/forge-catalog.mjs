@@ -1313,10 +1313,10 @@ for (const d of FORGE_DISCIPLINES) {
     FORGE_PATHS.push(path);
   });
 }
-const contact = (discipline, path = 0) =>
+const contact = (discipline, path = 0, fromEnd = 1) =>
   FORGE_PATHS.find(
     (p) => p.discipline === discipline && p.id === `${discipline}:path${path}`,
-  ).nodes.at(-1);
+  ).nodes.at(-fromEnd);
 const intersections = [
   ["flaming-arrow", "Flaming Arrow", ["flame", "marksmanship"], [0, 0]],
   ["thorn-arrow", "Thorn Arrow", ["marksmanship", "wilderness"], [2, 0]],
@@ -1414,7 +1414,7 @@ for (const [slug, name, disciplines, paths] of intersections)
     kind: "intersection",
     disciplines,
     cost: disciplines.length + 1,
-    requires: disciplines.map((d, i) => contact(d, paths[i])),
+    requires: disciplines.map((d, i) => contact(d, paths[i], disciplines.length === 2 ? 2 : 1)),
     power: `power-forge-${slug}`,
     minimumLevel: disciplines.length >= 3 ? 7 : 3,
     description: `Unlock every touching circle from ${disciplines.map((id) => FORGE_DISCIPLINES.find((d) => d.id === id).name).join(" + ")}.`,

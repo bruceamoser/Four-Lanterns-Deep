@@ -185,9 +185,9 @@ export const powerMethods = {
       { type: "physical", value: Math.max(0, Math.min(3, physical + delta)) },
     ];
   },
-  absorbPowerDamage(target, amount, type) {
+  absorbPowerDamage(target, amount, type, minimum = false) {
     if (amount <= 0) return 0;
-    let result = Math.max(0, amount - this.powerStat(target, "reduction"));
+    let result = Math.max(minimum ? 1 : 0, amount - this.powerStat(target, "reduction"));
     const shield = (target.powerEffects ?? [])
       .filter(
         (e) =>
@@ -225,9 +225,9 @@ export const powerMethods = {
       resistances,
       weaknesses: target.survival ? [] : this.creatureWeaknesses(target),
     }).total;
-    if (target.survival) this.suffer(target, damage, type, actor);
+    if (target.survival) damage = this.suffer(target, damage, type, actor, modern && attack).applied;
     else {
-      damage = this.absorbPowerDamage(target, damage, type);
+      damage = this.absorbPowerDamage(target, damage, type, modern && attack);
       target.hp = Math.max(0, target.hp - damage);
       if (actor) this.creatureAfterHit(target, actor, { type }, damage);
       this.defeatEnemy(target);
@@ -621,7 +621,9 @@ export const powerMethods = {
             const components = [{type:effect.type, amount:base}, ...enchantments.map(e => ({
               type:e.type, amount:this.enchantmentDamage(h,e,effect.type)
             }))];
+            const originalHp=recipient.hp;
             const damage = this.powerDamageComponents(recipient,components,h,true,defenses.get(recipient));
+            if (tier===2 && recipient.hp<originalHp && weaponBonus(h,spec,"leech")) this.powerHeal(h,weaponBonus(h,spec,"leech"));
             for (const enchant of enchantments) if (tier === 2 && enchant.condition)
               this.powerCondition(recipient,enchant.condition,1+this.buildStat(h,enchant.condition),h.id);
             if (

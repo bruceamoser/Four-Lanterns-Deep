@@ -165,8 +165,8 @@ export const recoveryMethods = {
       { mode, ...extra },
     );
   },
-  suffer(h, amount, type = "physical", source = null) {
-    amount = this.absorbPowerDamage(h, amount, type);
+  suffer(h, amount, type = "physical", source = null, attackMinimum = false) {
+    amount = this.absorbPowerDamage(h, amount, type, attackMinimum);
     amount = this.interceptDamage(h, amount, type, source);
     if (amount > 0)
       h.lastHarm = source?.name
@@ -187,7 +187,7 @@ export const recoveryMethods = {
     }
     if (deedsHero(h.draft)) {
       if (amount > 0) h.conditions = h.conditions.filter(c => c.key !== "asleep");
-      return this.deedsHarm(h, amount, type);
+      return { ...this.deedsHarm(h, amount, type), applied: amount };
     }
     const prior = h.survival.wounds,
       result = this.R.sufferDamage(h.survival, amount);
@@ -225,7 +225,7 @@ export const recoveryMethods = {
       if (this.woundNotices.length === 1)
         this.emit("wound", { hero: h, wound: w });
     }
-    return result;
+    return { ...result, applied: amount };
   },
   acknowledgeWound(direction) {
     const notice = this.woundNotices?.[0];

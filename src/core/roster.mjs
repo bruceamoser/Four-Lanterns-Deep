@@ -1,3 +1,4 @@
+import {missingSignatures} from "./forge.mjs";
 import { xpForLevel, levelForXP, legacyXPForLevel } from "./experience.mjs";
 
 export function storedHero(hero) {
@@ -146,6 +147,7 @@ export const rosterMethods = {
     return "";
   },
   createRecruit(draft) {
+    if (missingSignatures(draft).length) throw new Error("Choose a class signature before registering this hero.");
     if (!["town", "defeat"].includes(this.mode))
       throw new Error("Create heroes in Greyhaven.");
     if ((draft.progression?.level ?? 1) !== 1)

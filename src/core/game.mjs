@@ -853,7 +853,8 @@ export class Game {
       const enchantments = weapon
         ? activeItemEffects(h, weapon).filter((e) => e.effect === "damage")
         : [];
-      const damage = this.R.damageEvent({
+      const damage = (deedsHero(h.draft) ? deedsDamage : this.R.damageEvent)({
+        immunities: this.creature(target)?.immunities ?? [],
         components: [
           {
             type: spec.type,
@@ -880,7 +881,7 @@ export class Game {
         weaknesses: this.creatureWeaknesses(target),
       });
       this.breakConcealment(h);
-      damage.total = this.absorbPowerDamage(target, damage.total, spec.type);
+      damage.total = this.absorbPowerDamage(target, damage.total, spec.type, deedsHero(h.draft));
       target.hp = Math.max(0, target.hp - damage.total);
       target.conditions ??= [];
       for (const [condition, rating] of [
@@ -1147,7 +1148,7 @@ export class Game {
         })),
       ),
     });
-    this.suffer(h, damage.total, action.type, e);
+    damage.total = this.suffer(h, damage.total, action.type, e, deedsHero(h.draft)).applied;
     for (const m of outcome.matchAll(
       /(Burning|Freezing|Bleeding|Poisoned|Slowed|Dazed|Paralyzed|Frightened|Blinded|Deafened|Grappled) (\d+)/gi,
     ))

@@ -460,7 +460,7 @@ function approvedMagicItem(seed, depth, options) {
     def = ITEM_BASES[base];
   if (!def) throw new Error("Unknown treasure form.");
   const pool = Object.keys(EQUIPMENT_BONUSES).filter((k) =>
-    EQUIPMENT_BONUSES[k].allowed.includes(base),
+    EQUIPMENT_BONUSES[k].allowed.includes(base) && (EQUIPMENT_BONUSES[k].edition ?? 1) <= (options.revision ?? 3),
   );
   const relicAffixes = {
     "cinder-crown": ["armorward", "competence-flame"],

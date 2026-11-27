@@ -1,7 +1,8 @@
+import { POWERS } from "../core/powers.mjs";
 import { appearancePreviewHero } from "../core/appearance-preview.mjs";
 import {
   newForgeDraft,
-  forgeCharacter,
+  forgeCharacter, missingSignatures, forgePowerText, forgePower,
   forgeBudget,
   forgeSpent,
   forgeOrigins,
@@ -41,7 +42,7 @@ export function creationScreen({
     shopQuery = "";
   try {
     const saved = JSON.parse(localStorage.getItem(key));
-    if (saved?.forge?.version === 1) resume = saved;
+    if (saved?.forge?.version === draft.forge.version && saved.progression?.level === draft.progression.level) resume = saved;
   } catch {}
   const steps = [
     "Identity",
@@ -104,6 +105,8 @@ export function creationScreen({
       ancestry = record(draft.ancestryId),
       cls = record(draft.classId),
       remaining = forgeBudget(draft, C) - forgeSpent(draft);
+    for(const level of missingSignatures(draft)) p.errors.push({code:"signature",text:"Choose the level "+level+" class signature in Origins or the Forge."});
+    p.valid = !p.errors.length;
     root.innerHTML = `<div class="veil"><section class="creator-window character-window" role="dialog" aria-modal="true" aria-label="${respec ? "Respec character" : "Create character"}"><header class="character-header"><div><span class="eyebrow">${respec ? "A NEW PATH · THE SAME HERO" : "A NAME WORTH REMEMBERING"}</span><h2>${respec ? "Reforge your legend" : "A new companion"}</h2></div><span class="creator-slot">LEVEL ${draft.progression.level} · ${remaining} DP AVAILABLE</span><button class="icon-button close" aria-label="Close">${icon("close")}</button></header><div class="creator-body"><nav class="creation-steps"><div class="creation-step-list">${steps.map((s, i) => `<button data-step="${i}" class="${step === i ? "chosen" : ""}"><span>0${i + 1}</span>${s}</button>`).join("")}</div><div class="creation-note">Choose three starting disciplines through your origins. Spend DP in their circular paths. Your unspent DP carries forward.</div><button id="blank-hero" class="subtle-button">${respec ? "Restart rebuild" : "Start a blank hero"}</button></nav><main class="creation-content"><div class="section-heading"><div><span class="eyebrow">CHAPTER ${step + 1} OF ${steps.length}</span><h3>${steps[step]}</h3></div></div><div id="creation-fields"></div></main><aside class="creation-summary"><div class="creation-preview"><canvas id="recruit-preview"></canvas></div><h3>${esc(draft.name || "Unnamed adventurer")}</h3><p>${esc(name(draft.ancestryId))}<br>${esc(name(draft.classId))}</p><div class="creation-totals"><span>Maximum HP<b>${p.summary.maximumHp}</b></span><span>Grit<b>${p.summary.gritGranted}</b></span><span>Speed<b>${p.summary.speed + (p.forge.stats.movement ?? 0)}</b></span><span>DP left<b>${remaining}</b></span></div><div class="creation-validation">${p.valid ? '<span class="ready-seal">◆ Ready for the company</span>' : `<span>${p.errors.length} choices need attention</span><small>The Review step lists remaining requirements.</small>`}</div></aside></div><footer class="character-footer creator-footer"><button id="creator-back" ${!step ? "disabled" : ""}>Back</button><span>${respec ? "Your hero changes only when you confirm. Injuries and possessions are retained." : "Draft saved locally. Unspent DP is never lost."}</span>${step === 6 ? `<button id="recruit" class="primary" ${p.valid ? "" : "disabled"}>${respec ? "Confirm respec" : "Save hero to repository"}</button>` : '<button id="creator-next" class="primary">Continue →</button>'}</footer></section></div>`;
     const host = root.querySelector("#creation-fields"),
       model = ["class-arcanist", "class-shepherd", "class-intellect"].includes(
@@ -287,6 +290,15 @@ export function creationScreen({
         .join(
           "",
         )}${disciplineStrip(p.state, C.choices)}<p class="forge-origin-help">${forgeOrigins(draft, C).length}/3 starting points chosen. ${forgeBudget(draft, C)} total DP available across your paths. Origins grant ranks; learn attacks and techniques by purchasing circles in the forge.</p>`;
+      if (cls?.signatures) {
+        const slot=host.querySelector("#class").closest("label") ?? host.querySelector("#class");
+        slot.insertAdjacentHTML("afterend",[1,3,7].filter(level=>level<=draft.progression.level).map(level=>{
+          const selected=draft.signatures?.[level];
+          return field("Level "+level+" class signature",'<select data-signature-tier="'+level+'">'+options(cls.signatures[level].map(id=>({id,name:POWERS[id].name})),selected)+'</select>')+
+            (selected ? '<p class="cost-note">'+esc(forgePowerText(forgePower(POWERS[selected],{draft,preview:p})))+'</p>' : "");
+        }).join(""));
+        bind("[data-signature-tier]","change",e=>{(draft.signatures ??= {})[e.dataset.signatureTier]=e.value;changed();});
+      }
       bind("#class", "change", (e) => {
         draft.classId = e.value;
         draft.signatures = {};
@@ -311,7 +323,7 @@ export function creationScreen({
         host.innerHTML = `<p class="forge-origin-help">Your ${original.preview.inventory.items.length} inventory stacks and remaining supplies stay with this hero. Rebuilding does not grant another equipment kit or starting purse.</p><div class="forge-owned-powers">${original.preview.inventory.items.map((i) => `<article><h4>${esc(i.definition.name)}</h4><p>Quantity ${i.quantity}</p></article>`).join("")}</div>`;
         return;
       }
-      host.innerHTML = `<p class="section-intro">Choose a kit, then spend up to 60 coins on extra equipment. All kits include clothes, food, water, torches and a healing bottle. Armor requires its matching forge training.</p><div class="forge-kit-grid">${Object.entries(
+      host.innerHTML = `<p class="section-intro">Choose a kit, then spend up to ${p.inventory.startingCoins} coins on extra equipment. All kits include clothes, food, water, torches and a healing bottle. Armor requires its matching forge training.</p><div class="forge-kit-grid">${Object.entries(
         FORGE_KITS,
       )
         .map(

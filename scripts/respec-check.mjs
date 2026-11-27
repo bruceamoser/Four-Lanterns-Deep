@@ -90,7 +90,7 @@ export async function verifyRespec(page) {
       supplies: before.supplies,
       hp: 7,
       grit: 0,
-      dp: 30,
+      dp: 71,
       nodes: ["arms:0:0", "armor:0:0"],
     });
     await page.keyboard.press("Escape");

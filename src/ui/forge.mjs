@@ -1,3 +1,4 @@
+import { trainingTarget } from "../core/experience.mjs";
 import { deedsDP, deedsHero, disciplinePrice } from "../core/deeds-development.mjs";
 import {
   viewNodePosition,
@@ -169,7 +170,7 @@ export function forgeScreen({
       remaining = forgeBudget(draft, C) - forgeSpent(draft),
       h = live() ? game.party[index] : null;
     root.querySelector(".forge-currency").innerHTML =
-      `<span>LEVEL ${draft.progression.level}</span><b>${remaining}</b><span>DP AVAILABLE</span>${h && h.earnedLevel > h.preview.state.level ? `<button class="primary forge-train" ${readOnly() ? "disabled" : ""}>Train level ${h.earnedLevel} · +${deedsHero(draft) ? deedsDP(draft, h.earnedLevel) - deedsDP(draft) : (h.earnedLevel - h.preview.state.level) * 4} DP</button>` : ""}`;
+      `<span>LEVEL ${draft.progression.level}</span><b>${remaining}</b><span>DP AVAILABLE</span>${h && trainingTarget(h) > h.preview.state.level ? `<button class="primary forge-train" ${readOnly() ? "disabled" : ""}>Train level ${trainingTarget(h)} · +${deedsHero(draft) ? deedsDP(draft, trainingTarget(h)) - deedsDP(draft) : (trainingTarget(h) - h.preview.state.level) * 4} DP</button>` : ""}`;
     root
       .querySelector(".forge-train")
       ?.addEventListener("click", () => perform(() => game.trainForge(index)));

@@ -1,3 +1,4 @@
+import {verifyDeedsDelve} from "./deeds-delve-check.mjs";
 import { verifyBestiaryPreview } from "./bestiary-preview-check.mjs";
 import { verifyCreaturePilots } from "./creature-pilots-check.mjs";
 import { verifyEquipmentBonuses } from "./equipment-bonuses-check.mjs";
@@ -116,6 +117,7 @@ try {
   const runCheck = async (fn) => {
     if (!selectedChecks || selectedChecks.includes(fn.name)) await fn(w);
   };
+  await runCheck(verifyDeedsDelve);
   await runCheck(verifyEquipmentBonuses);
   await runCheck(verifyAreaArrows);
   await runCheck(verifyChallenge);

@@ -1,10 +1,11 @@
+import { trainingTarget } from "./experience.mjs";
 import { deedsHero } from "./deeds-development.mjs";
 import { FORGE_NODE, FORGE_LEVEL_CAP } from "./forge-catalog.mjs";
 import {
   forgeCharacter,
   forgeRequirements,
   forgeRefundPlan,
-  newForgeDraft,
+  newForgeDraft, missingSignatures,
 } from "./forge.mjs";
 import { gearPreview } from "./treasure.mjs";
 export const forgeGameMethods = {
@@ -52,13 +53,14 @@ export const forgeGameMethods = {
     const h = this.party[index];
     if (expectedHeroId && h.heroId !== expectedHeroId)
       throw new Error("The party slot changed. Reopen this hero’s forge.");
+    if (respec && missingSignatures(draft).length) throw new Error("Choose all earned class signatures before confirming the respec.");
     if (!respec) for (const [level,selected] of Object.entries(h.draft.signatures ?? {}))
       if (selected !== draft.signatures?.[level]) throw new Error("Respec in Greyhaven to replace a chosen signature.");
     const p = forgeCharacter(draft, this.C);
     if (!p.valid) throw new Error(p.errors.map((e) => e.text).join("\n"));
     const level = p.state.level;
     if (
-      level > h.earnedLevel ||
+      level > trainingTarget(h) ||
       level < h.preview.state.level ||
       level > FORGE_LEVEL_CAP
     )
@@ -172,7 +174,7 @@ export const forgeGameMethods = {
   trainForge(index) {
     const h = this.party[index],
       draft = structuredClone(h.draft);
-    draft.progression.level = Math.min(FORGE_LEVEL_CAP, h.earnedLevel);
+    draft.progression.level = trainingTarget(h);
     if (draft.progression.level <= h.preview.state.level)
       throw new Error("No untrained level is available.");
     return this.forgeCommit(index, draft);

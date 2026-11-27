@@ -1,4 +1,4 @@
-import { deedsClasses, deedsOrigins, atlasStudies, fieldOf } from "./deeds-origins.mjs";
+import { deedsClasses, deedsOrigins, atlasStudies, fieldOf, startingPurse } from "./deeds-origins.mjs";
 import { DEEDS_CLASSES, deedsHero, deedsDP, deedsVitals, disciplinePrice } from "./deeds-development.mjs";
 import { bulkCatalog, encumbranceFor } from "./bulk.mjs";
 import {
@@ -225,6 +225,9 @@ export function forgeRefundPlan(draft, C, id = null) {
     refund: removed.reduce((n, id) => n + disciplinePrice(draft, FORGE_NODE[id]), 0),
   };
 }
+export function missingSignatures(draft) {
+  return deedsHero(draft) && draft.classId ? [1,3,7].filter(n=>n<=draft.progression.level && !draft.signatures?.[n]) : [];
+}
 export function forgeBenefits(draft, C) {
   const owned = forgeOwned(draft, C),
     stats = {},
@@ -378,6 +381,7 @@ export function forgeCharacter(draft, C) {
     instanceId: id === "item-travel-clothes" ? "creation-outfit" : `kit:${id}`,
     quantity: 1,
   }));
+  const purse=deedsHero(draft) ? startingPurse(draft) : 60;
   let spent = 0;
   for (const [i, s] of (draft.shopping ?? []).entries()) {
     const def = C.inventory.equipment.find((r) => r.id === s.id);
@@ -405,10 +409,10 @@ export function forgeCharacter(draft, C) {
       hands: s.hands,
     });
   }
-  if (spent > 60)
+  if (spent > purse)
     error(
       "coins",
-      `Equipment costs ${spent} coins; the starting purse contains 60.`,
+      `Equipment costs ${spent} coins; the starting purse contains ${purse}.`,
     );
   const items = receipts
     .map((r) => {
@@ -491,7 +495,7 @@ export function forgeCharacter(draft, C) {
       ruleReferences: [],
     },
     languages,
-    startingCoins: 60,
+    startingCoins: purse,
     creationAttributes: { ...attr },
   };
   const state = {
@@ -521,8 +525,8 @@ export function forgeCharacter(draft, C) {
       capacity,
       encumbrance,
       spent,
-      startingCoins: 60,
-      remainingCoins: 60 - spent,
+      startingCoins: purse,
+      remainingCoins: purse - spent,
     },
     resistances: {},
     passiveSources: [],

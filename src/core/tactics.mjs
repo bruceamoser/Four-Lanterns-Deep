@@ -1,3 +1,5 @@
+import { deedsDamage } from "./deeds-damage.mjs";
+import { deedsHero } from "./deeds-development.mjs";
 import { weaponBonus } from "./equipment-bonuses.mjs";
 import { activeItemEffects } from "./treasure.mjs";
 import { ABILITIES } from "./abilities.mjs";
@@ -213,7 +215,8 @@ export const tacticMethods = {
       h,
       this.held(h, "item-ordinary-melee-weapon"),
     ).filter((e) => e.effect === "damage");
-    let damage = this.R.damageEvent({
+    let damage = (deedsHero(h.draft) ? deedsDamage : this.R.damageEvent)({
+      immunities: this.creature(e)?.immunities ?? [],
       components: [
         {
           type: "physical",
@@ -244,7 +247,7 @@ export const tacticMethods = {
       weaknesses: this.creatureWeaknesses(e),
     }).total;
     this.breakConcealment(h);
-    damage = this.absorbPowerDamage(e, damage, "physical");
+    damage = this.absorbPowerDamage(e, damage, "physical", deedsHero(h.draft));
     e.hp = Math.max(0, e.hp - damage);
     if (r.tier === "strong" && e.hp > 0 && weaponBonus(h, spec, "push"))
       this.forceMove(

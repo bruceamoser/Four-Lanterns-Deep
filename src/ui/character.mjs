@@ -1,3 +1,4 @@
+import { trainingTarget } from "../core/experience.mjs";
 import { DELVE_FINDS } from "../core/delve-finds.mjs";
 import { appearancePreviewHero } from "../core/appearance-preview.mjs";
 import { FORGE_NODES } from "../core/forge-catalog.mjs";
@@ -88,7 +89,7 @@ export function characterSheet({
      )
      .join(
        "",
-     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}${h.draft.forge?.version === 2 ? `<div class="cost-note">${h.sp}/${p.summary.maximumSp} SP · ${h.survival.gritAvailable} Grit</div>${["town","exploration"].includes(game.mode) && h.survival.hp < h.survival.maxHp ? '<button id="give-first-aid">First aid · 10 min</button>' : ""}<label><input id="avert-death" type="checkbox" ${h.avertDeath !== false ? "checked" : ""}> Spend Grit on a fatal death roll</label>${["stable","dying"].includes(h.survival.status) && h.survival.gritAvailable ? '<button id="use-grit">Spend Grit now</button>' : ""}` : ""}<button id="sheet-training" class="primary">${h.earnedLevel > p.state.level ? `Level up → ${h.earnedLevel}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">${h.draft.forge?.version === 1 ? "Adopt Deeds rules · respec" : "Respec from beginning"}</button><div class="dossier-footer"></div></aside>
+     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}${h.draft.forge?.version === 2 ? `<div class="cost-note">${h.sp}/${p.summary.maximumSp} SP · ${h.survival.gritAvailable} Grit</div>${["town","exploration"].includes(game.mode) && h.survival.hp < h.survival.maxHp ? '<button id="give-first-aid">First aid · 10 min</button>' : ""}<label><input id="avert-death" type="checkbox" ${h.avertDeath !== false ? "checked" : ""}> Spend Grit on a fatal death roll</label>${["stable","dying"].includes(h.survival.status) && h.survival.gritAvailable ? '<button id="use-grit">Spend Grit now</button>' : ""}` : ""}<button id="sheet-training" class="primary">${trainingTarget(h) > p.state.level ? `Level up → ${trainingTarget(h)}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">${h.draft.forge?.version === 1 ? "Adopt Deeds rules · respec" : "Respec from beginning"}</button><div class="dossier-footer"></div></aside>
    <main class="character-details"><nav class="sheet-tabs" aria-label="Character sections">${[
      ["equipment", "pack", "Equipment"],
      ["abilities", "bolt", "Abilities"],
@@ -111,7 +112,7 @@ export function characterSheet({
         return game.notify(
           "Return to Greyhaven to train. Your XP and earned levels are saved.",
         );
-      if (h.earnedLevel > p.state.level || p.development.current > 0)
+      if (trainingTarget(h) > p.state.level || p.development.current > 0)
         train(index);
       else {
         tab = "build";
@@ -578,7 +579,7 @@ export function characterSheet({
         },
       });
     } else {
-      content.innerHTML = `<div class="section-heading"><div><span class="eyebrow">A LIFE BEFORE THE DARK</span><h3>Journey & development</h3></div><b class="level-medallion">${p.state.level}</b></div><div class="journey-grid"><div><span class="eyebrow">ORIGINS</span><h3>${esc(name(h.draft.culture.id))}</h3><p>${esc(name(h.draft.background.id))}</p><p>${esc(p.summary.languages.map((l) => l.name).join(" · "))}</p></div><div><span class="eyebrow">TRAINING</span><h3>${p.development.current} DP available</h3><p>Earned level ${h.earnedLevel} · ${p.development.spent} DP spent</p><p>Gain XP from discovery, encounters and treasure. Apply earned levels by training here.</p>${game.mode === "town" ? '<button id="train-hero" class="primary">Develop this hero</button>' : '<span class="cost-note">Return to Greyhaven to train.</span>'}</div></div>${experienceDetails(h, game.campaign.depth)}<h3 class="subheading">Disciplines</h3><div class="discipline-grid">${Object.entries(
+      content.innerHTML = `<div class="section-heading"><div><span class="eyebrow">A LIFE BEFORE THE DARK</span><h3>Journey & development</h3></div><b class="level-medallion">${p.state.level}</b></div><div class="journey-grid"><div><span class="eyebrow">ORIGINS</span><h3>${esc(name(h.draft.culture.id))}</h3><p>${esc(name(h.draft.background.id))}</p><p>${esc(p.summary.languages.map((l) => l.name).join(" · "))}</p></div><div><span class="eyebrow">TRAINING</span><h3>${p.development.current} DP available</h3><p>Earned level ${trainingTarget(h)} · ${p.development.spent} DP spent</p><p>Gain XP from discovery, encounters and treasure. Apply earned levels by training here.</p>${game.mode === "town" ? '<button id="train-hero" class="primary">Develop this hero</button>' : '<span class="cost-note">Return to Greyhaven to train.</span>'}</div></div>${experienceDetails(h, game.campaign.depth)}<h3 class="subheading">Disciplines</h3><div class="discipline-grid">${Object.entries(
         p.state.ranks,
       )
         .map(

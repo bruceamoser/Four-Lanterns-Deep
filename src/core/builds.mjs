@@ -1,4 +1,5 @@
-import { strongest, weaponBonus } from "./equipment-bonuses.mjs";
+import { CREATURE_ROSTER } from "./creature-roster.mjs";
+import { strongest, weaponBonus, weaponEffects } from "./equipment-bonuses.mjs";
 import { forgePower, forgePowerText } from "./forge.mjs";
 import { POWERS } from "./powers.mjs";
 import { distance } from "./dungeon.mjs";
@@ -511,6 +512,12 @@ export const buildMethods = {
       this.buildStat(h, "damage") +
       this.buildStat(h, type) +
       (spec?.damageModifier ?? 0);
+    if (spec?.weapon) {
+      const effects=weaponEffects(h,spec);
+      const theme=CREATURE_ROSTER[target?.type]?.theme;
+      n+=Math.max(0,...effects.filter(e=>e.effect==="slay" && e.themes.includes(theme)).map(e=>e.value));
+      n+=weaponBonus(h,spec,"reckless");
+    }
     if (spec?.spell) n += this.buildStat(h, "spell");
     if (tier === 2)
       n += this.buildStat(h, "critical") + weaponBonus(h, spec, "strongDamage");

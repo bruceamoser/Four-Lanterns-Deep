@@ -2,7 +2,7 @@
 
 ## November 27 — Deeds implementation in progress
 
-Worktree `/home/bmoser/Projects/FLD-Deeds-Review`, branch `codex/deeds-conversion`. The [release plan](../deeds-conversion.md) and [implementation handoff](handoffs/2026-11-27-deeds-conversion.md) track the mechanical work. PR 208 merged the research and attribution. Save compatibility, development, drops, appraisal, Grit and care, signatures and the first optional vault are in the implementation branch. The new technique and identification interactions are integrated. An actual 0.8.8 synthetic combat save passed migration and respec. Native desktop, balancing and installer qualification are in progress. Public release 0.8.8 remains the upgrade baseline.
+Worktree `/home/bmoser/Projects/FLD-Deeds-Review`, branch `codex/deeds-conversion`. The [release plan](../deeds-conversion.md) and [implementation handoff](handoffs/2026-11-27-deeds-conversion.md) track the mechanical work. PR 208 merged the research and attribution. Save compatibility, development, drops, appraisal, Grit and care, signatures and the first optional vault are in the implementation branch. The new technique and identification interactions are integrated. An actual 0.8.8 synthetic combat save passed migration and respec. The native vault-to-market test and actual AppImage update round trip passed. A respec draft resume defect was corrected. Balance sampling, the full Forge walkthrough and finished installer qualification are underway in PR 209. Public release 0.8.8 remains the upgrade baseline.
 
 ## November 27 — Deeds rules and Moria design review
 

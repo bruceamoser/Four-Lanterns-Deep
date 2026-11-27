@@ -324,7 +324,7 @@ export class Scene {
         const stairs = ["entrance", "descent"].includes(item.kind);
         const dropped = !!item.source?.dropped;
         const modelName =
-          item.kind === "ore" ? "rubble" : item.kind === "vaultDoor" ? "wallHalf" : item.kind === "bell" ? "toolAnvil" : item.kind === "spring"
+          item.kind === "ore" ? "rubble" : item.kind === "vaultDoor" ? "wallHalf" : item.kind === "bell" ? "watchBell" : item.kind === "spring"
             ? "well"
             : stairs
               ? "stairs"
@@ -453,6 +453,23 @@ export class Scene {
     );
   }
   model(name, height) {
+    if (name === "watchBell" && !this.assets.has(name)) {
+      const frame = new T.Group();
+      const wood = new T.MeshStandardMaterial({color:0x523824,roughness:.88});
+      const brass = new T.MeshStandardMaterial({color:0xe9ac43,metalness:.55,roughness:.32,side:T.DoubleSide});
+      const add = (shape, material, x, y, z) => {
+        const part = new T.Mesh(shape, material);
+        part.position.set(x,y,z);
+        part.castShadow = true;
+        frame.add(part);
+      };
+      for (const x of [-.46,.46]) add(new T.BoxGeometry(.11,1.1,.18),wood,x,.55,0);
+      add(new T.BoxGeometry(1.14,.14,.19),wood,0,1.08,0);
+      const profile = [[.34,.30],[.32,.34],[.25,.38],[.21,.59],[.19,.72],[.13,.81],[.05,.83],[.04,.98]];
+      add(new T.LatheGeometry(profile.map(([x,y])=>new T.Vector2(x,y)),20),brass,0,0,0);
+      add(new T.SphereGeometry(.075,12,8),brass,0,.30,0);
+      this.assets.set(name,{scene:frame});
+    }
     const asset = this.assets.get(name);
     if (!asset) return new T.Group();
     const obj = clone(asset.scene);

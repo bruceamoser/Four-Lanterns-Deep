@@ -291,6 +291,8 @@ test("training and full respec preserve inventory, missing HP, spent Grit, XP an
     name: h.name,
     progression: { level: 7 },
   });
+  const signatures=C.choices.find(r=>r.id===d.classId).signatures;
+  d.signatures={1:signatures[1][0],3:signatures[3][0],7:signatures[7][0]};
   g.respec(0, d, h.heroId);
   assert.equal(g.active.xp, xp);
   assert.deepEqual(

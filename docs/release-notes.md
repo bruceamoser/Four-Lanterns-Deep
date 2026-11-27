@@ -1,3 +1,16 @@
+**v0.9.0 — Deeds in the Deep**
+
+- Build a hero with three distinct starting disciplines, class-priced studies, and signature choices at levels 1, 3 and 7. Master one path or connect disciplines for techniques such as Flaming Arrow. Pointwork, Openings, Detection, Telekinesis and Soul Capacity join the Forge.
+- Read damage by type, aim around cover and choose when to spend SP and Grit. A Standard result activates many tactical effects. A party can stabilize a dying hero, give first aid and carry scars home.
+- Discover 52 dungeon finds across potions, scrolls, wands, implements and ritual offerings. Experiment with a bottle or pay for identification in Greyhaven. The whole run remembers what the company learns.
+- Magic gear can respond to its wearer before appraisal. Inspect an identified piece for its effects and training requirements. Different creatures carry different spoils. Find guarded vaults with alarm bells, a strongbox and a second way in.
+- The Shrine can return one chosen fallen hero when the company brings both rare offerings. Hero training is balanced through level 10. Dungeon depth and accumulated experience continue.
+- Existing 0.8.8 runs can finish their current fight. Use a town respec to bring an existing hero onto Deeds rules and keep their identity, possessions, XP and history.
+
+Install the Windows setup executable, the Linux amd64 Debian package, or the x86_64 AppImage. Existing installations can check **Settings → Updates**.
+
+---
+
 **v0.8.8 — A rebuilt dungeon bestiary**
 
 - Explore a 58-creature bestiary with animated 3D models beside their book illustrations.

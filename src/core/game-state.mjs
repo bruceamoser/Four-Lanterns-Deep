@@ -15,6 +15,10 @@ export function validateGameState(campaign) {
     const d = campaign.discoveries;
     if (!d || !Number.isSafeInteger(d.seed) || ![d.known, d.tried].every(list => Array.isArray(list) && list.length <= Object.keys(DELVE_FINDS).length && new Set(list).size === list.length && list.every(k => Object.hasOwn(DELVE_FINDS, k) && DELVE_FINDS[k].family === "potion")))
       throw new Error("Invalid saved discoveries.");
+    if (d.notes !== undefined && (!Array.isArray(d.notes) || d.notes.length > 60 || d.notes.some(n => !n || !nonnegative(n.depth) || typeof n.text !== "string")))
+      throw new Error("Invalid scouting notes.");
+    if (d.creatures !== undefined && (!d.creatures || Array.isArray(d.creatures) || typeof d.creatures !== "object" || Object.values(d.creatures).some(row => !row || ![row.actions,row.drops].every(list => Array.isArray(list) && list.every(v => typeof v === "string")))))
+      throw new Error("Invalid creature observations.");
   }
   if (campaign.xpCurve !== undefined && ![1, 2, 3].includes(campaign.xpCurve))
     throw new Error("Invalid XP curve.");
@@ -54,6 +58,8 @@ export function validateGameState(campaign) {
     ),
   ];
   for (const item of items) {
+    if (item.facts != null && item.facts !== 0 && (!Array.isArray(item.facts) || item.facts.some(f => typeof f !== "string")))
+      throw new Error("Invalid identified properties.");
     if (item.kind === "find" && (!Object.hasOwn(DELVE_FINDS, item.find) || item.catalogId !== "delve-" + item.find || typeof item.instanceId !== "string" || (item.appearance != null && (typeof item.appearance !== "string" || item.appearance.length > 64))))
       throw new Error("Invalid saved dungeon find.");
     if (
