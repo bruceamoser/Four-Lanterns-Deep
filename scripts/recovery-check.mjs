@@ -1,3 +1,4 @@
+import { drafts as earlierDrafts } from "../tests/forge-fixture.mjs";
 import { settingsAction, waitForGame } from "./ui-session.mjs";
 import { chromium, expect } from "@playwright/test";
 export async function verifyRecovery(page) {
@@ -6,8 +7,14 @@ export async function verifyRecovery(page) {
     while (await page.locator(".supply-alert button").count())
       await page.locator(".supply-alert button").click();
   };
-  await page.evaluate(() => {
+  // This drill covers the pre-Deeds wound tables on a save whose owner has deferred conversion.
+  const patient = structuredClone(earlierDrafts[0]);
+  patient.forge.version = 1;
+  await page.evaluate((draft) => {
     const g = window.__ddd.game;
+    const original = g.party[0];
+    g.party[0] = { ...g.hero(draft, 0), heroId: original.heroId, x: original.x, z: original.z };
+    g.syncTorches();
     g.mode = "town";
     g.encounter = null;
     g.pendingDefense = null;
@@ -17,7 +24,7 @@ export async function verifyRecovery(page) {
     g.dice = (n) => [3, 6, 6, ...Array(n).fill(1)].slice(0, n);
     g.party[0].survival.hp = 1;
     g.suffer(g.party[0], 3, "physical", "test-sentry");
-  });
+  }, patient);
   await expect(page.locator(".dialog")).toContainText("A lasting wound");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.locator('[data-hero="1"]').click();
