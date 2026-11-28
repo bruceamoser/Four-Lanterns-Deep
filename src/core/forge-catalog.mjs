@@ -2,7 +2,7 @@ import { DEEDS_PATHS } from "./deeds-paths.mjs";
 import { DISCIPLINE_FORAGING } from "./discipline-benefits.mjs";
 // Game-owned progression. A discipline is a self-contained set of circular paths;
 // intersections require every named contact, never merely a nearby discipline.
-export const FORGE_VERSION = 2;
+export const FORGE_VERSION = 3;
 export const FORGE_LEVEL_CAP = 30;
 export const FORGE_DISCIPLINES = [
   ["flame", "Flame", "Ignition, spreading fire and battlefield heat.", 0, 0],
@@ -1426,8 +1426,9 @@ for (const [slug, name, disciplines, paths] of intersections)
         }
       : {}),
   });
+import { LINEAR_NODES } from "./linear-atlas.mjs";
 export const FORGE_NODE = Object.freeze(
-  Object.fromEntries(FORGE_NODES.map((n) => [n.id, Object.freeze(n)])),
+  Object.fromEntries([...FORGE_NODES,...LINEAR_NODES].map((n) => [n.id, Object.freeze(n)])),
 );
 export function disciplinePosition(id) {
   const d = FORGE_DISCIPLINES.find((d) => d.id === id);

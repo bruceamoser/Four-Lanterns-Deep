@@ -2,7 +2,7 @@ import { techniqueMethods } from "./deeds-techniques.mjs";
 import { furnishDelve, vaultMethods } from "./deeds-vault.mjs";
 import { deedsDamage, coverBetween } from "./deeds-damage.mjs";
 import { deedsCareMethods, deathBand } from "./deeds-care.mjs";
-import { deedsHero } from "./deeds-development.mjs";
+import { deedsHero, rulesLevel } from "./deeds-development.mjs";
 import { discoveryMethods } from "./discoveries.mjs";
 import { strongest, weaponBonus } from "./equipment-bonuses.mjs";
 import { creatureAiMethods } from "./creature-ai.mjs";
@@ -58,7 +58,7 @@ import {
 } from "./movement.mjs";
 import { recoveryMethods } from "./recovery.mjs";
 import { interactionMethods } from "./interactions.mjs";
-import { experienceMethods, xpForLevel } from "./experience.mjs";
+import { experienceMethods, heroThreshold } from "./experience.mjs";
 import {
   rosterMethods,
   prepareRoster,
@@ -126,7 +126,7 @@ export class Game {
     const hero = {
       id: `hero-${index}`,
       heroId: crypto.randomUUID(),
-      xp: xpForLevel(draft.progression?.level ?? 1),
+      xp: heroThreshold(draft)(draft.progression?.level ?? 1),
       xpHistory: [],
       draft: structuredClone(draft),
       name: draft.name,
@@ -511,7 +511,7 @@ export class Game {
         this.C.creatures,
         this.party
           .filter((h) => h.survival.status !== "dead")
-          .map((h) => h.preview.state.level),
+          .map((h) => rulesLevel(h.draft)),
         this.campaign.challenge ?? "standard",
       );
     if (
@@ -612,12 +612,13 @@ export class Game {
     this.emit("change");
   }
   availableActions(h = this.active) {
+    const learned = new Set(this.powerIds(h));
     return this.C.choices.filter(
       (c) =>
         ABILITIES[c.id] &&
         ABILITIES[c.id].category !== "passive" &&
-        (c.universal || this.powerIds(h).includes(c.id)),
-    );
+        (c.universal || learned.has(c.id)),
+    ).map(c => h.preview.forge?.techniques?.[c.id] ? {...c, name:this.powerSpec(c.id,h).name} : c);
   }
   useAbility(id, targetId, options = {}) {
     if (POWERS[id]) return this.usePower(id, targetId, options);
@@ -1859,7 +1860,6 @@ export class Game {
         }
         if (this.canAct(hero)) Object.assign(hero, end);
       }
-      this.movementSupplies(Math.max(...steps.map((s) => s.points.length)));
       this.syncTorches();
       this.emit("move", {
         steps: steps.map(({ hero, points }) => ({ heroId: hero.id, points })),

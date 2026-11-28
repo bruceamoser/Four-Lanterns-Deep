@@ -1,5 +1,9 @@
 # Current working progress
 
+## November 28 — Linear discipline arms and personal spellbooks
+
+Implementation is on `codex/linear-arms-and-spellbooks` from `4714fb52`. The published baseline is 0.9.0. New heroes use a 100-level digital curve. Successive purchases evolve one technique slot per arm. A section purchase automatically adds every associated spell to that hero’s personal book. Existing heroes can rebuild in Greyhaven. The direct Ubuntu launcher passed the personal book and Atlas walkthrough. Playtest follow-up found extra distance and stationary ration checks. Food and water now roll once per dungeon day, lit torches once per burning hour and camp pauses both. Installer qualification is in progress. [Implementation handoff](handoffs/2026-11-28-linear-atlas.md).
+
 ## November 27 — Stable release 0.9.0
 
 [Four Lanterns Deep 0.9.0](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/tag/v0.9.0) is published as latest. Tag `v0.9.0` points to `77c45e03c18f0c3b393c82c06cdcc529084924c2`. Both Linux packages and the Windows installer passed the finished-asset workflow. The public release contains eleven assets and both updater feeds.

@@ -188,6 +188,17 @@ test("Twin Shot spends one Action, rolls two separate attacks, checks two arrows
   assert.ok(events.every((e) => e.ranged));
   assert.equal(g.enemies[0].hp, 192);
 });
+test("Twin Shot does not consume another arrow after the first kills its only target", () => {
+  const d = high(1);
+  learn(d, "marksmanship:0:4");
+  const g = arena(d);
+  g.enemies[0].hp = 1;
+  let checks = 0;
+  g.supplyDie = () => { checks++; return 1; };
+  g.usePower("power-forge-twin-shot", "target");
+  assert.equal(g.enemies[0].hp, 0);
+  assert.equal(checks, 1);
+});
 test("an exhausted first arrow stops Twin Shot before dealing free second-shot damage", () => {
   const d = high(1);
   learn(d, "marksmanship:0:4");

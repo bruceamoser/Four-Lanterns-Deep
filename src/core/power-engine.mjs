@@ -391,6 +391,19 @@ export const powerMethods = {
       recipients = recipients.filter((p) =>
         this.encounter?.roster.some((r) => r.id === p.id && !r.withdrawn),
       );
+    if (spec.maxTargets) {
+      recipients = recipients.filter(r=>!spec.volley || (distance(actor,r)<=spec.range && this.heroCanSee(actor,r) && lineOfSight(this.map,actor,r)))
+        .sort((a,b)=>Number(b===point)-Number(a===point)||distance(point,a)-distance(point,b)||a.id.localeCompare(b.id)).slice(0,spec.maxTargets);
+    }
+    for (const e of spec.effects) {
+      if (e.kind === "refill" && !point.preview?.inventory.items.some(i=>i.carried && i.catalogId==="item-water-flask" && this.supplyValue(point,i)<8))
+        throw Error("Choose a companion with a partly empty water flask.");
+      if (e.kind === "transferSP") {
+        const donor = e.draw ? point : actor, receiver = e.draw ? actor : point;
+        if (!(donor.sp - (donor===actor?spec.spCost:0)>0) || !(receiver.sp - (receiver===actor?spec.spCost:0)<receiver.preview.summary.maximumSp))
+          throw Error("Choose a donor with SP and a recipient with room in their reserve.");
+      }
+    }
     if (spec.effects.some((e) => e.kind === "damage") && !recipients.length)
       throw new Error("No enemies in the affected area.");
     if (
@@ -419,6 +432,8 @@ export const powerMethods = {
       )
         throw new Error("Choose a companion with a spent, retained Reaction.");
     }
+    if (spec.effects.every(e=>e.kind==="stabilize") && !recipients.some(p=>p.survival?.status==="dying"))
+      throw Error("Choose a dying companion.");
     const canCleanse = spec.effects.some(
       (effect) =>
         effect.kind === "cleanse" &&
@@ -434,7 +449,7 @@ export const powerMethods = {
       );
     if (
       spec.effects.some((e) => e.kind === "heal") &&
-      !spec.effects.some((e) => ["wound", "stabilize"].includes(e.kind)) &&
+      !spec.effects.some((e) => ["damage", "wound", "stabilize"].includes(e.kind)) &&
       !canCleanse &&
       recipients.every((p) => p.survival.hp >= this.healingMaximum(p))
     )
@@ -447,6 +462,14 @@ export const powerMethods = {
     if (p.deedsOnly && !deedsHero(h.draft)) return "Adopt Deeds rules in Greyhaven first.";
     if (!p.universal && !this.powerIds(h).includes(id)) return "Not learned.";
     if (this.pendingCue) return "Resolve the optional tactical step first.";
+    if (p.ritualMinutes && this.mode==="combat") return "Rituals require uninterrupted time outside combat.";
+    if (p.effects.some(e=>e.kind==="recall") && this.recallReason(this.party.indexOf(h))) return "Gather the company in a quiet dungeon chamber to open a return passage.";
+    if (p.effects.some(e=>e.kind==="unlockVault")) {
+      const door=this.map.vault?.door;
+      if(this.mode!=="exploration" || !door || door.open || distance(h,door)>p.range)
+        return "Move within "+p.range+" squares of a closed dungeon postern.";
+    }
+    if (p.context==="shrine" && this.mode!=="town") return "Visit the Shrine in Greyhaven.";
     if (p.oneHand && this.held(h,"item-ordinary-melee-weapon")?.hands !== 1) return "Ready a melee weapon in one hand.";
     if (p.effects.some(e=>e.kind==="sense") && this.mode==="town") return "Use this sense on a dungeon floor.";
     if (p.spell && deedsHero(h.draft)) {
@@ -536,6 +559,7 @@ export const powerMethods = {
     const h = this.active,
       reason = this.powerReason(id, h);
     if (reason) throw new Error(reason);
+    if (this.powerSpec(id,h).context) return this.castBookRitual(id,options.subject,h);
     const { spec, point, cells, recipients, route } = this.powerPlan(
       id,
       target,
@@ -556,8 +580,13 @@ export const powerMethods = {
         })
       )
         return;
-    } else this.advanceTime(60, { provisions: true });
+    }
     if (spec.spell && deedsHero(h.draft)) h.sp -= spec.spCost;
+    if (this.mode !== "combat") {
+      const mode = this.mode;
+      this.advanceTime(60 * (spec.ritualMinutes || 1), { provisions: true });
+      if (this.mode !== mode || !this.canAct(h)) { this.note(spec.name+" was interrupted."); return; }
+    }
     h.powerUses ??= {};
     h.restPowerUses ??= {};
     if (spec.limit) h.powerUses[id] = (h.powerUses[id] ?? 0) + 1;
@@ -592,7 +621,7 @@ export const powerMethods = {
         sources:[{kind:"boon",amount:d.boons},{kind:"bane",amount:d.banes}]}));
     };
     let sharedSpellTier;
-    if (spec.spell && deedsHero(h.draft) && recipients.length) {
+    if ((spec.spell || spec.volley) && deedsHero(h.draft) && recipients.length) {
       const primary = spec.effects.find(e => e.kind === "damage");
       if (primary) {
         const least = recipients.map(target => ({target,...defenseFor(target,primary.type)}))
@@ -605,7 +634,8 @@ export const powerMethods = {
       if (
         effect.kind === "damage" &&
         spec.weapon === "ranged" &&
-        !this.supplyItem(h, "item-ammunition-bundle")
+        (!this.supplyItem(h, "item-ammunition-bundle") ||
+          (effect.shot > 0 && recipients.length && !recipients.some(alive)))
       )
         continue;
       if (effect.kind === "clearNpcTerrain") {
@@ -636,7 +666,8 @@ export const powerMethods = {
         switch (effect.kind) {
           case "damage": {
             if (!alive(recipient)) break;
-            if (!spec.spell) defenses.delete(recipient);
+            if (spec.volley && !this.supplyItem(h,"item-ammunition-bundle")) break;
+            if (!spec.spell && !spec.volley) defenses.delete(recipient);
             const tier = sharedSpellTier ?? rollAgainst(recipient, effect.type);
             bands.set(recipient.id,tier);
             const weapon = spec.weapon && this.held(h, "item-ordinary-" + spec.weapon + "-weapon");
@@ -646,8 +677,11 @@ export const powerMethods = {
             const components = [{type:effect.type, amount:base}, ...enchantments.map(e => ({
               type:e.type, amount:this.enchantmentDamage(h,e,effect.type)
             }))];
+            const defense=defenses.get(recipient);
+            const finalDefense=spec.piercePhysical && defense?.resistances ? {...defense,resistances:defense.resistances.map(r=>r.type==="physical"?{...r,value:Math.max(0,r.value-spec.piercePhysical)}:r)} : defense;
             const originalHp=recipient.hp;
-            const damage = this.powerDamageComponents(recipient,components,h,true,defenses.get(recipient));
+            const damage = this.powerDamageComponents(recipient,components,h,true,finalDefense);
+            if(spec.volley) this.checkSupply(h,this.supplyItem(h,"item-ammunition-bundle"),"ammunition after shot");
             if (tier===2 && recipient.hp<originalHp && weaponBonus(h,spec,"leech")) this.powerHeal(h,weaponBonus(h,spec,"leech"));
             for (const enchant of enchantments) if (tier === 2 && enchant.condition)
               this.powerCondition(recipient,enchant.condition,1+this.buildStat(h,enchant.condition),h.id);
@@ -732,6 +766,29 @@ export const powerMethods = {
                 effect.amount,
               );
             break;
+          case "recall":
+            this.openReturnPassage(spec.name);
+            break;
+          case "unlockVault": {
+            const door=this.map.vault.door;
+            delete this.map.obstacles[key(door.x,door.z)];
+            door.open=true;
+            this.seen[key(door.x,door.z)]=true;
+            this.note("The ironbound postern opens quietly.");
+            this.emit("world-objects");this.emit("map");
+            break;
+          }
+          case "refill": {
+            const flask=recipient.preview.inventory.items.find(i=>i.carried && i.catalogId==="item-water-flask" && this.supplyValue(recipient,i)<8);
+            if(flask) recipient.supplies[flask.instanceId]=8;
+            break;
+          }
+          case "transferSP": {
+            const donor=effect.draw?recipient:h, receiver=effect.draw?h:recipient;
+            const amount=Math.min(effect.amount,donor.sp,receiver.preview.summary.maximumSp-receiver.sp);
+            donor.sp-=amount;receiver.sp+=amount;
+            break;
+          }
           case "stabilize":
             if (recipient.survival.status === "dying")
               recipient.survival = this.R.stabilize(recipient.survival);
@@ -840,7 +897,7 @@ export const powerMethods = {
           }
         }
       }
-      if (effect.kind === "damage" && spec.weapon === "ranged") {
+      if (effect.kind === "damage" && spec.weapon === "ranged" && !spec.volley) {
         const ammunition = this.supplyItem(h, "item-ammunition-bundle");
         if (ammunition)
           this.checkSupply(h, ammunition, "ammunition after shot");

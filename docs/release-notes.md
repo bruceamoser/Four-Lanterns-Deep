@@ -1,3 +1,13 @@
+**v0.10.0 — The Living Atlas**
+
+- Follow seven ordered stages on each discipline arm. Measured Cut becomes Sweeping Blade, then Iron Tempest. Its shortcut follows the technique as it improves.
+- Study any of 29 spellbooks through the Atlas. Each purchased section immediately adds its pages to that hero’s personal spellbook. Cast there or pin a favorite. The other three heroes keep their own studies.
+- Food and water last a full dungeon day between uses. Torches spend fuel by burning time. Camping pauses both clocks. A finishing arrow can save the follow-up shot.
+- Train through 100 levels in Greyhaven. Level 2 takes 200 XP. Each level grants 1 DP, with advanced studies at 23 and masteries at 67. HP and SP grow gradually.
+- Existing journeys open with their original builds. In town, choose **Character → Adopt the new Atlas** to rebuild a hero. Identity, belongings, lifetime XP and history carry over.
+
+---
+
 **v0.9.0 — Deeds in the Deep**
 
 - Build a hero with three distinct starting disciplines, class-priced studies, and signature choices at levels 1, 3 and 7. Master one path or connect disciplines for techniques such as Flaming Arrow. Pointwork, Openings, Detection, Telekinesis and Soul Capacity join the Forge.

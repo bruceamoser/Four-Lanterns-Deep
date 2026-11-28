@@ -4,7 +4,7 @@ A four-hero expedition beneath Greyhaven, built on Deeds of Legend.
 
 A desktop, single-player, 3D isometric dungeon-delving RPG for four heroes, based on **Deeds of Legend**. Target: Linux and Windows, stylized dark fantasy, a persistent town, repeated descents and recoverable expedition losses.
 
-**v0.9.0 — Deeds in the Deep.** Develop four heroes across 23 discipline origins and 77 paths. Single-path masteries, 33 confluences and tiered class signatures offer different ways to specialize. Unknown potions, charged devices, enchanted gear and guarded vaults give the company reasons to risk another floor. See the [rules conversion and game balance results](docs/deeds-conversion.md).
+**v0.10.0 — The Living Atlas.** Follow 55 seven-stage technique arms across the disciplines, or study sections from 29 spellbooks. Each learned page goes straight into that hero’s personal book. Train through 100 levels in Greyhaven. [Atlas and progression](docs/linear-atlas.md)
 
 ## Working across local computers
 
@@ -12,7 +12,7 @@ Shared Codex instructions live in [AGENTS.md](AGENTS.md). Say **“Pull the repo
 
 ## Download and install
 
-Get the [latest release](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/latest). Windows has an installer; Debian/Ubuntu has a `.deb` package (`sudo apt install ./Four-Lanterns-Deep-0.9.0-amd64.deb`). Other Linux systems can use the `linux-x64.tar.gz` bundle: extract it and run `bash install-linux.sh` to add the game to your applications menu. A standalone AppImage is also available. No development tools or GitHub account are needed. Initial Windows builds are unsigned.
+Get the [latest release](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/latest). Windows has an installer; Debian/Ubuntu has a `.deb` package (`sudo apt install ./Four-Lanterns-Deep-0.10.0-amd64.deb`). Other Linux systems can use the `linux-x64.tar.gz` bundle: extract it and run `bash install-linux.sh` to add the game to your applications menu. A standalone AppImage is also available. No development tools or GitHub account are needed. Initial Windows builds are unsigned.
 
 The installed game checks for updates on startup and every four hours, downloads them in the background, and offers **Settings → Updates → Save & restart to install**. Your active journey is saved before installation. Updates preserve save files. Existing Forge journeys continue. You can finish a 0.8.8 battle and respec in Greyhaven to adopt Deeds. Pre-v0.6 runs are preserved separately and require an older edition. Source-checkout/unpacked builds link to the release installer instead of self-updating. See [release details and publishing](docs/releases.md).
 

@@ -1,122 +1,44 @@
-export const SUPPLY_CADENCE = Object.freeze({
-  foodSteps: 80,
-  waterSteps: 40,
-  lightSteps: 25,
-  foodHours: 4,
-  waterHours: 2,
-  lightHours: 1,
-});
+export const TORCH_BURN_INTERVAL = 3600;
+
+// Retire the old, party-wide step and stationary-work meters once per saved run.
 export function prepareProvisions(campaign) {
-  campaign.provisionTrail ??= { steps: 0, seconds: 0 };
-  for (const n of [
-    campaign.provisionTrail.steps,
-    campaign.provisionTrail.seconds,
-  ])
-    if (!Number.isSafeInteger(n) || n < 0)
-      throw new Error("Invalid saved supply progress.");
+  if (!campaign.provisionTrail) return;
+  const now = campaign.clockSeconds ?? (campaign.hours ?? 0) * 3600;
+  for (const hero of [
+    ...campaign.party,
+    ...(campaign.reserve ?? []),
+    ...(campaign.fallenHeroes ?? []).map((e) => e.hero).filter(Boolean),
+  ]) {
+    const needs = hero.needs;
+    if (!needs) continue;
+    for (const [last, due] of [
+      ["ateAt", "foodDue"],
+      ["drankAt", "waterDue"],
+    ]) {
+      if (needs[due] && now - needs[last] < 86400) {
+        delete needs[due];
+        needs.warned = (needs.warned ?? []).filter((key) => key !== last);
+      }
+    }
+  }
+  delete campaign.provisionTrail;
 }
+
 export const provisionMethods = {
-  provisionCheck(h, catalogId, purpose) {
-    const field = catalogId === "item-food-bundle" ? "ateAt" : "drankAt",
-      due = field === "ateAt" ? "foodDue" : "waterDue";
-    const item = this.supplyItem(h, catalogId);
-    if (item) {
-      h.needs[field] = this.clock().seconds;
-      h.needs[due] = false;
-      h.needs.warned = h.needs.warned.filter((k) => k !== field);
-      this.checkSupply(h, item, purpose);
-      return;
-    }
-    h.needs[due] = true;
-    if (!h.needs.warned.includes(field)) {
-      h.needs.warned.push(field);
-      this.supplyNotice(
-        h,
-        { name: field === "ateAt" ? "Food" : "Water" },
-        `No usable ${field === "ateAt" ? "food" : "water"} for this provision check. Replenish the company's supplies.`,
-      );
-    }
-  },
-  movementSupplies(steps = 1) {
-    if (!Number.isSafeInteger(steps) || steps < 0)
-      throw new Error("Movement must be whole nonnegative steps.");
-    if (!["exploration", "combat"].includes(this.mode) || !steps) return;
-    prepareProvisions(this.campaign);
-    const trail = this.campaign.provisionTrail,
-      before = trail.steps;
-    trail.steps += steps;
-    for (const [n, id, name] of [
-      [SUPPLY_CADENCE.waterSteps, "item-water-flask", "water"],
-      [SUPPLY_CADENCE.foodSteps, "item-food-bundle", "food"],
-    ])
-      for (let i = Math.floor(before / n); i < Math.floor(trail.steps / n); i++)
-        for (const h of this.party.filter(
-          (h) => h.survival.status === "active",
-        ))
-          this.provisionCheck(h, id, `${name} after ${n} party steps`);
-    for (const h of this.party.filter((h) => h.torch?.lit)) {
-      h.torch.steps = (h.torch.steps ?? 0) + steps;
-      while (h.torch.steps >= SUPPLY_CADENCE.lightSteps) {
-        h.torch.steps -= SUPPLY_CADENCE.lightSteps;
-        const item = this.supplyItem(h, "item-lighting-bundle");
-        if (!item) {
-          h.torch.lit = false;
-          h.torch.steps %= SUPPLY_CADENCE.lightSteps;
-          break;
-        }
-        this.checkSupply(
-          h,
-          item,
-          `torch after ${SUPPLY_CADENCE.lightSteps} party steps`,
-        );
+  burnTorches(seconds) {
+    for (const hero of this.party) {
+      if (!hero.torch?.lit) continue;
+      hero.torch.seconds += seconds;
+      while (hero.torch.seconds >= TORCH_BURN_INTERVAL) {
+        const item = this.supplyItem(hero, "item-lighting-bundle");
+        if (!item) break;
+        hero.torch.seconds -= TORCH_BURN_INTERVAL;
+        this.checkSupply(hero, item, "an hour of torchlight");
+      }
+      if (!this.supplyItem(hero, "item-lighting-bundle")) {
+        hero.torch.seconds = 0;
+        this.syncTorches();
       }
     }
-    this.syncTorches();
-  },
-  stationarySupplies(seconds, { camping = false } = {}) {
-    if (camping || this.mode !== "exploration" || !seconds) return;
-    prepareProvisions(this.campaign);
-    const trail = this.campaign.provisionTrail,
-      before = trail.seconds;
-    trail.seconds += seconds;
-    for (const [hours, id, name] of [
-      [SUPPLY_CADENCE.waterHours, "item-water-flask", "water"],
-      [SUPPLY_CADENCE.foodHours, "item-food-bundle", "food"],
-    ])
-      for (
-        let i = Math.floor(before / (hours * 3600));
-        i < Math.floor(trail.seconds / (hours * 3600));
-        i++
-      )
-        for (const h of this.party.filter(
-          (h) => h.survival.status === "active",
-        ))
-          this.provisionCheck(h, id, `${name} after ${hours} hours at rest`);
-    for (const h of this.party.filter((h) => h.torch?.lit)) {
-      h.torch.seconds += seconds;
-      while (h.torch.seconds >= 3600) {
-        h.torch.seconds -= 3600;
-        const item = this.supplyItem(h, "item-lighting-bundle");
-        if (!item) {
-          h.torch.lit = false;
-          break;
-        }
-        this.checkSupply(h, item, "torch during one hour of stationary work");
-      }
-    }
-  },
-  provisionCountdown() {
-    prepareProvisions(this.campaign);
-    const p = this.campaign.provisionTrail;
-    return {
-      food: SUPPLY_CADENCE.foodSteps - (p.steps % SUPPLY_CADENCE.foodSteps),
-      water: SUPPLY_CADENCE.waterSteps - (p.steps % SUPPLY_CADENCE.waterSteps),
-      foodHours:
-        SUPPLY_CADENCE.foodHours -
-        ((p.seconds / 3600) % SUPPLY_CADENCE.foodHours),
-      waterHours:
-        SUPPLY_CADENCE.waterHours -
-        ((p.seconds / 3600) % SUPPLY_CADENCE.waterHours),
-    };
   },
 };

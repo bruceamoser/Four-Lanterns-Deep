@@ -1,3 +1,5 @@
+import { LINEAR_PATHS, LINEAR_FIELDS } from "../src/core/linear-atlas.mjs";
+import { SPELLS } from "../src/core/spell-pages.mjs";
 import { forgePower, forgePowerText } from "../src/core/forge.mjs";
 import {
   FORGE_NODES,
@@ -99,3 +101,16 @@ await fs.writeFile(
     2,
   ) + "\n",
 );
+
+
+// One line per arm keeps the source-to-runtime coverage report reviewable.
+const reviewed = LINEAR_PATHS.map(path=>({
+  discipline:path.field, arm:path.name, type:path.isBook?"spellbook":"technique",
+  stages:path.nodes.map(node=>({
+    stage:node.stage, level:node.minimumLevel, dp:node.cost, name:node.name,
+    ...(node.pages?{pages:node.pages.map(id=>{const p=POWERS[id];return {id,source:p.printedName,name:p.name,sp:p.spCost,effect:forgePowerText(p)};})}
+      :node.spec?{action:node.power,effect:forgePowerText(node.spec)}:{stats:node.stats,recipes:node.recipes,grant:node.grant}),
+  })),
+}));
+await fs.writeFile(new URL("../docs/linear-atlas-coverage.json",import.meta.url),
+  '{"source":"44ef046","fields":'+LINEAR_FIELDS.length+',"pages":'+SPELLS.length+',"arms":[\n'+reviewed.map(r=>JSON.stringify(r)).join(",\n")+'\n]}\n');

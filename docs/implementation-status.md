@@ -1,8 +1,12 @@
-# Four Lanterns Deep — implementation status v0.8.4
+# Four Lanterns Deep — implementation status
+
+## 0.10.0 Living Atlas
+
+Twenty-one disciplines offer 55 seven-stage technique arms and 29 seven-section source books. Studying a section adds its pages to the hero’s personal spellbook. The 100-level digital edition, numerical tuning, executable catalogue and migration are described in [The Living Atlas](linear-atlas.md).
 
 ## 0.9.0 Deeds edition
 
-The current edition has 23 displayed disciplines, 77 connected paths, 33 confluences and 90 signature choices. Paid field and combat techniques, typed damage, Grit, discovery, appraisal, creature spoils and vaults are documented in the [conversion report](deeds-conversion.md). The generated [current Forge catalog](game-power-coverage.json) and [review of book paths and spells](deeds-tree-review.md) distinguish shipped effects from source material reserved for future adaptations. Version-three save envelopes read existing version-two Forge journeys. A town respec converts an individual hero. The entries below describe earlier releases.
+The 0.9.0 edition has 23 displayed disciplines, 77 connected paths, 33 confluences and 90 signature choices. Paid field and combat techniques, typed damage, Grit, discovery, appraisal, creature spoils and vaults are documented in the [conversion report](deeds-conversion.md). The generated [current Forge catalog](game-power-coverage.json) and [review of book paths and spells](deeds-tree-review.md) distinguish shipped effects from source material reserved for future adaptations. Version-three save envelopes read existing version-two Forge journeys. A town respec converts an individual hero. The entries below describe earlier releases.
 
 
 
@@ -32,7 +36,7 @@ are a playable iteration rather than final production assets.
 - All 50 ancestry traits retain explicit game behavior. Crafting and treatment traits now benefit the new recipe/care systems. The Human Far Walker trait now grants movement and carrying capacity instead of a second DP rule.
 - Party Supplies overview with reviewed Greyhaven restock to a preferred die, exact result/coin/Bulk previews, automatic procurement discounts. Ingredient-free basic camp duties choose recipients automatically with manual override and hidden training-based success chances. Everyday ingredients have compatible value/weight migration; advanced potion, smoke, rope and magical recipes retain learning/tools/location/time requirements. See [supplies](supplies.md).
 - HP healing, stabilization and wound treatment remain distinct. Normal camp treatment consumes a field dressing; exceptional treatment consumes a restoration draught. The town infirmary supplies a priced alternative. Treatment removes wound-linked penalties but retains scars/counts and never restores Grit. HoL's injury tables, death marks and Last Words remain.
-- Persistent dungeon provision checks follow party movement (water 40 steps, food 80, burning light 25), plus camp/stationary hours. A compact animated dungeon camp replaces Safe Breath: eight-hour minimum, six sleeping/two working hours per hero, 2 HP per sleeping hour, no Grit recovery, interruption/detection and saved partial progress. Duties include general ability-adjusted d100 foraging, material-dependent production, water gathering, HP care and daily-limited wound treatment. Current/projected stocks, HP and wounds remain visible.
+- Each hero automatically eats and drinks once per 24 hours of dungeon time. A torch checks fuel per burning hour. Camp pauses the clocks. A compact animated dungeon camp replaces Safe Breath: eight-hour minimum, six sleeping/two working hours per hero, 2 HP per sleeping hour, no Grit recovery, interruption/detection and saved partial progress. Duties include general ability-adjusted d100 foraging, material-dependent production, water gathering, HP care and daily-limited wound treatment. Current/projected stocks, HP and wounds remain visible.
 - Dungeon Mason modular class outfits, default/custom headpieces, fantasy accessories and skin/hair/outfit colours. Appearance edits work in town and the dungeon, with owned-equipment filtering, live stowed-equipment previews and named colour regions. Equipped weapons/backpacks follow actual inventory; magic-weapon forms stay fixed. Quarter/half Bulk for small items and bundles; matching supplies combine one die step above the larger, capped at d20 without discarding extras.
 - Greyhaven is a KayKit town map with winding, feathered dirt lanes. Building clicks and service hotkeys move the party along the same curves; town travel never changes saved dungeon coordinates or resources. Middle-button camera rotation works in town and dungeon.
 

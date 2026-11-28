@@ -27,7 +27,7 @@ export function shortcutManager({
       (key, i) => {
         const id = favorites[i],
           name = id
-            ? game.C.choices.find((c) => c.id === id)?.name
+            ? game.powerSpec(id,h)?.name ?? game.C.choices.find((c) => c.id === id)?.name
             : "Empty slot";
         return `<li><kbd>${key}</kbd><span>${esc(name ?? id)}</span>${id ? `<button data-shortcut-move="${i}" data-direction="-1" aria-label="Move ${esc(name)} earlier" ${i === 0 ? "disabled" : ""}>↑</button><button data-shortcut-move="${i}" data-direction="1" aria-label="Move ${esc(name)} later" ${i === favorites.length - 1 ? "disabled" : ""}>↓</button><button data-shortcut-remove="${id}" aria-label="Remove ${esc(name)}">×</button>` : "<small>Add an action →</small>"}</li>`;
       },

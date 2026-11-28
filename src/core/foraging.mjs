@@ -26,7 +26,7 @@ export function forageTable({
   ranks = {},
   remedies = false,
   salvage = false,
-  healingSkills = 0,
+  forageStudy = 0, healingSkills = 0,
 } = {}) {
   const bonus = Object.fromEntries(FORAGE_RESOURCES.map((r) => [r.id, 0])),
     modifiers = [];
@@ -59,6 +59,7 @@ export function forageTable({
   if (remedies && !powers.includes("power-forager-remedies"))
     add("Dressing recipe knowledge", { herbs: 3 });
   if (salvage) add("Salvage training", { wood: 3, fletching: 3 });
+  if (forageStudy) add("Provisioning", {food:forageStudy});
   if (healingSkills)
     add("Healing knowledge", { herbs: Math.min(6, healingSkills * 2) });
   const sum = Object.values(bonus).reduce((n, v) => n + v, 0);
@@ -106,6 +107,7 @@ export const foragingMethods = {
       ranks: h.preview.state.ranks,
       remedies: this.knownRecipes(h).has("recipe-field-dressing"),
       salvage: this.traits(h).some((t) => t.salvage),
+      forageStudy: h.preview.forge?.stats.forageStudy ?? 0,
       healingSkills: this.campHealSkills(h).length,
     });
   },

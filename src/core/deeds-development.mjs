@@ -333,7 +333,15 @@ const schools = {
   calling: "invocation",
   radiance: "wards",
 };
-export const deedsHero = (draft) => draft?.forge?.version === 2;
+export const linearHero = draft => draft?.forge?.version === 3;
+export const deedsHero = draft => linearHero(draft) || draft?.forge?.version === 2;
+export function rulesLevel(draft) {
+  const level = draft?.progression?.level ?? 1;
+  return linearHero(draft) ? 1 + Math.floor((level - 1) / 11) : level;
+}
+export function signatureLevel(draft, tier) {
+  return linearHero(draft) ? ({1:1,3:23,7:67})[tier] : Number(tier);
+}
 export function disciplinePrice(draft, node) {
   if (node?.kind !== "origin" || !deedsHero(draft)) return node?.cost ?? 0;
   return (
@@ -347,6 +355,10 @@ export function deedsDP(draft, level = draft.progression?.level ?? 1) {
   const adaptable =
     draft.traitIds?.includes("trait-human-far-walker") ||
     draft.borrowedTraitId === "trait-human-far-walker";
+  if (linearHero(draft)) {
+    const starting = 8 + (a.guile ?? 0) + (a.knowledge ?? 0) + (a.reason ?? 0);
+    return starting + level - 1 + (adaptable ? 1 + Math.floor((level - 1) / 11) : 0);
+  }
   const growth = (level - 1) * 6 + (level * (level + 1)) / 2 - 1;
   return (
     10 +
@@ -361,17 +373,19 @@ export function deedsVitals(draft, fixedHP = 0, bonusSP = 0) {
   const a = DEEDS_ANCESTRIES[draft.ancestryId];
   const c = DEEDS_CLASSES[draft.classId];
   const level = draft.progression?.level ?? 1;
+  const contribution = (a?.hp ?? 0) + (c?.hp ?? 0);
+  const growth = linearHero(draft) ? (level - 1) / 11 : level - 1;
   return {
     maximumHp:
       10 +
-      level * ((a?.hp ?? 0) + (c?.hp ?? 0)) +
+      contribution + Math.floor(growth * contribution) +
       (draft.attributes?.fortitude ?? 0) +
       fixedHP,
     maximumSp:
-      2 * level +
+      2 + Math.floor(2 * growth) +
       (a?.sp ?? 0) +
       2 * Math.max(0, draft.attributes?.[c?.casting] ?? 0) +
       bonusSP,
-    gritGranted: 1 + Number(level >= 3) + Number(level >= 7),
+    gritGranted: 1 + Number(rulesLevel(draft) >= 3) + Number(rulesLevel(draft) >= 7),
   };
 }

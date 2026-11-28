@@ -20,8 +20,10 @@ const disciplines = new Set([
   "subterfuge",
   "wilderness",
 ]);
+const deedsTokens = new Set(["divination","elements","fencing","force","invocation","mentalism","spellcraft","tactics","wards"]);
 export function disciplineIcon(id) {
   const slug = id?.replace(/^discipline-/, "");
+  if (deedsTokens.has(slug)) return `<img class="discipline-symbol" src="/art/discipline-tokens/${slug}.svg" alt="" aria-hidden="true">`;
   return disciplines.has(slug)
     ? `<img class="discipline-symbol" src="/vendor/hol/assets/${slug}.webp" alt="" aria-hidden="true">`
     : "";

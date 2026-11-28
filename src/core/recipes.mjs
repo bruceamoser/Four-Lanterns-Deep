@@ -245,8 +245,9 @@ export const recipeMethods = {
       return this.sleepReason();
     if (r.location === "town" && this.mode !== "town")
       return "Requires the town workshop.";
-    if (h.preview.state.level < r.level)
-      return `Requires hero level ${r.level}.`;
+    const requiredLevel = h.draft.forge?.version === 3 ? 1 + (r.level - 1) * 11 : r.level;
+    if (h.preview.state.level < requiredLevel)
+      return `Requires hero level ${requiredLevel}.`;
     if (
       r.tool &&
       !this.traits(h).some((t) => t.improvise) &&

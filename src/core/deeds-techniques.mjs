@@ -124,6 +124,12 @@ export const techniqueMethods = {
     const discoveries = this.discoveries(),
       facts = [];
     const inside = (p) => distance(h, p) <= radius;
+    if (sense === "supplies") {
+      for (const member of this.party.filter(inside)) {
+        const ailments=member.conditions.filter(c=>["poisoned","bleeding","burning"].includes(c.key));
+        facts.push(member.name+" · "+(ailments.map(c=>c.key).join(", ") || "no contamination detected"));
+      }
+    }
     if (["all", "magic"].includes(sense))
       for (const c of this.map.chests.filter(inside))
         if (
@@ -154,13 +160,40 @@ export const techniqueMethods = {
       }
     if (["all", "path"].includes(sense)) {
       const exit = this.map.exit;
-      this.seen[key(exit.x, exit.z)] = true;
-      facts.push("Descent lies at " + key(exit.x, exit.z));
+      if (h.draft.forge?.version === 3) {
+        const passages=Object.values(this.map.tiles).filter(inside);
+        const fresh=passages.filter(p=>!this.seen[key(p.x,p.z)]).length;
+        for(const p of passages)this.seen[key(p.x,p.z)]=true;
+        if(fresh)facts.push("Mapped "+fresh+" nearby squares");
+      }
+      if (inside(exit) || h.draft.forge?.version !== 3) {
+        this.seen[key(exit.x, exit.z)] = true;
+        facts.push("Descent lies at " + key(exit.x, exit.z));
+      }
     }
     const entry = facts.length ? facts.join(" · ") : "Nothing detected nearby.";
     (discoveries.notes ??= []).push({ depth: this.map.depth, text: entry });
     discoveries.notes = discoveries.notes.slice(-60);
     this.note(entry);
+  },
+  bookRitualSubjects(id,h=this.active) {
+    const context=this.powerSpec(id,h)?.context;
+    if(context==="shrine") return this.campaign.fallenHeroes.filter(e=>e.returnedAt==null).map(e=>({id:e.heroId,name:e.hero.name,reason:this.returnRite(e.heroId)}));
+    if(context==="identify") return this.party.flatMap((owner,i)=>(owner.treasure??[]).filter(item=>item.carried && (item.veiled||item.appearance)).map(item=>({
+      id:i+"/"+item.instanceId,name:owner.name+" · "+(item.veiled?"Veiled equipment":"Unknown potion"),reason:this.mode!=="town" && distance(h,owner)>1?"Bring the item beside the caster.":"",owner:i,item:item.instanceId,
+    })));
+    return [];
+  },
+  castBookRitual(id,subject,h=this.active) {
+    const why=this.powerReason(id,h); if(why)throw Error(why);
+    const spec=this.powerSpec(id,h);
+    const entry=this.bookRitualSubjects(id,h).find(e=>e.id===subject);
+    if(!entry || entry.reason) throw Error(entry?.reason || "Choose a valid ritual subject.");
+    if(spec.context==="identify") return this.identifyRitual(this.party.indexOf(h),entry.owner,entry.item);
+    h.sp-=spec.spCost;
+    this.advanceTime(60*spec.ritualMinutes,{provisions:true});
+    if(!this.canAct(h)||this.mode!=="town")return this.note(spec.name+" was interrupted.");
+    const problem=this.returnRite(subject,true); if(problem)throw Error(problem);
   },
   identifyRitual(caster, owner, id) {
     const patient = this.party[owner],
@@ -186,6 +219,7 @@ export const techniqueMethods = {
       throw new Error("Identification requires a free hand and 3 SP.");
     h.sp -= 3;
     this.advanceTime(600, { provisions: true });
+    if (!this.canAct(h) || !["town","exploration"].includes(this.mode)) return this.note("Identification was interrupted.");
     const tier = this.heroRoll(
         h,
         DEEDS_CLASSES[h.draft.classId]?.casting ?? "knowledge",

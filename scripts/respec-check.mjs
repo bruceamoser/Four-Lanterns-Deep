@@ -90,8 +90,8 @@ export async function verifyRespec(page) {
       supplies: before.supplies,
       hp: 7,
       grit: 0,
-      dp: 71,
-      nodes: ["arms:0:0", "armor:0:0"],
+      dp: 8 + before.draft.progression.level - 1 - 2,
+      nodes: ["arm:arms:bladework:1","arm:armor:harness:1"],
     });
     await page.keyboard.press("Escape");
     await settingsAction(page, "Save");

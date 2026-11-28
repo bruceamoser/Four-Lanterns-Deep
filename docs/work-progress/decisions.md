@@ -1,5 +1,12 @@
 # Durable working decisions
 
+- November 28, 2026. Food and water each roll once per hero per 24 hours of dungeon time. Torch fuel rolls each accumulated burning hour. Camp pauses both clocks. These replace the distance and stationary-work checks after playtesting found premature depletion. [Supply rules](../supplies.md)
+
+## 2026-11-28 — Personal spellbooks and linear digital development
+
+Bruce directed that buying a source-book section automatically grants every page to that hero’s personal book. Favorites configure combat shortcuts. Each active technique arm occupies one evolving action slot. There are 100 game levels. Class and ancestry growth and the encounter budget span ten source power bands. The implemented costs, examples and legacy conversion are in [The Living Atlas](../linear-atlas.md).
+
+
 ## 2026-11-09 — Local execution, GitHub handoffs
 
 Bruce wants development to execute on each local computer. Use the repository to transfer source, working checkpoints and project knowledge. Do not move execution to Codex Cloud as part of this workflow.
