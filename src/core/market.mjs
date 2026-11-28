@@ -86,7 +86,8 @@ export const marketMethods = {
   buyPrice(h, item) {
     return Math.ceil(
       item.definition.price *
-        Math.min(1, ...this.traits(h).map((t) => t.buyRate ?? 1)),
+        Math.min(1, ...this.traits(h).map((t) => t.buyRate ?? 1)) *
+        (1 - Math.min(0.25,h.preview.forge?.stats.barter ?? 0)),
     );
   },
   sellPrice(h, item) {
@@ -239,6 +240,9 @@ export const marketMethods = {
     if (!item) throw new Error("This hero has no Scroll of Return.");
     h.treasure = h.treasure.filter((i) => i !== item);
     this.refreshHero(h);
+    this.openReturnPassage("The scroll");
+  },
+  openReturnPassage(source) {
     this.bankTreasureXP();
     this.campaign.bank += this.campaign.haul;
     this.campaign.haul = 0;
@@ -255,7 +259,7 @@ export const marketMethods = {
     this.paths.clear();
     this.pendingInteraction = null;
     this.note(
-      `The scroll opens a passage to Greyhaven. Your way back to depth ${this.campaign.depth} remains open.`,
+      `${source} opens a passage to Greyhaven. Your way back to depth ${this.campaign.depth} remains open.`,
     );
     this.emit("party");
     this.emit("change");

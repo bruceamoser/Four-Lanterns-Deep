@@ -1,5 +1,6 @@
 import { xpForLevel } from "../src/core/experience.mjs";
 import { settingsAction, waitForGame } from "./ui-session.mjs";
+import { verifyLinearAtlas } from "./linear-atlas-check.mjs";
 import { expect } from "@playwright/test";
 import { learn, drafts } from "../tests/forge-fixture.mjs";
 export async function chooseNode(page, id, { buy = true } = {}) {
@@ -63,12 +64,16 @@ export async function fillForgeHero(
   if (learnAttack) {
     await page.locator('[data-step="4"]').click();
     await page.locator("#open-creation-forge").click();
-    await chooseNode(page, "arms:0:0");
-    await chooseNode(page, "armor:0:0");
+    for (const [field,node] of [["arms","arm:arms:bladework:1"],["armor","arm:armor:harness:1"]]) {
+      await page.locator('[data-field="'+field+'"]').click();
+      await page.locator('[data-node="'+node+'"]').click();
+      await page.locator("[data-study]").click();
+    }
     await page.locator(".forge-close").click();
   }
 }
 export async function verifyForgeUI(page) {
+  if (await page.evaluate(()=>window.__ddd.game.party[0].draft.forge.version===3)) return verifyLinearAtlas(page);
   const saved = await page.evaluate(() =>
     structuredClone(window.__ddd.game.snapshot()),
   );

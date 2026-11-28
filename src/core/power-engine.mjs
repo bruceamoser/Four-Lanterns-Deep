@@ -391,7 +391,10 @@ export const powerMethods = {
       recipients = recipients.filter((p) =>
         this.encounter?.roster.some((r) => r.id === p.id && !r.withdrawn),
       );
-    if (spec.maxTargets) recipients = recipients.sort((a,b)=>distance(actor,a)-distance(actor,b)||a.id.localeCompare(b.id)).slice(0,spec.maxTargets);
+    if (spec.maxTargets) {
+      recipients = recipients.filter(r=>!spec.volley || (distance(actor,r)<=spec.range && this.heroCanSee(actor,r) && lineOfSight(this.map,actor,r)))
+        .sort((a,b)=>Number(b===point)-Number(a===point)||distance(point,a)-distance(point,b)||a.id.localeCompare(b.id)).slice(0,spec.maxTargets);
+    }
     for (const e of spec.effects) {
       if (e.kind === "refill" && !point.preview?.inventory.items.some(i=>i.carried && i.catalogId==="item-water-flask" && this.supplyValue(point,i)<8))
         throw Error("Choose a companion with a partly empty water flask.");
@@ -429,6 +432,8 @@ export const powerMethods = {
       )
         throw new Error("Choose a companion with a spent, retained Reaction.");
     }
+    if (spec.effects.every(e=>e.kind==="stabilize") && !recipients.some(p=>p.survival?.status==="dying"))
+      throw Error("Choose a dying companion.");
     const canCleanse = spec.effects.some(
       (effect) =>
         effect.kind === "cleanse" &&
@@ -458,6 +463,12 @@ export const powerMethods = {
     if (!p.universal && !this.powerIds(h).includes(id)) return "Not learned.";
     if (this.pendingCue) return "Resolve the optional tactical step first.";
     if (p.ritualMinutes && this.mode==="combat") return "Rituals require uninterrupted time outside combat.";
+    if (p.effects.some(e=>e.kind==="recall") && this.recallReason(this.party.indexOf(h))) return "Gather the company in a quiet dungeon chamber to open a return passage.";
+    if (p.effects.some(e=>e.kind==="unlockVault")) {
+      const door=this.map.vault?.door;
+      if(this.mode!=="exploration" || !door || door.open || distance(h,door)>p.range)
+        return "Move within "+p.range+" squares of a closed dungeon postern.";
+    }
     if (p.context==="shrine" && this.mode!=="town") return "Visit the Shrine in Greyhaven.";
     if (p.oneHand && this.held(h,"item-ordinary-melee-weapon")?.hands !== 1) return "Ready a melee weapon in one hand.";
     if (p.effects.some(e=>e.kind==="sense") && this.mode==="town") return "Use this sense on a dungeon floor.";
@@ -610,7 +621,7 @@ export const powerMethods = {
         sources:[{kind:"boon",amount:d.boons},{kind:"bane",amount:d.banes}]}));
     };
     let sharedSpellTier;
-    if (spec.spell && deedsHero(h.draft) && recipients.length) {
+    if ((spec.spell || spec.volley) && deedsHero(h.draft) && recipients.length) {
       const primary = spec.effects.find(e => e.kind === "damage");
       if (primary) {
         const least = recipients.map(target => ({target,...defenseFor(target,primary.type)}))
@@ -654,7 +665,8 @@ export const powerMethods = {
         switch (effect.kind) {
           case "damage": {
             if (!alive(recipient)) break;
-            if (!spec.spell) defenses.delete(recipient);
+            if (spec.volley && !this.supplyItem(h,"item-ammunition-bundle")) break;
+            if (!spec.spell && !spec.volley) defenses.delete(recipient);
             const tier = sharedSpellTier ?? rollAgainst(recipient, effect.type);
             bands.set(recipient.id,tier);
             const weapon = spec.weapon && this.held(h, "item-ordinary-" + spec.weapon + "-weapon");
@@ -664,8 +676,11 @@ export const powerMethods = {
             const components = [{type:effect.type, amount:base}, ...enchantments.map(e => ({
               type:e.type, amount:this.enchantmentDamage(h,e,effect.type)
             }))];
+            const defense=defenses.get(recipient);
+            const finalDefense=spec.piercePhysical && defense?.resistances ? {...defense,resistances:defense.resistances.map(r=>r.type==="physical"?{...r,value:Math.max(0,r.value-spec.piercePhysical)}:r)} : defense;
             const originalHp=recipient.hp;
-            const damage = this.powerDamageComponents(recipient,components,h,true,defenses.get(recipient));
+            const damage = this.powerDamageComponents(recipient,components,h,true,finalDefense);
+            if(spec.volley) this.checkSupply(h,this.supplyItem(h,"item-ammunition-bundle"),"ammunition after shot");
             if (tier===2 && recipient.hp<originalHp && weaponBonus(h,spec,"leech")) this.powerHeal(h,weaponBonus(h,spec,"leech"));
             for (const enchant of enchantments) if (tier === 2 && enchant.condition)
               this.powerCondition(recipient,enchant.condition,1+this.buildStat(h,enchant.condition),h.id);
@@ -750,6 +765,18 @@ export const powerMethods = {
                 effect.amount,
               );
             break;
+          case "recall":
+            this.openReturnPassage(spec.name);
+            break;
+          case "unlockVault": {
+            const door=this.map.vault.door;
+            delete this.map.obstacles[key(door.x,door.z)];
+            door.open=true;
+            this.seen[key(door.x,door.z)]=true;
+            this.note("The ironbound postern opens quietly.");
+            this.emit("world-objects");this.emit("map");
+            break;
+          }
           case "refill": {
             const flask=recipient.preview.inventory.items.find(i=>i.carried && i.catalogId==="item-water-flask" && this.supplyValue(recipient,i)<8);
             if(flask) recipient.supplies[flask.instanceId]=8;
@@ -869,7 +896,7 @@ export const powerMethods = {
           }
         }
       }
-      if (effect.kind === "damage" && spec.weapon === "ranged") {
+      if (effect.kind === "damage" && spec.weapon === "ranged" && !spec.volley) {
         const ammunition = this.supplyItem(h, "item-ammunition-bundle");
         if (ammunition)
           this.checkSupply(h, ammunition, "ammunition after shot");

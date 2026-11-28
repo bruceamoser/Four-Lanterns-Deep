@@ -1,8 +1,12 @@
-# Four Lanterns Deep — implementation status v0.8.4
+# Four Lanterns Deep — implementation status
+
+## 0.10.0 Living Atlas
+
+Twenty-one disciplines offer 55 seven-stage technique arms and 29 seven-section source books. Studying a section adds its pages to the hero’s personal spellbook. The 100-level digital edition, numerical tuning, executable catalogue and migration are described in [The Living Atlas](linear-atlas.md).
 
 ## 0.9.0 Deeds edition
 
-The current edition has 23 displayed disciplines, 77 connected paths, 33 confluences and 90 signature choices. Paid field and combat techniques, typed damage, Grit, discovery, appraisal, creature spoils and vaults are documented in the [conversion report](deeds-conversion.md). The generated [current Forge catalog](game-power-coverage.json) and [review of book paths and spells](deeds-tree-review.md) distinguish shipped effects from source material reserved for future adaptations. Version-three save envelopes read existing version-two Forge journeys. A town respec converts an individual hero. The entries below describe earlier releases.
+The 0.9.0 edition has 23 displayed disciplines, 77 connected paths, 33 confluences and 90 signature choices. Paid field and combat techniques, typed damage, Grit, discovery, appraisal, creature spoils and vaults are documented in the [conversion report](deeds-conversion.md). The generated [current Forge catalog](game-power-coverage.json) and [review of book paths and spells](deeds-tree-review.md) distinguish shipped effects from source material reserved for future adaptations. Version-three save envelopes read existing version-two Forge journeys. A town respec converts an individual hero. The entries below describe earlier releases.
 
 
 

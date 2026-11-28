@@ -71,9 +71,9 @@ export async function verifyDeedsDelve(page) {
     await expect(page.locator("#avert-death")).toBeVisible();
     await page.locator("#sheet-training").click();
     await expect(
-      page.locator(".forge-signatures select").first(),
+      page.locator(".study-signatures select").first(),
     ).toBeVisible();
-    await expect(page.locator('[data-discipline="fencing"]')).toBeVisible();
+    await expect(page.locator('[data-field="fencing"]')).toBeVisible();
     await page.screenshot({ path: "test-results/deeds-forge.png" });
     await page.keyboard.press("Escape");
     console.log(

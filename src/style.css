@@ -3302,6 +3302,7 @@ p {
   border-top: 1px solid #9d885233;
   font: 12px Arial;
 }
+body:has(#modal-root > *) .combat-float { visibility: hidden; }
 .combat-float {
   position: fixed;
   z-index: 15;

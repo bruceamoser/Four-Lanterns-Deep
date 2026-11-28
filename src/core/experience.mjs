@@ -27,6 +27,18 @@ export function levelForXP(xp, threshold=xpForLevel) {
   const cap = threshold === digitalXPForLevel ? 100 : 30;
   let level=1;while(level<cap && xp>=threshold(level+1)) level++;return level;
 }
+// Preserve the power band of a trained Deeds hero when a player adopts the digital Atlas.
+export function digitalEquivalent(draft, level) {
+  if (draft.forge?.version === 1) return Math.min(100, 1 + Math.round((level-1)*99/29));
+  return Math.min(100, 1 + 11 * (level-1));
+}
+export function convertedProgress(hero) {
+  const p = xpProgress(hero);
+  const floor = digitalXPForLevel(digitalEquivalent(hero.draft,p.level));
+  const ceiling = digitalXPForLevel(digitalEquivalent(hero.draft,p.level+1));
+  const xp = floor + Math.floor((ceiling-floor) * (p.required ? Math.min(1,p.current/p.required) : 0));
+  return {offset:hero.xp-xp, earnedLevel:levelForXP(xp,digitalXPForLevel)};
+}
 export function trainingTarget(hero) {
   const trained = hero.preview?.state.level ?? hero.draft?.progression?.level ?? 1;
   return hero.draft?.forge?.version === 2 ? Math.max(trained, Math.min(10, hero.earnedLevel)) : hero.earnedLevel;

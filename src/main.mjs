@@ -1,3 +1,4 @@
+import {digitalEquivalent} from "./core/experience.mjs";
 import { trainingTarget } from "./core/experience.mjs";
 import { DELVE_FINDS, bottleNames } from "./core/delve-finds.mjs";
 import { CHALLENGES } from "./core/challenge.mjs";
@@ -646,7 +647,7 @@ function render() {
         .map((l) => `<p>${esc(l)}</p>`)
         .join(
           "",
-        )}</aside><div class="bottom ${combat ? "combat-bottom" : ""}"><div class="phase ${combat ? "combat" : ""}">${phase}</div>${combat ? combatDock() : ""}<div class="actionbar">${button("Character", "sheet", "ABILITIES & GEAR")}${button("Formation", "formation", esc(FORMATIONS[c.formation].name))}${combat ? button("Actions", "actions", "CARDS & TARGETS") + button("Move farther", "convert", "MANEUVER → MOVE") + (game.sustainDue(game.active) ? button("Sustain ward", "sustain-ward", "1 MANEUVER · 0 SP") : "") + button("End turn", "end", b ? `${b.remaining.main} MAIN · ${b.remaining.maneuver} MANEUVER · ${game.movementLeft()} MOVE` : "SPACE", true) : button("Supplies", "supplies", "STOCKS & PREPARATION") + button("Make camp", "camp", "SLEEP & RECOVER") + button("Return", "extract", "ENTRANCE STAIRS") + button("Descend", "deeper", "FAR STAIRS", true)}</div><div class="hint">${combat ? (selectedAction ? `TARGETING: ${esc(C.choices.find((c) => c.id === selectedAction.id).name)} · Click a target · Esc cancels` : `${esc(h.name)} acts alone · Teal squares: movement range · Gold: last movement · Right-drag pans`) : "Right-drag to pan · Wheel to zoom · Q / E rotate · F follow · G grid · Tab map · J journal · Formation sets marching order"}</div></div>`;
+        )}</aside><div class="bottom ${combat ? "combat-bottom" : ""}"><div class="phase ${combat ? "combat" : ""}">${phase}</div>${combat ? combatDock() : ""}<div class="actionbar">${button("Character", "sheet", "ABILITIES & GEAR")}${button("Formation", "formation", esc(FORMATIONS[c.formation].name))}${combat ? button("Actions", "actions", "CARDS & TARGETS") + button("Move farther", "convert", "MANEUVER → MOVE") + (game.sustainDue(game.active) ? button("Sustain ward", "sustain-ward", "1 MANEUVER · 0 SP") : "") + button("End turn", "end", b ? `${b.remaining.main} MAIN · ${b.remaining.maneuver} MANEUVER · ${game.movementLeft()} MOVE` : "SPACE", true) : button("Supplies", "supplies", "STOCKS & PREPARATION") + button("Make camp", "camp", "SLEEP & RECOVER") + button("Return", "extract", "ENTRANCE STAIRS") + button("Descend", "deeper", "FAR STAIRS", true)}</div><div class="hint">${combat ? (selectedAction ? `TARGETING: ${esc(game.powerSpec(selectedAction.id)?.name ?? C.choices.find((c) => c.id === selectedAction.id).name)} · Click a target · Esc cancels` : `${esc(h.name)} acts alone · Teal squares: movement range · Gold: last movement · Right-drag pans`) : "Right-drag to pan · Wheel to zoom · Q / E rotate · F follow · G grid · Tab map · J journal · Formation sets marching order"}</div></div>`;
     drawMap();
   }
   bind();
@@ -1031,7 +1032,7 @@ function respecHero(index) {
   const h = game.party[index];
   dialog(
     "Rebuild your hero",
-    `<p>Start <b>${esc(h.name)}</b> again from the first character-creation step. Reselect attributes, ancestry traits, origins, class, and discipline paths at level ${h.preview.state.level}.</p><div class="respec-summary"><span><b>${h.xp.toLocaleString()}</b> XP kept</span><span><b>${h.preview.state.level}</b> trained level kept</span><span><b>${h.preview.inventory.items.length}</b> inventory stacks kept</span></div><p>All purchased circles return to unspent DP. Your equipment, remaining supplies, wounds, learned recipes and history stay with you. Rebuilding does not heal or refill Grit.</p><p class="cost-note">Free in Greyhaven. Your current build stays intact until you confirm the completed rebuild.</p>`,
+    `<p>Start <b>${esc(h.name)}</b> again from the first character-creation step. Reselect attributes, ancestry traits, origins, class, and discipline paths at level ${h.draft.forge && h.draft.forge.version<3 ? digitalEquivalent(h.draft,h.preview.state.level) : h.preview.state.level}.</p><div class="respec-summary"><span><b>${h.xp.toLocaleString()}</b> XP kept</span><span><b>${h.preview.state.level}</b> current trained level</span><span><b>${h.preview.inventory.items.length}</b> inventory stacks kept</span></div><p>All purchased circles return to unspent DP. Your equipment, remaining supplies, wounds, learned recipes and history stay with you. Rebuilding does not heal or refill Grit.</p><p class="cost-note">Free in Greyhaven. Your current build stays intact until you confirm the completed rebuild.</p>`,
     '<button id="cancel-respec">Keep current build</button><button id="begin-respec" class="primary">Begin rebuild</button>',
   );
   modal.querySelector("#cancel-respec").onclick = () => sheet(index);
@@ -1239,8 +1240,9 @@ function activateAction(id, index = game.selected) {
 function combatDock() {
   const h = game.active,
     b = game.encounter.current === h.id ? game.budget : null;
+  const actions = new Map(game.availableActions(h).map(c=>[c.id,c]));
   const cards = (h.favorites ?? [])
-    .map((id) => game.availableActions(h).find((c) => c.id === id))
+    .map((id) => actions.get(id))
     .filter(Boolean);
   const targeting = selectedAction
     ? `<div class="targeting-tray" role="status"><div><span class="eyebrow">READY TO USE · NO COST SPENT</span><strong>${esc(game.powerSpec(selectedAction.id)?.name ?? C.choices.find((c) => c.id === selectedAction.id)?.name)}</strong><small>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? "Use on yourself, or choose a different action." : "Click a target, or select another action to switch."}</small></div>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? button("Use on self", "confirm-self", "CONFIRM", true) : ""}${button("Cancel", "cancel-target", "ESC · RETURN TO MOVEMENT")}</div>`

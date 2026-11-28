@@ -160,8 +160,16 @@ export const techniqueMethods = {
       }
     if (["all", "path"].includes(sense)) {
       const exit = this.map.exit;
-      this.seen[key(exit.x, exit.z)] = true;
-      facts.push("Descent lies at " + key(exit.x, exit.z));
+      if (h.draft.forge?.version === 3) {
+        const passages=Object.values(this.map.tiles).filter(inside);
+        const fresh=passages.filter(p=>!this.seen[key(p.x,p.z)]).length;
+        for(const p of passages)this.seen[key(p.x,p.z)]=true;
+        if(fresh)facts.push("Mapped "+fresh+" nearby squares");
+      }
+      if (inside(exit) || h.draft.forge?.version !== 3) {
+        this.seen[key(exit.x, exit.z)] = true;
+        facts.push("Descent lies at " + key(exit.x, exit.z));
+      }
     }
     const entry = facts.length ? facts.join(" · ") : "Nothing detected nearby.";
     (discoveries.notes ??= []).push({ depth: this.map.depth, text: entry });

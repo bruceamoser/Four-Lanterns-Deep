@@ -135,11 +135,6 @@ export function forgeRanks(draft, C) {
   const ranks = {};
   for (const id of forgeOwned(draft, C)) {
     const n = FORGE_NODE[id];
-    if (linearHero(draft) && n?.pages) {
-      const school = n.arm.slice(5);
-      const alias = {flame:"flame",water:"frost",air:"storm"}[school] ?? {mentalism:"mind",invocation:"calling",wards:"radiance"}[n.discipline];
-      if (alias) ranks["discipline-"+alias] = Math.max(ranks["discipline-"+alias] ?? 0, n.rank);
-    }
     if (n?.rank)
       ranks[`discipline-${n.discipline}`] = Math.max(
         ranks[`discipline-${n.discipline}`] ?? 0,
@@ -243,7 +238,7 @@ export function forgeBenefits(draft, C) {
   const owned = forgeOwned(draft, C),
     stats = {},
     profiles = { melee: [1, 1, 2], ranged: [1, 1, 2] },
-    techniques = {}, spellbook = {}, upgrades = [],
+    techniques = {}, spellbook = {}, attunements = {}, upgrades = [],
     abilities = deedsHero(draft) ? ["power-forge-strike", "power-forge-shot", "ability-stabilize"] : [],
     recipes = [];
   if (deedsHero(draft)) {
@@ -263,7 +258,10 @@ export function forgeBenefits(draft, C) {
     if (!n) continue;
     if (n.spec) techniques[n.power] = n.id;
     if (n.pages) {
-      (spellbook[n.arm.slice(5)] ??= []).push(...n.pages);
+      const book = n.arm.slice(5);
+      (spellbook[book] ??= []).push(...n.pages);
+      const affinity = {flame:"flame",water:"frost",air:"storm"}[book] ?? {mentalism:"mind",invocation:"calling",wards:"radiance"}[n.discipline];
+      if (affinity) attunements[affinity] = Math.max(attunements[affinity] ?? 0,n.rank);
       abilities.push(...n.pages);
     }
     if (n.power) abilities.push(n.power);
@@ -278,7 +276,7 @@ export function forgeBenefits(draft, C) {
     stats,
     profiles,
     upgrades,
-    techniques, spellbook, abilities: [...new Set(abilities)],
+    techniques, spellbook, attunements, abilities: [...new Set(abilities)],
     recipes: [...new Set(recipes)],
     owned: [...owned],
   };
@@ -629,7 +627,8 @@ export function forgePowerText(p) {
     `${{ main: "Action", maneuver: "Maneuver", reaction: "Reaction", passive: "Passive" }[p.category] ?? "Power"}${p.target === "self" ? "" : ` · range ${p.range ?? 0}`}${p.radius ? ` · radius ${p.radius}` : ""}${p.shape ? ` · ${p.shape}` : ""}${p.shots ? ` · ${p.shots} arrows` : ""}.`,
     p.spell && p.spCost != null ? p.spCost + " SP · " + (p.weapon || p.shield ? "Held focus." : "Free hand required.") : "",
     p.ritualMinutes ? "Ritual · "+p.ritualMinutes+" min outside combat." : "",
-    p.maxTargets ? "Up to "+p.maxTargets+" adjacent enemies." : "",
+    p.volley ? "Strike up to three enemies clustered around the target. One roll and one ammunition check per target." : p.maxTargets ? "Up to "+p.maxTargets+" adjacent enemies." : "",
+    p.piercePhysical ? "Ignore "+p.piercePhysical+" physical resistance." : "",
     p.dungeonName ? "Adapted from "+p.printedName+"." : "",
     p.trainingBoon ? "Basic strike training grants 1 Boon on this attack." : "",
     p.normalRange ? "Normal range " + p.normalRange + ". Beyond it, 1 Bane." : "",
@@ -661,6 +660,8 @@ export function forgePowerText(p) {
           survey: "Reveal the floor layout and containers, not hidden enemies.",
           cue: (e.ally ? "Choose an ally within three squares to move" : "You may step") + " up to " + (e.steps ?? 1) + " square(s)" + (e.strongSteps ? " ("+e.strongSteps+" on Strong)" : "") + (e.safe ? " without reactions." : e.ignoreTarget ? " without a reaction from the target." : ".") + (e.aid ? " The ally gains an attack Boon against the target." : ""),
           sense: "Sense "+e.sense+" within "+e.range+" squares and record what the company discovers.",
+          recall: "Open a passage to Greyhaven for the company. Return to this saved floor from the gate.",
+          unlockVault: "Quietly open a closed dungeon postern within "+p.range+" squares.",
           refill: "Refill a carried water flask to d8.",
           transferSP: (e.draw ? "Draw up to " : "Give up to ")+e.amount+" SP from the donor’s current reserve. Casting costs are separate.",
           identify: "Choose an unidentified carried find. Examine it for hidden properties.",

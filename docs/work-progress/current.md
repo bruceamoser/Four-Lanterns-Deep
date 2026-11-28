@@ -2,7 +2,7 @@
 
 ## November 28 — Linear discipline arms and personal spellbooks
 
-Implementation is on `codex/linear-arms-and-spellbooks` from `4714fb52`. The published baseline is 0.9.0. New heroes use a 100-level digital curve. Successive purchases evolve one technique slot per arm. A section purchase automatically adds every associated spell to that hero’s personal book. Existing heroes can rebuild in Greyhaven. Native and exhaustive catalogue qualification are in progress.
+Implementation is on `codex/linear-arms-and-spellbooks` from `4714fb52`. The published baseline is 0.9.0. New heroes use a 100-level digital curve. Successive purchases evolve one technique slot per arm. A section purchase automatically adds every associated spell to that hero’s personal book. Existing heroes can rebuild in Greyhaven. The direct Ubuntu launcher passed the personal book and Atlas walkthrough. Installer qualification is in progress. [Implementation handoff](handoffs/2026-11-28-linear-atlas.md).
 
 ## November 27 — Stable release 0.9.0
 

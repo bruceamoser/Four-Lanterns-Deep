@@ -598,7 +598,7 @@ export function slotOf(item) {
 }
 export function effectStatus(hero, effect) {
   const rank =
-    hero.preview?.state.ranks?.[`discipline-${effect.discipline}`] ?? 0;
+    hero.preview?.forge?.attunements?.[effect.discipline] ?? hero.preview?.state.ranks?.[`discipline-${effect.discipline}`] ?? 0;
   return {
     active: !effect.discipline || rank >= effect.rank,
     rank,

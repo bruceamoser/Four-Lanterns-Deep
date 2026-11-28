@@ -1,4 +1,4 @@
-import { digitalXPForLevel, xpProgress, trainingTarget } from "./experience.mjs";
+import { digitalEquivalent, convertedProgress, trainingTarget } from "./experience.mjs";
 import { fieldOf } from "./deeds-origins.mjs";
 import { deedsHero, signatureLevel } from "./deeds-development.mjs";
 import { FORGE_NODE, FORGE_LEVEL_CAP } from "./forge-catalog.mjs";
@@ -61,19 +61,20 @@ export const forgeGameMethods = {
     const p = forgeCharacter(draft, this.C);
     if (!p.valid) throw new Error(p.errors.map((e) => e.text).join("\n"));
     const level = p.state.level;
+    const adopting = h.draft.forge?.version !== 3 && draft.forge.version === 3;
+    const convertedLevel = adopting ? digitalEquivalent(h.draft,h.preview.state.level) : null;
     if (
-      level > trainingTarget(h) ||
+      (adopting ? level !== convertedLevel : level > trainingTarget(h)) ||
       level < h.preview.state.level ||
       level > (draft.forge.version === 3 ? 100 : FORGE_LEVEL_CAP)
     )
       throw new Error("Train only earned levels.");
     const next = structuredClone(h);
     next.draft = structuredClone(draft);
-    if (h.draft.forge?.version !== 3 && draft.forge.version === 3) {
-      const progress = xpProgress(h);
-      const floor = digitalXPForLevel(progress.level);
-      const gap = digitalXPForLevel(progress.level + 1) - floor;
-      next.xpOffset = h.xp - floor - Math.floor(gap * (progress.required ? progress.current / progress.required : 0));
+    if (adopting) {
+      const progress = convertedProgress(h);
+      next.xpOffset = progress.offset;
+      next.earnedLevel = progress.earnedLevel;
     }
     // Progression never changes possessions, the campaign purse or remaining supplies.
     for (const k of ["kit", "shopping", "loadout"])
@@ -194,7 +195,7 @@ export const forgeGameMethods = {
       draft = newForgeDraft();
     draft.name = h.name;
     draft.appearance = structuredClone(h.draft.appearance);
-    draft.progression.level = h.preview.state.level;
+    draft.progression.level = h.draft.forge.version === 3 ? h.preview.state.level : digitalEquivalent(h.draft,h.preview.state.level);
     if (h.draft.forge?.version === 2) {
       for (const k of ["attributes","traitIds","borrowedTraitId","ancestryId","classId","languages","culture","background","classDisciplines"])
         if (h.draft[k] !== undefined) draft[k] = structuredClone(h.draft[k]);
