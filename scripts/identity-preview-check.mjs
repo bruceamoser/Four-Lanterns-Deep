@@ -63,6 +63,9 @@ export async function verifyGameplayIdentity(page) {
           group: 999,
         },
       ];
+      for (const item of g.active.preview.inventory.items.filter(i => i.held))
+        g.equip(0, item.instanceId, "stow");
+      g.active.sp = g.active.preview.summary.maximumSp;
       g.active.preview.state.abilities.push(
         "power-firebreak",
         "power-dousing-rain",

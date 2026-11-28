@@ -33,7 +33,11 @@ export async function verifyProvisions(page) {
             h.supplies[item.instanceId] = 8;
         }
       });
-      g.campaign.provisionTrail = { steps: 39, seconds: 0 };
+      g.campaign.clockSeconds = 86400 - 10;
+      for (const h of g.party) {
+        h.needs.ateAt = h.needs.drankAt = 0;
+        h.needs.restedAt = g.campaign.clockSeconds;
+      }
       g.supplyDie = () => 1;
       g.emit("floor");
       g.emit("change");
@@ -46,9 +50,9 @@ export async function verifyProvisions(page) {
     });
     expect(
       await page.evaluate(
-        () => window.__ddd.game.campaign.provisionTrail.steps,
+        () => window.__ddd.game.party[0].needs.drankAt,
       ),
-    ).toBe(40);
+    ).toBe(86400);
     expect(
       await page.evaluate(() => {
         const g = window.__ddd.game,
@@ -74,16 +78,16 @@ export async function verifyProvisions(page) {
     await waitForGame(page);
     expect(
       await page.evaluate(
-        () => window.__ddd.game.campaign.provisionTrail.steps,
+        () => window.__ddd.game.party[0].needs.drankAt,
       ),
-    ).toBe(40);
+    ).toBe(86400);
     expect(
       await page.evaluate(
         () => window.__ddd.game.campaign.supplyNotices.length,
       ),
     ).toBe(0);
     console.log(
-      "Actual dungeon movement triggers provision checks once; character stores and saved progress passed.",
+      "A full day triggers one water check on an actual dungeon step; stores and the next daily deadline persist across reload.",
     );
   } finally {
     if (await page.locator(".dungeon-camp").count())

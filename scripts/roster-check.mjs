@@ -46,13 +46,13 @@ export async function verifyRoster(page) {
   await page.evaluate(() =>
     window.__ddd.game.awardXP(
       "roster-check",
-      10000,
+      200,
       "Recovered the lantern vault",
     ),
   );
   await page.locator('[data-hero="0"]').click();
   await page.locator('[data-tab="journey"]').click();
-  await expect(page.locator(".experience-panel")).toContainText("10,000 total XP");
+  await expect(page.locator(".experience-panel")).toContainText("200 total XP");
   await expect(page.locator(".experience-panel")).toContainText(
     "Training ready · Level 2",
   );
@@ -68,7 +68,7 @@ export async function verifyRoster(page) {
   expect(
     await page.evaluate(() => window.__ddd.game.livingRoster().length),
   ).toBe(before.living + 1);
-  expect(await page.evaluate(() => window.__ddd.game.party[0].xp)).toBe(10000);
+  expect(await page.evaluate(() => window.__ddd.game.party[0].xp)).toBe(200);
   await page.locator('.town-directory [data-action="roster"]').click();
   await page.locator(`[data-roster-hero="${recruitId}"]`).click();
   await page.locator('[data-roster-slot="1"]').click();

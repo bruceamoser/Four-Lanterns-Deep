@@ -2,6 +2,14 @@
 
 Everyday supplies use one party **Supplies** screen, available from the HUD, character inventory and workshop. Food, water, arrows, torches and dressings remain individual carried items with the existing depletion die, Bulk and one-step combining rule. The last exhausted use still works. Advanced potion, smoke, rope and magical recipes remain in **Advanced recipes & training**.
 
+## When supplies are used
+
+A hero eats and drinks once per 24 hours of dungeon time. Walking, fighting and stationary work share that clock. A ten-second exploration step advances it once for the company. A completed round advances it six seconds. Camp, Greyhaven and time on the reserve pause ration use. A missed ration produces one warning and one meal or drink satisfies the need when stock returns.
+
+A readied torch rolls for fuel after an hour actually burning. A minute of exploration, combat or work contributes the same minute. Automatic dousing, camp and stowing pause the burn clock. Both clocks resume across saves. Old runs retain their remaining stocks. Past step counters cannot charge the company on load.
+
+Supply dice step down one size on a roll of one. A full d8 flask, food bundle or ammunition bundle averages 18 checks before exhaustion (8 + 6 + 4). A d6 lighting bundle averages 10 burning hours. The last use succeeds. A single area arrow costs one check even if it hits several creatures. A volley checks each arrow fired and a follow-up shot stops when its only target falls.
+
 ## Greyhaven
 
 Choose a departure target from d4 through d20 (default d8). Review one supply or the complete party before paying. Party restock covers carried everyday supplies plus missing food/water; optional empty slots allow adding other supplies explicitly. Existing larger dice are preserved. The review lists every recipient, before/after die, coins and any Bulk for newly added items. Cancel is free. Changes invalidate stale quotes; insufficient coins never produce a partial purchase.

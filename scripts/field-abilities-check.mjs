@@ -1,10 +1,16 @@
 import { expect } from "@playwright/test";
+import { drafts as legacyDrafts } from "../tests/forge-fixture.mjs";
 
 export async function verifyFieldAbilities(page) {
   const saved = await page.evaluate(() =>
     structuredClone(window.__ddd.game.snapshot()),
   );
   try {
+    // Mending Touch consumes a dressing on a pre-Atlas hero. New healers cast from their books.
+    await page.evaluate((draft) => {
+      const game = window.__ddd.game;
+      game.party[2] = game.hero(draft, 2);
+    }, legacyDrafts[2]);
     for (const mode of ["town", "exploration"]) {
       await page.evaluate((mode) => {
         const g = window.__ddd.game;

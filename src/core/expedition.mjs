@@ -1,3 +1,4 @@
+import { TORCH_BURN_INTERVAL } from "./provisions.mjs";
 import { distance, lineOfSight } from "./dungeon.mjs";
 import {
   partyCanSee,
@@ -79,15 +80,16 @@ export function prepareExpedition(campaign) {
       held: false,
       lit: false,
       seconds: 0,
-      steps: 0,
       supplyId: null,
     };
-    if (h.torch.steps === undefined) {
-      h.torch.steps = Math.floor((Math.min(1799, h.torch.seconds) * 25) / 1800);
-      h.torch.seconds = 0;
+    if (h.torch.steps !== undefined) {
+      if (!Number.isSafeInteger(h.torch.steps) || h.torch.steps < 0)
+        throw new Error("Invalid saved torch movement.");
+      // Old movement checks ran beside a separate stationary burn clock.
+      h.torch.seconds = Math.min(TORCH_BURN_INTERVAL - 1,
+        h.torch.seconds + h.torch.steps * EXPEDITION_TIME.explorationStep);
+      delete h.torch.steps;
     }
-    if (!Number.isSafeInteger(h.torch.steps) || h.torch.steps < 0)
-      throw new Error("Invalid saved torch movement.");
     if (
       !Number.isSafeInteger(h.torch.seconds) ||
       h.torch.seconds < 0 ||
@@ -221,7 +223,7 @@ export const expeditionMethods = {
     const round = this.encounter.round;
     this.encounter = this.R.finishTurn(this.encounter);
     if (this.encounter.round !== round)
-      this.advanceTime(EXPEDITION_TIME.combatRound);
+      this.advanceTime(EXPEDITION_TIME.combatRound, { provisions: true });
   },
   clock() {
     const seconds = this.campaign.clockSeconds ?? this.campaign.hours * 3600;
@@ -330,30 +332,31 @@ export const expeditionMethods = {
     );
     this.emit("change");
   },
-  autoProvisions() {
+  autoProvisions(elapsed = 0) {
     for (const h of this.party.filter((h) => h.survival.status === "active")) {
       for (const [field, catalogId, verb] of [
         ["ateAt", "item-food-bundle", "eats a daily meal"],
         ["drankAt", "item-water-flask", "drinks a daily water ration"],
       ]) {
-        if (
-          !h.needs[field === "ateAt" ? "foodDue" : "waterDue"] &&
-          this.clock().seconds - h.needs[field] < EXPEDITION_TIME.dailyNeeds
-        )
-          continue;
-        const item = this.supplyItem(h, catalogId);
-        if (item) {
-          h.needs[field] = this.clock().seconds;
-          h.needs[field === "ateAt" ? "foodDue" : "waterDue"] = false;
-          h.needs.warned = h.needs.warned.filter((k) => k !== field);
+        const now = this.clock().seconds;
+        const due = field === "ateAt" ? "foodDue" : "waterDue";
+        while (h.needs[due] || now - h.needs[field] >= EXPEDITION_TIME.dailyNeeds) {
+          const item = this.supplyItem(h, catalogId);
+          if (!item) {
+            h.needs[due] = true;
+            if (!h.needs.warned.includes(field)) {
+              h.needs.warned.push(field);
+              this.supplyNotice(h, { name: field === "ateAt" ? "Food" : "Water" },
+                `No usable ${field === "ateAt" ? "food" : "water"} remains. Replenish supplies in Greyhaven or at camp.`);
+            }
+            break;
+          }
+          // After going without, one ration satisfies the present need.
+          const previous = Math.max(h.needs[field], now - elapsed - EXPEDITION_TIME.dailyNeeds);
+          h.needs[field] = h.needs[due] ? now : previous + EXPEDITION_TIME.dailyNeeds;
+          h.needs[due] = false;
+          h.needs.warned = h.needs.warned.filter(key => key !== field);
           this.checkSupply(h, item, verb);
-        } else if (!h.needs.warned.includes(field)) {
-          h.needs.warned.push(field);
-          this.supplyNotice(
-            h,
-            { name: field === "ateAt" ? "Food" : "Water" },
-            `No usable ${field === "ateAt" ? "food" : "water"} remains. Buy or make supplies; water flasks can be refilled in town.`,
-          );
         }
       }
     }
@@ -366,12 +369,17 @@ export const expeditionMethods = {
       throw new Error("Time must be whole nonnegative seconds.");
     prepareExpedition(this.campaign);
     const resting = sleeping || sleepingHeroes !== null;
+    const inDungeon = this.mode === "exploration" || this.mode === "combat";
+    // Reserve heroes stay in Greyhaven while the expedition clock advances.
+    for (const h of this.campaign.reserve ?? []) {
+      h.needs.ateAt += seconds;
+      h.needs.drankAt += seconds;
+    }
     this.campaign.clockSeconds += seconds;
     this.expireBattlefield();
     this.campaign.hours = Math.floor(this.campaign.clockSeconds / 3600);
     for (const h of this.party.filter((h) => h.survival.status !== "dead")) {
-      if (resting) {
-        // Camp is a resource-free planning/recovery phase, without deferred needs debt.
+      if (resting || this.mode === "town") {
         h.needs.ateAt += seconds;
         h.needs.drankAt += seconds;
       }
@@ -398,9 +406,10 @@ export const expeditionMethods = {
         );
       }
     }
-    if (provisions && !resting && seconds >= 60)
-      this.stationarySupplies(seconds, { camping: !!sleepingHeroes });
-    if (provisions && !resting) this.autoProvisions();
+    if (inDungeon && !resting && seconds > 0) {
+      this.burnTorches(seconds);
+      if (provisions) this.autoProvisions(seconds);
+    }
     if (!sleeping && !sleepingHeroes)
       for (const h of this.party) h.needs.sleepProgress = 0;
     this.emit("time");
@@ -417,7 +426,6 @@ export const expeditionMethods = {
     this.note(
       `${h.name} refills ${flasks.length} water flask${flasks.length === 1 ? "" : "s"} at the well.`,
     );
-    this.autoProvisions();
     this.emit("change");
   },
   sleepReason() {

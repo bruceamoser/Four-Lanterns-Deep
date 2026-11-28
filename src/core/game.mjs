@@ -1860,7 +1860,6 @@ export class Game {
         }
         if (this.canAct(hero)) Object.assign(hero, end);
       }
-      this.movementSupplies(Math.max(...steps.map((s) => s.points.length)));
       this.syncTorches();
       this.emit("move", {
         steps: steps.map(({ hero, points }) => ({ heroId: hero.id, points })),

@@ -75,27 +75,44 @@ test("torch needs a hand, reveals nearby darkness, douses in light and preserves
     (i) => i.catalogId === "item-lighting-bundle" && i.instanceId !== supply,
   ))
     h.supplies[i.instanceId] = 0;
-  g.movementSupplies(24);
+  g.advanceTime(3590);
   assert.equal(h.supplies[supply], 6);
   g.map.lights = [{ x: 3, z: 3, radius: 3 }];
   g.syncTorches();
   assert.equal(h.torch.lit, false);
   g.advanceTime(3600);
-  g.movementSupplies(30);
-  assert.equal(h.torch.steps, 24);
+  assert.equal(h.torch.seconds, 3590);
   assert.equal(h.supplies[supply], 6);
   const copy = new Game(R, C);
   copy.load(deserialize(serialize(g.snapshot())), { resume: false });
-  assert.equal(copy.party[0].torch.steps, 24);
+  assert.equal(copy.party[0].torch.seconds, 3590);
   copy.map.lights = [];
   copy.syncTorches();
   copy.supplyDie = () => 1;
-  copy.movementSupplies(1);
+  copy.advanceTime(10);
   assert.equal(copy.party[0].supplies[supply], 4);
-  copy.movementSupplies(25);
+  copy.advanceTime(3600);
   assert.equal(copy.party[0].supplies[supply], 0);
   assert.equal(copy.party[0].torch.lit, false);
   assert.match(copy.campaign.supplyNotices.at(-1).message, /exhausted/);
+});
+test("six seconds of combat use the same burn clock after a long camp pauses a lit torch", () => {
+  const g = arena(), h = g.party[0];
+  add(g, h, "item-lighting-bundle");
+  g.toggleTorch(0);
+  const fuel = h.torch.supplyId;
+  h.supplies[fuel] = 6;
+  h.torch.seconds = 3594;
+  g.supplyDie = () => 1;
+  g.advanceTime(8 * 3600, {sleepingHeroes: [], provisions: true});
+  assert.equal(h.torch.seconds, 3594);
+  assert.equal(h.supplies[fuel], 6);
+  combat(g, 0);
+  g.map.lights = [];
+  g.syncTorches();
+  g.advanceTime(6, {provisions: true});
+  assert.equal(h.torch.seconds, 0);
+  assert.equal(h.supplies[fuel], 4);
 });
 test("full hands block a torch and readying a bow stows it; free-hand potion checks include torches", () => {
   const g = arena(),

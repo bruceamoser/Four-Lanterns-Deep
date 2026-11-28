@@ -1,3 +1,4 @@
+import { verifyProvisions } from "./provisions-check.mjs";
 import { verifyLinearAtlas } from "./linear-atlas-check.mjs";
 import { verifyCreatureAI } from "./creature-ai-check.mjs";
 import { enterGame, settingsAction } from "./ui-session.mjs";
@@ -101,6 +102,7 @@ try {
   const saved = await page.evaluate(() => window.desktop.load());
   expect(JSON.parse(saved).campaign.party.length).toBe(4);
   await verifyLinearAtlas(page);
+  await verifyProvisions(page);
   await settingsAction(page, "Updates");
   await expect(page.locator("#update-panel")).toContainText(
     `Version ${version}`,

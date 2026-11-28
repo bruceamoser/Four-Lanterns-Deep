@@ -55,7 +55,8 @@ export async function verifyBuildForge(page) {
     await page.locator("#drop-item").click();
     expect(
       await page.evaluate(
-        () => window.__ddd.game.map.chests.filter((c) => c.dropped).length,
+        (id) => window.__ddd.game.map.chests.filter((c) => c.dropped && c.items?.some((i) => i.instanceId === id)).length,
+        moved,
       ),
     ).toBe(1);
     expect(
@@ -68,14 +69,14 @@ export async function verifyBuildForge(page) {
       ),
     ).toBe(false);
     await page.keyboard.press("Escape");
-    const pile = await page.evaluate(() => {
+    const pile = await page.evaluate((id) => {
       const { game: g, scene: s } = window.__ddd,
-        c = g.map.chests.find((c) => c.dropped);
+        c = g.map.chests.find((c) => c.dropped && c.items?.some((i) => i.instanceId === id));
       s.focusOn(c);
       s.zoom = 14;
       s.resize();
       return c.id;
-    });
+    }, moved);
     await page.waitForTimeout(600);
     const point = await page.evaluate((id) => {
       const s = window.__ddd.scene,

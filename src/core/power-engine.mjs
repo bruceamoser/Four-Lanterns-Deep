@@ -634,7 +634,8 @@ export const powerMethods = {
       if (
         effect.kind === "damage" &&
         spec.weapon === "ranged" &&
-        !this.supplyItem(h, "item-ammunition-bundle")
+        (!this.supplyItem(h, "item-ammunition-bundle") ||
+          (effect.shot > 0 && recipients.length && !recipients.some(alive)))
       )
         continue;
       if (effect.kind === "clearNpcTerrain") {
