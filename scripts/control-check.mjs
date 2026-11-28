@@ -179,7 +179,7 @@ export async function verifyControls(page) {
     window.__ddd.game.party.slice(0, 3).map((h) => [h.x, h.z]),
   );
   await page.getByRole("button", { name: "Actions", exact: false }).click();
-  await page.locator('[data-card="power-ember-lance"]').click();
+  await page.locator('[data-card="spell-flame-4"]').click();
   const target = await page.evaluate(() => {
     const { game: g, scene: s } = window.__ddd,
       e = g.enemies[0],
@@ -194,7 +194,7 @@ export async function verifyControls(page) {
   });
   await page.mouse.move(target.x, target.y);
   await page.mouse.click(target.x, target.y);
-  await page.waitForFunction(() => window.__ddd.game.enemies[0].hp === 5);
+  await page.waitForFunction(() => window.__ddd.game.enemies[0].hp < 10);
   expect(
     await page.evaluate(() => window.__ddd.game.enemies[0].conditions[0]),
   ).toMatchObject({ key: "burning", rating: 2 });
@@ -236,7 +236,10 @@ export async function verifyControls(page) {
   await page.screenshot({ path: "test-results/learned-actions.png" });
   await page.evaluate(() => {
     const g = window.__ddd.game;
-    g.awardXP("control-training", 10000, "Training test expedition");
+    g.party[0].xp = 0;
+    g.party[0].earnedLevel = 1;
+    g.campaign.pendingTreasureXP = 0;
+    g.awardXP("control-training", 200, "Training test expedition");
     g.enemies[0].hp = 0;
     g.mode = "exploration";
     g.encounter = null;
@@ -249,9 +252,9 @@ export async function verifyControls(page) {
   await page.locator('[data-tab="journey"]').click();
   await page.getByRole("button", { name: "Develop this hero" }).click();
   await expect(
-    page.getByRole("dialog", { name: "Discipline forge" }),
+    page.getByRole("dialog", { name: "Discipline atlas" }),
   ).toBeVisible();
-  await page.locator(".forge-train").click();
+  await page.locator("[data-train]").click();
   await page.locator(".forge-close").click();
   await page.keyboard.press("Escape");
   expect(
@@ -265,7 +268,7 @@ export async function verifyControls(page) {
     "Earned level and native workshop training preserved spent HP/Grit.",
   );
   console.log(
-    "Right-drag camera, wheel zoom, marching order, full sheet, nonzero/muted audio, Ember Lance and actor-only tactical movement passed.",
+    "Right-drag camera, wheel zoom, marching order, full sheet, nonzero/muted audio, Searing Brand and actor-only tactical movement passed.",
   );
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

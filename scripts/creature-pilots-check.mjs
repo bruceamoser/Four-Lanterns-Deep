@@ -1,3 +1,4 @@
+import approved from "../config/approved-creature-assets.json" with { type: "json" };
 import { expect } from "@playwright/test";
 
 export async function verifyCreaturePilots(page) {
@@ -81,12 +82,18 @@ export async function verifyCreaturePilots(page) {
       s.focusOn({ x: 7, z: 8.5 }, false);
     });
     await page.waitForTimeout(1000);
-    const inspection = await page.evaluate(() => {
+    const manifest = Object.fromEntries(approved.assets
+      .map(a => [a.creatureId, {model: a.model, attack: a.runtime?.attack?.clip ?? "1H_Melee_Attack_Slice_Diagonal"}]));
+    const inspection = await page.evaluate((manifest) => {
       const s = window.__ddd.scene;
       return [...s.entities.values()]
         .filter((e) => e.isEnemy)
         .map((e) => {
-          const names = [
+          const entry = manifest[e.data.type];
+          const production = entry && s.assets.has(entry.model) ? entry : null;
+          const names = production
+            ? ["Idle", "Walking_A", production.attack, "Hit_A", "Death_A_Pose"]
+            : [
             "Idle",
             "Walking_A",
             "1H_Melee_Attack_Slice_Diagonal",
@@ -199,6 +206,7 @@ export async function verifyCreaturePilots(page) {
           }
           return {
             id: e.data.type,
+            production, avatar: e.model.userData.avatar,
             visible: e.group.visible,
             missing,
             poses,
@@ -237,10 +245,11 @@ export async function verifyCreaturePilots(page) {
               .filter((o) => /^VortexWind/.test(o.name)).length,
           };
         });
-    });
+    }, manifest);
     expect(inspection).toHaveLength(19);
     for (const e of inspection) {
       expect(e.missing, e.id).toEqual([]);
+      if (e.production) expect(e.avatar, e.id).toBe(e.production.model);
       expect(e.visible, e.id + " is actually visible in the scene").toBe(true);
       expect(
         new Set(e.poses.map((p) => Math.round(p.fingerprint * 1000))).size,
@@ -251,28 +260,29 @@ export async function verifyCreaturePilots(page) {
         e.id,
       ).toBe(true);
     }
-    expect(inspection[0]).toMatchObject({ spear: true, pan: true });
-    expect(inspection[1].tail).toBe(true);
-    expect(inspection[3].wind).toBe(7);
-    expect(inspection[3].skull).toBe(false);
-    expect(inspection[5].tail).toBe(true);
-    expect(inspection[11].tail).toBe(true);
-    expect(inspection[10].heatMotion).toBe(true);
-    expect(inspection[12].heatMotion).toBe(true);
-    expect(inspection[15].heatMotion).toBe(true);
-    expect(inspection[15].modelScale).toBeCloseTo(0.95 * 1.12, 5);
-    expect(inspection[14].marshalGear).toEqual({
+    // The original pilots used named props and procedural materials. Finished GLBs bake these details.
+    if (!inspection[0].production) expect(inspection[0]).toMatchObject({ spear: true, pan: true });
+    if (!inspection[1].production) expect(inspection[1].tail).toBe(true);
+    if (!inspection[3].production) expect(inspection[3].wind).toBe(7);
+    if (!inspection[3].production) expect(inspection[3].skull).toBe(false);
+    if (!inspection[5].production) expect(inspection[5].tail).toBe(true);
+    if (!inspection[11].production) expect(inspection[11].tail).toBe(true);
+    if (!inspection[10].production) expect(inspection[10].heatMotion).toBe(true);
+    if (!inspection[12].production) expect(inspection[12].heatMotion).toBe(true);
+    if (!inspection[15].production) expect(inspection[15].heatMotion).toBe(true);
+    if (!inspection[15].production) expect(inspection[15].modelScale).toBeCloseTo(0.95 * 1.12, 5);
+    if (!inspection[14].production) expect(inspection[14].marshalGear).toEqual({
       board: true,
       blade: true,
       genericWeapon: false,
     });
-    expect(inspection[16].shieldguardGear).toEqual({
+    if (!inspection[16].production) expect(inspection[16].shieldguardGear).toEqual({
       wall: true,
       spear: true,
       genericWeapon: false,
       genericShield: false,
     });
-    for (const pose of inspection[9].poses) {
+    for (const pose of inspection[9].production ? [] : inspection[9].poses) {
       expect(
         Number.isFinite(pose.hangingMinY),
         pose.name + " measures the actual cup mesh",
@@ -296,11 +306,18 @@ export async function verifyCreaturePilots(page) {
       ["2H_Ranged_Shoot", "dart"],
       ["Unarmed_Melee_Attack_Punch_A", "coal-touch"],
     ]) {
-      await page.evaluate((name) => {
+      await page.evaluate(({name, manifest}) => {
         for (const e of window.__ddd.scene.entities.values())
           if (e.isEnemy) {
             e.mixer.stopAllAction();
             e.action = null;
+            const entry = manifest[e.data.type];
+            if (entry && window.__ddd.scene.assets.has(entry.model)) {
+              const clip = name === "1H_Melee_Attack_Slice_Diagonal" ? entry.attack : name;
+              window.__ddd.scene.animate(e.data.id, e.clips.some(c => c.name === clip) ? clip : "Idle", true);
+              e.lock = 10;
+              continue;
+            }
             const clip =
               name === "Spellcast_Shoot" &&
               e.data.type !== "creature-kobold-emberkeeper"
@@ -322,15 +339,14 @@ export async function verifyCreaturePilots(page) {
             window.__ddd.scene.animate(e.data.id, clip, true);
             e.lock = 10;
           }
-      }, name);
+      }, {name, manifest});
       await page.waitForTimeout(name === "Death_A_Pose" ? 900 : 240);
       await page.screenshot({
         path: `test-results/creature-model-pilots/game-${label}.png`,
       });
     }
     console.log(
-      "Authored creature checks: required clips bind with finite geometry; bat shares idle/movement flight; emberkeeper brazier is upright and above the floor, including spellcasting.",
-      JSON.stringify(inspection),
+      "Nineteen dungeon creatures rendered with finite animated geometry and the configured attack for each approved model.",
     );
   } finally {
     await page.evaluate(

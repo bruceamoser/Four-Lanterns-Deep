@@ -150,7 +150,7 @@ export async function verifyCombatUX(page) {
   await page.getByRole("button", { name: "End turn", exact: false }).click();
   await page.waitForFunction(() => window.__ddd.game.selected === 3);
   await page.getByRole("button", { name: "Actions", exact: false }).click();
-  await page.locator('[data-card="power-ember-lance"]').click();
+  await page.locator('[data-card="spell-flame-1"]').click();
   await page.getByRole("button", { name: "End turn", exact: false }).click();
   await page.waitForFunction(
     () =>

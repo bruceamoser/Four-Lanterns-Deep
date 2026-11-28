@@ -10,11 +10,15 @@ Replaced new-hero Atlas development with 84 linear arms. A technique keeps one a
 
 ## Verification and outstanding work
 
-The direct Ubuntu launcher has passed silent native checks for spell study, immediate personal pages, an actual healing cast, team isolation, refunds and save-on-close. Full catalogue tests exercise 319 pages, ordered predecessors, every active martial stage, maximum level, equipment attunement, ritual rewards and migration. The 0.8.8 migration regression passes. All 407 automated tests passed. The Linux AppImage, Debian package and Windows portable build are assembled. The game archives on both platforms contain all 58 approved creature models. Installer and updater checks run separately. See [PR 211](https://github.com/bruceamoser/Four-Lanterns-Deep/pull/211).
+The direct Ubuntu launcher has passed silent native checks for spell study, immediate personal pages, an actual healing cast, team isolation, refunds and save-on-close. Full catalogue tests exercise 319 pages, ordered predecessors, every active martial stage, maximum level, equipment attunement, ritual rewards and migration. The 0.8.8 migration regression passes. All 411 automated tests passed including the additional supply regressions. The Linux AppImage, Debian package and Windows portable build are assembled. The game archives on both platforms contain all 58 approved creature models. A saved 0.9.0 AppImage journey upgraded to 0.10.0 with its vault balance intact. A damaged download was rejected, and an unsuccessful save blocked installation. See [PR 211](https://github.com/bruceamoser/Four-Lanterns-Deep/pull/211).
 
 ## Consumable playtest follow-up
 
 A ten-second exploration step used to trigger additional water, food and torch rolls every 40, 80 and 25 squares. Stationary activity had separate timers. Replace these with per-hero 24-hour ration clocks and one hour of accumulated burning per torch. The die still shrinks on a one. A full d8 averages 18 uses. A follow-up arrow now stops if the previous shot killed its only target. Old saves keep their supplies and partial burn time. [Current rules and save behavior](../../supplies.md).
+
+A paired simulation exercised both editions with the same input: 360 ten-second walking steps in darkness, eight hours of stationary work, then eight hours in camp. The old code checked each torch bearer’s water 13 times, food six times and fuel 22 times. The new code checked water and food zero times and fuel nine times. The native game then crossed the daily threshold on an actual dungeon step and retained it across save/reload.
+
+Updated the native regression fixtures to use the current caster and study, the digital training threshold, and each approved creature’s actual attack. A separate legacy hero still exercises the old wound and treatment UI. The current production visual check also exercised Cinder Strider’s five configured animations.
 
 ## Local state
 

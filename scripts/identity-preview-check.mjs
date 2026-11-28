@@ -44,6 +44,8 @@ export async function verifyGameplayIdentity(page) {
       g.woundNotices = [];
       g.busy = false;
       g.selected = 0;
+      // The appearance preview above used the fighter; the surface drill needs a spellcaster's SP.
+      g.party[0] = g.hero(structuredClone(g.party[3].draft), 0);
       const { x, z } = g.map.start;
       g.party.forEach((h, i) => {
         Object.assign(h, { x: x + (i % 2), z: z + Math.floor(i / 2) });
@@ -90,6 +92,7 @@ export async function verifyGameplayIdentity(page) {
       g.emit("change");
     });
     await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__ddd.game.actionReason("power-firebreak"))).toBe("");
     const range = await page.evaluate(() => {
       const { game: g, scene: s } = window.__ddd;
       return {
@@ -147,8 +150,11 @@ export async function verifyGameplayIdentity(page) {
     ).toBeUndefined();
     await page.screenshot({ path: "test-results/battlefield-fire.png" });
     await page.evaluate(() => {
-      window.__ddd.game.budget.remaining.main = 1;
-      window.__ddd.game.emit("change");
+      const g = window.__ddd.game;
+      g.budget.remaining.main = 1;
+      g.active.sp = g.active.preview.summary.maximumSp;
+      g.emit("change");
+
     });
     await page.locator('[data-hot-action="power-dousing-rain"]').click();
     await page.mouse.click(point.x, point.y);
