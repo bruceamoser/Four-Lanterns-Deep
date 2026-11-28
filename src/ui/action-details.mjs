@@ -119,7 +119,7 @@ export function actionDetails(game, id, h = game.active) {
       : "Use on your combat turn.",
   );
   return {
-    name: choice?.name ?? spec.name ?? id,
+    name: spec.name ?? choice?.name ?? id,
     spec,
     rules:
       integrated[id] ??

@@ -460,7 +460,7 @@ export const expeditionMethods = {
     const start = this.clock().seconds;
     this.advanceTime(3600, { sleeping: true, provisions: true });
     for (const h of this.party.filter(h => ["stable","active"].includes(h.survival.status))) {
-      if (h.draft.forge?.version === 2) {
+      if (h.draft.forge?.version >= 2) {
         const now = this.clock().seconds;
         h.innRestHours = (h.innRestEnd === start ? h.innRestHours ?? 0 : 0) + 1;
         h.innRestEnd = now;

@@ -1,5 +1,6 @@
-import { trainingTarget } from "./experience.mjs";
-import { deedsHero } from "./deeds-development.mjs";
+import { digitalXPForLevel, xpProgress, trainingTarget } from "./experience.mjs";
+import { fieldOf } from "./deeds-origins.mjs";
+import { deedsHero, signatureLevel } from "./deeds-development.mjs";
 import { FORGE_NODE, FORGE_LEVEL_CAP } from "./forge-catalog.mjs";
 import {
   forgeCharacter,
@@ -54,6 +55,7 @@ export const forgeGameMethods = {
     if (expectedHeroId && h.heroId !== expectedHeroId)
       throw new Error("The party slot changed. Reopen this hero’s forge.");
     if (respec && missingSignatures(draft).length) throw new Error("Choose all earned class signatures before confirming the respec.");
+    if (!respec && h.draft.forge?.version !== draft.forge.version) throw new Error("Rebuild in Greyhaven to change editions.");
     if (!respec) for (const [level,selected] of Object.entries(h.draft.signatures ?? {}))
       if (selected !== draft.signatures?.[level]) throw new Error("Respec in Greyhaven to replace a chosen signature.");
     const p = forgeCharacter(draft, this.C);
@@ -62,11 +64,17 @@ export const forgeGameMethods = {
     if (
       level > trainingTarget(h) ||
       level < h.preview.state.level ||
-      level > FORGE_LEVEL_CAP
+      level > (draft.forge.version === 3 ? 100 : FORGE_LEVEL_CAP)
     )
       throw new Error("Train only earned levels.");
     const next = structuredClone(h);
     next.draft = structuredClone(draft);
+    if (h.draft.forge?.version !== 3 && draft.forge.version === 3) {
+      const progress = xpProgress(h);
+      const floor = digitalXPForLevel(progress.level);
+      const gap = digitalXPForLevel(progress.level + 1) - floor;
+      next.xpOffset = h.xp - floor - Math.floor(gap * (progress.required ? progress.current / progress.required : 0));
+    }
     // Progression never changes possessions, the campaign purse or remaining supplies.
     for (const k of ["kit", "shopping", "loadout"])
       next.draft[k] = structuredClone(
@@ -146,7 +154,7 @@ export const forgeGameMethods = {
         ...(respec ? this.forgeFavorites(next) : (next.favorites ?? [])).filter(
           (id) => available.some((a) => a.id === id),
         ),
-        ...available.filter((a) => !a.universal).map((a) => a.id),
+        ...(draft.forge.version === 3 ? [] : available.filter((a) => !a.universal).map((a) => a.id)),
       ]),
     ].slice(0, 8);
     this.party[index] = next;
@@ -187,6 +195,14 @@ export const forgeGameMethods = {
     draft.name = h.name;
     draft.appearance = structuredClone(h.draft.appearance);
     draft.progression.level = h.preview.state.level;
+    if (h.draft.forge?.version === 2) {
+      for (const k of ["attributes","traitIds","borrowedTraitId","ancestryId","classId","languages","culture","background","classDisciplines"])
+        if (h.draft[k] !== undefined) draft[k] = structuredClone(h.draft[k]);
+      const toField = id => "discipline-" + fieldOf(id.slice(11));
+      draft.classDisciplines = draft.classDisciplines.map(toField);
+      for (const key of ["culture","background"]) draft[key].discipline = toField(draft[key].discipline);
+      draft.signatures = Object.fromEntries(Object.entries(h.draft.signatures ?? {}).filter(([tier])=>signatureLevel(draft,tier)<=draft.progression.level));
+    }
     for (const k of ["kit", "shopping", "loadout"])
       draft[k] = structuredClone(h.draft[k]);
     return draft;

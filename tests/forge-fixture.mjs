@@ -9,7 +9,7 @@ import { forgeStartingDrafts } from "../src/core/forge-presets.mjs";
 import { Game } from "../src/core/game.mjs";
 import { key } from "../src/core/dungeon.mjs";
 export const C = forgeCatalog(source),
-  drafts = forgeStartingDrafts(examples, C);
+  drafts = forgeStartingDrafts(examples, C, 2); // Published 0.9.0 runs remain playable.
 export { R };
 export function learn(draft, id) {
   if (forgeOwned(draft, C).has(id)) return;

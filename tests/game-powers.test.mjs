@@ -90,7 +90,7 @@ function wound(g, h, exceptional = false) {
 test("new training uses game designs while originals and legacy heroes remain valid", () => {
   const g = fresh();
   assert.equal(Object.values(POWERS).filter(p=>!p.deedsOnly).length,265);
-  assert.equal(Object.values(POWERS).filter(p=>p.deedsOnly).length,18);
+  assert.equal(Object.values(POWERS).filter(p=>p.deedsOnly && !p.linear).length,18);
   assert.equal(
     C.choices.some((c) => c.gamePower),
     false,

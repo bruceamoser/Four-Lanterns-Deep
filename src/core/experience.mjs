@@ -1,3 +1,4 @@
+import { linearHero } from "./deeds-development.mjs";
 export const XP_RULES = Object.freeze({
   firstLevel: 10000,
   room: 60,
@@ -13,22 +14,31 @@ export const XP_THRESHOLDS = (() => {
   return Object.freeze(result);
 })();
 export function xpForLevel(level) { return XP_THRESHOLDS[Math.max(1,Math.min(30,level))]; }
+const digitalThresholds = [0, 0];
+for (let level = 2; level <= 100; level++) {
+  const step = level - 2;
+  digitalThresholds[level] = digitalThresholds[level - 1] + 200 + 35 * step + 4 * step * step;
+}
+export const digitalXPForLevel = level => digitalThresholds[Math.max(1, Math.min(100, level))];
+export const heroThreshold = draft => linearHero(draft) ? digitalXPForLevel : xpForLevel;
+export const effectiveXP = hero => (hero.xp ?? 0) - (hero.xpOffset ?? 0);
 export function legacyXPForLevel(level) { const n=Math.max(0,Math.min(30,level)-1);return n*400+n*(n-1)*175/2; }
 export function levelForXP(xp, threshold=xpForLevel) {
-  let level=1;while(level<30 && xp>=threshold(level+1)) level++;return level;
+  const cap = threshold === digitalXPForLevel ? 100 : 30;
+  let level=1;while(level<cap && xp>=threshold(level+1)) level++;return level;
 }
 export function trainingTarget(hero) {
   const trained = hero.preview?.state.level ?? hero.draft?.progression?.level ?? 1;
   return hero.draft?.forge?.version === 2 ? Math.max(trained, Math.min(10, hero.earnedLevel)) : hero.earnedLevel;
 }
 export function xpProgress(hero) {
-  const level = Math.max(hero.earnedLevel, levelForXP(hero.xp ?? 0));
-  const floor = xpForLevel(level),
-    next = level < 30 ? xpForLevel(level + 1) : null;
+  const threshold = heroThreshold(hero.draft), xp = effectiveXP(hero);
+  const level = Math.max(hero.earnedLevel, levelForXP(xp, threshold));
+  const floor = threshold(level), next = level < (linearHero(hero.draft) ? 100 : 30) ? threshold(level + 1) : null;
   return {
     level,
     total: hero.xp ?? 0,
-    current: (hero.xp ?? 0) - floor,
+    current: xp - floor,
     required: next === null ? 0 : next - floor,
     next,
     percent:
@@ -36,7 +46,7 @@ export function xpProgress(hero) {
         ? 100
         : Math.max(
             0,
-            Math.min(100, (((hero.xp ?? 0) - floor) / (next - floor)) * 100),
+            Math.min(100, ((xp - floor) / (next - floor)) * 100),
           ),
   };
 }
@@ -51,8 +61,8 @@ export const experienceMethods = {
     this.map.xpClaims.push(claim);
     for (const h of recipients) {
       const previous = trainingTarget(h);
-      h.xp = (h.xp ?? xpForLevel(h.earnedLevel)) + amount;
-      h.earnedLevel = Math.max(h.earnedLevel, levelForXP(h.xp));
+      h.xp = (h.xp ?? heroThreshold(h.draft)(h.earnedLevel)) + amount;
+      h.earnedLevel = Math.max(h.earnedLevel, levelForXP(effectiveXP(h), heroThreshold(h.draft)));
       if (trainingTarget(h) > previous)
         this.emit("level-ready", { hero: h, level: trainingTarget(h) });
       h.xpHistory ??= [];

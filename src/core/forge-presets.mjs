@@ -1,5 +1,5 @@
 import { newForgeDraft, forgeCharacter } from "./forge.mjs";
-export function forgeStartingDrafts(examples, C) {
+export function forgeStartingDrafts(examples, C, version = 3) {
   const settings = [
     {
       classId: "class-protector",
@@ -80,7 +80,7 @@ export function forgeStartingDrafts(examples, C) {
   ];
   return settings.map((s, i) => {
     const old = examples[i]?.draft ?? examples[i],
-      d = newForgeDraft();
+      d = newForgeDraft(version);
     for (const k of [
       "name",
       "attributes",
@@ -112,7 +112,16 @@ export function forgeStartingDrafts(examples, C) {
       discipline: "discipline-" + s.backgroundRoot,
     };
     d.kit = s.kit;
-    d.forge.nodes = s.nodes;
+    if (version === 3) {
+      const paths = [
+        ["arm:arms:bladework", "arm:guard:shieldwork", "arm:armor:harness"],
+        ["arm:marksmanship:precision","arm:wilderness:tracking"],
+        ["book:restoration","arm:medicine:first-aid"],
+        ["book:flame","book:detection"],
+      ][i];
+      if (i === 3) d.classDisciplines = ["discipline-elements"];
+      d.forge.nodes = [...paths.map(path=>path+":1"), paths[0]+":2"];
+    } else d.forge.nodes = [...s.nodes];
     const p = forgeCharacter(d, C);
     if (!p.valid)
       throw new Error(

@@ -5,6 +5,11 @@ import { esc } from "./icons.mjs";
 export function buildPanel(host, { game, index, train }) {
   const h = game.party[index],
     p = h.preview;
+  if(h.draft.forge?.version===3) {
+    const skills=Object.values(p.forge.techniques).map(id=>FORGE_NODE[id]);
+    host.innerHTML='<section class="build-forge"><div class="forge-summary-hero"><span class="eyebrow">DISCIPLINE ATLAS</span><h3>'+p.development.current+' DP available</h3>'+disciplineStrip(p.state,game.C.choices)+'<button id="open-build-forge" class="primary">'+(trainingTarget(h)>p.state.level?'Train to level '+trainingTarget(h):'Open discipline atlas')+'</button></div><h3>Current techniques</h3>'+skills.map(n=>'<article><strong>'+esc(n.name)+'</strong><p>'+esc(game.powerSpec(n.power,h).description)+'</p></article>').join("")+'<p>'+h.draft.forge.nodes.length+' stages studied · '+p.development.spent+' DP spent</p></section>';
+    host.querySelector("#open-build-forge").onclick=()=>train(index);return;
+  }
   const labels = {
     hp: "Maximum HP",
     capacity: "Carrying capacity",

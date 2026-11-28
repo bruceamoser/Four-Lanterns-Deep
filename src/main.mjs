@@ -1169,6 +1169,13 @@ function activateAction(id, index = game.selected) {
       return;
     }
     const fieldSpec = game.powerSpec(id, hero);
+    if (fieldSpec?.context) {
+      const subjects=game.bookRitualSubjects(id,hero);
+      dialog(fieldSpec.name,'<p>'+esc(fieldSpec.description)+'</p><div class="catalog-list">'+subjects.map(s=>'<button data-subject="'+esc(s.id)+'" '+(s.reason?'disabled':'')+'>'+esc(s.name)+'<small>'+esc(s.reason)+'</small></button>').join("")+'</div>'+(subjects.length?'':'<p>No eligible subjects here.</p>')+'<button data-cancel>Close</button>');
+      modal.querySelector("[data-cancel]").onclick=closeModal;
+      modal.querySelectorAll("[data-subject]").forEach(b=>b.onclick=()=>attempt(()=>{game.useAbility(id,null,{subject:b.dataset.subject});closeModal();}));
+      return;
+    }
     if (fieldSpec?.field && game.mode !== "combat") {
       if (fieldSpec.target === "self") {
         game.useAbility(id, game.active.id);
@@ -1233,10 +1240,10 @@ function combatDock() {
   const h = game.active,
     b = game.encounter.current === h.id ? game.budget : null;
   const cards = (h.favorites ?? [])
-    .map((id) => C.choices.find((c) => c.id === id))
+    .map((id) => game.availableActions(h).find((c) => c.id === id))
     .filter(Boolean);
   const targeting = selectedAction
-    ? `<div class="targeting-tray" role="status"><div><span class="eyebrow">READY TO USE · NO COST SPENT</span><strong>${esc(C.choices.find((c) => c.id === selectedAction.id)?.name)}</strong><small>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? "Use on yourself, or choose a different action." : "Click a target, or select another action to switch."}</small></div>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? button("Use on self", "confirm-self", "CONFIRM", true) : ""}${button("Cancel", "cancel-target", "ESC · RETURN TO MOVEMENT")}</div>`
+    ? `<div class="targeting-tray" role="status"><div><span class="eyebrow">READY TO USE · NO COST SPENT</span><strong>${esc(game.powerSpec(selectedAction.id)?.name ?? C.choices.find((c) => c.id === selectedAction.id)?.name)}</strong><small>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? "Use on yourself, or choose a different action." : "Click a target, or select another action to switch."}</small></div>${(game.powerSpec(selectedAction.id) ?? ABILITIES[selectedAction.id]).target === "self" ? button("Use on self", "confirm-self", "CONFIRM", true) : ""}${button("Cancel", "cancel-target", "ESC · RETURN TO MOVEMENT")}</div>`
     : "";
   return `<div class="combat-dock">${targeting}<div class="combat-status"><strong>${game.encounter.nextSide === "players" ? esc(h.name) : "Opposition is acting"}</strong><div class="budget-pips">${game.encounter.nextSide === "players" ? `<span><b>${b?.remaining.main ?? 1}</b> MAIN</span><span><b>${b?.remaining.maneuver ?? 1}</b> MANEUVER</span><span><b>${b?.remaining.reaction ?? 1}</b> REACTION</span><span><b>${game.movementLeft()}</b> MOVE</span>` : "<span>WAIT FOR YOUR COMPANY</span>"}</div></div><div class="favorite-bar">${
     cards
@@ -1477,7 +1484,7 @@ function shop() {
 function dying(h) {
   dialog(
     `${esc(h.name)} is Dying`,
-    h.draft.forge?.version === 2 ? `<p>${esc(game.deathSummary(h))}. Spend Grit to recover ${Math.ceil(h.survival.maxHp / 2)} HP or make a Fortitude death roll.</p>` : `<p>Spend Grit to return to full available HP, or make a Fortitude death roll.</p>`,
+    h.draft.forge?.version >= 2 ? `<p>${esc(game.deathSummary(h))}. Spend Grit to recover ${Math.ceil(h.survival.maxHp / 2)} HP or make a Fortitude death roll.</p>` : `<p>Spend Grit to return to full available HP, or make a Fortitude death roll.</p>`,
     `<button id="death-roll">Make death roll</button><button id="grit" ${h.survival.gritAvailable ? "" : "disabled"}>Spend 1 Grit</button>`,
   );
   modal.querySelector(".close").onclick = () =>

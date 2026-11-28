@@ -103,7 +103,7 @@ export const deedsCareMethods = {
     )
       return false;
     h.survival = this.R.receiveHealing(h.survival, 6);
-    h.sp = Math.min(h.preview.summary.maximumSp, h.sp + 3);
+    h.sp = Math.min(h.preview.summary.maximumSp, h.sp + 3 + (h.preview.forge?.stats.restSp ?? 0));
     h.briefRestDay = this.clock().day;
     return true;
   },

@@ -126,7 +126,7 @@ test("each discipline has four additional starter choices with stable origin and
     (c) => c.kind === "discipline",
   )) {
     const starters = Object.values(POWERS).filter(
-      (p) => p.discipline === discipline.id && p.rank === 1,
+      (p) => !p.linear && p.discipline === discipline.id && p.rank === 1,
     );
     assert.equal(starters.length, 5, discipline.id);
     assert.deepEqual(

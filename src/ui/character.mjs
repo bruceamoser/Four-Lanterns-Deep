@@ -8,6 +8,7 @@ import { EQUIPMENT_SLOTS, slotOf } from "../core/treasure.mjs";
 import { enchantmentDetails, itemComparison } from "./treasure.mjs";
 import { abilityType, disciplineIcon } from "./book-symbols.mjs";
 import { experienceDetails } from "./experience.mjs";
+import { personalSpellbook } from "./personal-spellbook.mjs";
 import { icon, itemIcon, actionIcon, esc } from "./icons.mjs";
 import { ABILITIES, coverage } from "../core/abilities.mjs";
 import { heroPreview } from "../view/appearance.mjs";
@@ -26,7 +27,7 @@ export function characterSheet({
   respec,
   treat,
 }) {
-  let tab = "equipment",
+  let tab = "equipment", selectedBook = null,
     filter = "all",
     query = "",
     selection = null,
@@ -89,9 +90,10 @@ export function characterSheet({
      )
      .join(
        "",
-     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}${h.draft.forge?.version === 2 ? `<div class="cost-note">${h.sp}/${p.summary.maximumSp} SP · ${h.survival.gritAvailable} Grit</div>${["town","exploration"].includes(game.mode) && h.survival.hp < h.survival.maxHp ? '<button id="give-first-aid">First aid · 10 min</button>' : ""}<label><input id="avert-death" type="checkbox" ${h.avertDeath !== false ? "checked" : ""}> Spend Grit on a fatal death roll</label>${["stable","dying"].includes(h.survival.status) && h.survival.gritAvailable ? '<button id="use-grit">Spend Grit now</button>' : ""}` : ""}<button id="sheet-training" class="primary">${trainingTarget(h) > p.state.level ? `Level up → ${trainingTarget(h)}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">${h.draft.forge?.version === 1 ? "Adopt Deeds rules · respec" : "Respec from beginning"}</button><div class="dossier-footer"></div></aside>
+     )}</div>${game.powerStat(h, "hidden") ? '<div class="concealment-badge">◈ CONCEALED · Your next attack reveals you</div>' : ""}${h.draft.forge?.version >= 2 ? `<div class="cost-note">${h.sp}/${p.summary.maximumSp} SP · ${h.survival.gritAvailable} Grit</div>${["town","exploration"].includes(game.mode) && h.survival.hp < h.survival.maxHp ? '<button id="give-first-aid">First aid · 10 min</button>' : ""}<label><input id="avert-death" type="checkbox" ${h.avertDeath !== false ? "checked" : ""}> Spend Grit on a fatal death roll</label>${["stable","dying"].includes(h.survival.status) && h.survival.gritAvailable ? '<button id="use-grit">Spend Grit now</button>' : ""}` : ""}<button id="sheet-training" class="primary">${trainingTarget(h) > p.state.level ? `Level up → ${trainingTarget(h)}` : "Develop character"}</button><button id="sheet-shortcuts">Manage shortcuts</button><button id="sheet-respec" class="respec-button" ${game.respecReason(index) ? "disabled" : ""} title="${esc(game.respecReason(index) || "Rebuild from the first step; keep this hero’s XP and possessions")}">${h.draft.forge && h.draft.forge.version < 3 ? "Adopt the new Atlas · respec" : "Respec from beginning"}</button><div class="dossier-footer"></div></aside>
    <main class="character-details"><nav class="sheet-tabs" aria-label="Character sections">${[
      ["equipment", "pack", "Equipment"],
+     ...(h.draft.forge?.version === 3 ? [["spellbook","book","Spellbook"]] : []),
      ["abilities", "bolt", "Abilities"],
      ["build", "star", "Build forge"],
      ["journey", "book", "Journey"],
@@ -501,12 +503,14 @@ export function characterSheet({
       };
       drawItems();
       inspect();
+    } else if (tab === "spellbook") {
+      personalSpellbook(content,{game,index,activate,train,attempt,selected:selectedBook,onSelect:id=>{selectedBook=id;draw();}});
     } else if (tab === "build") {
       buildPanel(content, { game, index, attempt, train });
     } else if (tab === "abilities") {
       const cards = C.choices.filter(
         (c) =>
-          c.kind === "ability" &&
+          c.kind === "ability" && !c.id.startsWith("spell-") &&
           (game.powerIds(h).includes(c.id) || c.universal),
       );
       content.innerHTML = `<div class="section-heading"><div><span class="eyebrow">YOUR COMBAT REPERTOIRE</span><h3>Abilities & favorites</h3></div><span class="favorite-count">${icon("star")} ${(h.favorites ?? []).length} / 8</span></div><p class="section-intro">Pin actions to your combat bar. Select a card for its cost, range and full rules.</p><h3 class="subheading">Ancestry gifts</h3><div class="ancestry-gifts">${game
@@ -535,7 +539,7 @@ export function characterSheet({
               : granted
                 ? { status: "included", reason: granted.description }
                 : coverage(c.id);
-          return `<article class="ability-entry ${a ? "playable" : ""}"><div class="ability-symbol">${abilityType(c, a)}</div><details><summary><strong>${esc(c.name)}</strong><small>${a ? `${a.category.toUpperCase()} · ${a.range ? `${a.range} SQUARES` : "SELF"}${a.attribute ? " · " + a.attribute.toUpperCase() : ""}` : esc(status.status === "included" ? "PASSIVE / CONTEXTUAL" : status.status.toUpperCase())}</small></summary><div class="ability-rules"><p class="dungeon-rule">${esc(status.reason)}</p>${a ? `<button data-use="${c.id}" ${game.actionReason(c.id, h) ? "disabled" : ""}>Use action</button><p class="cost-note">${esc(game.actionReason(c.id, h) || (a.target === "self" ? "Applies to this hero." : a.field && game.mode !== "combat" && a.target === "ally" ? "Choose a companion in the next step." : "Close this sheet and select a target in the dungeon."))}</p>` : `<p class="cost-note">${esc(status.reason)}</p>`}</div></details>${a ? `<button class="favorite-toggle ${f ? "pinned" : ""}" data-favorite="${c.id}" aria-label="${f ? "Unfavorite" : "Favorite"} ${esc(c.name)}" aria-pressed="${!!f}" title="${f ? "Remove from" : "Pin to"} combat bar">${icon("star")}</button>` : ""}</article>`;
+          return `<article class="ability-entry ${a ? "playable" : ""}"><div class="ability-symbol">${abilityType(c, a)}</div><details><summary><strong>${esc(a?.name ?? c.name)}</strong><small>${a ? `${a.category.toUpperCase()} · ${a.range ? `${a.range} SQUARES` : "SELF"}${a.attribute ? " · " + a.attribute.toUpperCase() : ""}` : esc(status.status === "included" ? "PASSIVE / CONTEXTUAL" : status.status.toUpperCase())}</small></summary><div class="ability-rules"><p class="dungeon-rule">${esc(status.reason)}</p>${a ? `<button data-use="${c.id}" ${game.actionReason(c.id, h) ? "disabled" : ""}>Use action</button><p class="cost-note">${esc(game.actionReason(c.id, h) || (a.target === "self" ? "Applies to this hero." : a.field && game.mode !== "combat" && a.target === "ally" ? "Choose a companion in the next step." : "Close this sheet and select a target in the dungeon."))}</p>` : `<p class="cost-note">${esc(status.reason)}</p>`}</div></details>${a ? `<button class="favorite-toggle ${f ? "pinned" : ""}" data-favorite="${c.id}" aria-label="${f ? "Unfavorite" : "Favorite"} ${esc(c.name)}" aria-pressed="${!!f}" title="${f ? "Remove from" : "Pin to"} combat bar">${icon("star")}</button>` : ""}</article>`;
         })
         .join("")}</div>`;
       root.querySelectorAll("[data-prepare-trait]").forEach(

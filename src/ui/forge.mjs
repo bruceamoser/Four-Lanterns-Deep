@@ -1,3 +1,4 @@
+import { linearAtlas } from "./linear-atlas.mjs";
 import { trainingTarget } from "../core/experience.mjs";
 import { deedsDP, deedsHero, disciplinePrice } from "../core/deeds-development.mjs";
 import {
@@ -41,6 +42,7 @@ export function forgeScreen({
   close,
   attempt = (fn) => fn(),
 }) {
+  if ((initial ?? game.party[index].draft).forge.version === 3) return linearAtlas({root,game,C,index,draft:initial,onChange,close,attempt});
   let draft = initial ?? game.party[index].draft,
     selected = null,
     refund = null,

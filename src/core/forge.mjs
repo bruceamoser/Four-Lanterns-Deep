@@ -1,3 +1,5 @@
+import { LINEAR_FIELDS, LINEAR_NODES, studyRoot } from "./linear-atlas.mjs";
+import { linearHero, signatureLevel } from "./deeds-development.mjs";
 import { deedsClasses, deedsOrigins, atlasStudies, fieldOf, startingPurse } from "./deeds-origins.mjs";
 import { DEEDS_CLASSES, deedsHero, deedsDP, deedsVitals, disciplinePrice } from "./deeds-development.mjs";
 import { bulkCatalog, encumbranceFor } from "./bulk.mjs";
@@ -21,7 +23,7 @@ const attributes = [
   "knowledge",
   "reason",
 ];
-export function newForgeDraft() {
+export function newForgeDraft(version = FORGE_VERSION) {
   return {
     name: "",
     attributes: Object.fromEntries(attributes.map((k) => [k, 0])),
@@ -31,7 +33,7 @@ export function newForgeDraft() {
     signatures: {},
     culture: {},
     background: {},
-    forge: { version: FORGE_VERSION, nodes: [] },
+    forge: { version, nodes: [] },
     progression: { level: 1 },
     kit: "vanguard",
     shopping: [],
@@ -42,6 +44,7 @@ export function forgeCatalog(source) {
   const c = structuredClone(gameCatalog(source));
   c.forge = true;
   const powers = new Set(FORGE_NODES.map((n) => n.power).filter(Boolean));
+  for (const n of LINEAR_NODES) { if (n.power) powers.add(n.power); for (const id of n.pages ?? []) powers.add(id); }
   const grants = new Set(FORGE_NODES.map((n) => n.grant).filter(Boolean));
   c.choices = c.choices.filter(
     (r) =>
@@ -78,30 +81,32 @@ export function forgeCatalog(source) {
   for (const [id,origin] of Object.entries(deedsOrigins)) {
     let r=c.choices.find(choice=>choice.id===id);
     if (!r) {r={id,kind:"origin",name:origin.name,pairs:[]}; c.choices.push(r);}
+    r.studies=origin.roots.map(id=>"discipline-"+id);
     r.deedsDisciplines=atlasStudies(origin.roots);
   }
-  for (const r of c.choices.filter(r=>r.kind==="class")) r.deedsDisciplines=atlasStudies(deedsClasses[r.id]);
+  for (const r of c.choices.filter(r=>r.kind==="class")) { r.deedsDisciplines=atlasStudies(deedsClasses[r.id]); r.studies=deedsClasses[r.id].map(id=>"discipline-"+id); }
+  for (const id of LINEAR_FIELDS) if (!c.choices.some(r=>r.id==="discipline-"+id)) c.choices.push({id:"discipline-"+id,kind:"discipline",name:id[0].toUpperCase()+id.slice(1)});
   return c;
 }
 export function forgeOrigins(draft, C) {
   const cls = C.choices.find((r) => r.id === draft.classId),
     origins = [];
   const classId = draft.classDisciplines?.[0];
-  if (cls?.kind === "class" && (deedsHero(draft) ? cls.deedsDisciplines : cls.startingDisciplines).includes(classId))
+  if (cls?.kind === "class" && (linearHero(draft) ? cls.studies : deedsHero(draft) ? cls.deedsDisciplines : cls.startingDisciplines).includes(classId))
     origins.push({
       source: "Class",
-      id: classId.replace("discipline-", "") + ":origin",
+      id: linearHero(draft) ? studyRoot(classId.slice(11)) : classId.replace("discipline-", "") + ":origin",
     });
   for (const key of ["culture", "background"]) {
     const s = draft[key],
       r = C.choices.find((r) => r.id === s?.id);
     if (
       r?.id.startsWith("origin-" + key + "-") &&
-      (deedsHero(draft) ? r.deedsDisciplines?.includes(s.discipline) : r.pairs.some((p) => p.disciplineId === s.discipline))
+      (linearHero(draft) ? r.studies?.includes(s.discipline) : deedsHero(draft) ? r.deedsDisciplines?.includes(s.discipline) : r.pairs.some((p) => p.disciplineId === s.discipline))
     )
       origins.push({
         source: key === "culture" ? "Culture" : "Background",
-        id: s.discipline.replace("discipline-", "") + ":origin",
+        id: linearHero(draft) ? studyRoot(s.discipline.slice(11)) : s.discipline.replace("discipline-", "") + ":origin",
       });
   }
   return origins;
@@ -130,6 +135,11 @@ export function forgeRanks(draft, C) {
   const ranks = {};
   for (const id of forgeOwned(draft, C)) {
     const n = FORGE_NODE[id];
+    if (linearHero(draft) && n?.pages) {
+      const school = n.arm.slice(5);
+      const alias = {flame:"flame",water:"frost",air:"storm"}[school] ?? {mentalism:"mind",invocation:"calling",wards:"radiance"}[n.discipline];
+      if (alias) ranks["discipline-"+alias] = Math.max(ranks["discipline-"+alias] ?? 0, n.rank);
+    }
     if (n?.rank)
       ranks[`discipline-${n.discipline}`] = Math.max(
         ranks[`discipline-${n.discipline}`] ?? 0,
@@ -142,6 +152,7 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
   const reasons = [],
     owned = forgeOwned(draft, C),
     level = draft.progression?.level ?? 1;
+  if (node && !!node.linear !== linearHero(draft)) return ["This choice belongs to a different Atlas edition."];
   if (!node) return ["Unknown forge node."];
   if (!deedsHero(draft) && FORGE_DISCIPLINES.some(d=>d.inner===2 && d.id===node.discipline)) return ["Adopt Deeds rules in Greyhaven first."];
   if (owned.has(node.id)) return ["Already learned."];
@@ -182,15 +193,15 @@ export function forgeRequirements(node, draft, C, { budget = true } = {}) {
 export function validateForge(draft, C) {
   const errors = [];
   if (
-    ![1, FORGE_VERSION].includes(draft.forge?.version) ||
+    ![1, 2, FORGE_VERSION].includes(draft.forge?.version) ||
     !Array.isArray(draft.forge.nodes)
   )
     return [
       "This character belongs to an earlier ruleset. Start a new v0.6 journey.",
     ];
   const level = draft.progression?.level;
-  if (!Number.isSafeInteger(level) || level < 1 || level > FORGE_LEVEL_CAP)
-    return ["Choose a trained level from 1 to 30."];
+  if (!Number.isSafeInteger(level) || level < 1 || level > (linearHero(draft) ? 100 : FORGE_LEVEL_CAP))
+    return ["Choose a valid trained level."];
   const p = structuredClone(draft);
   p.forge.nodes = [];
   for (const id of draft.forge.nodes) {
@@ -226,17 +237,17 @@ export function forgeRefundPlan(draft, C, id = null) {
   };
 }
 export function missingSignatures(draft) {
-  return deedsHero(draft) && draft.classId ? [1,3,7].filter(n=>n<=draft.progression.level && !draft.signatures?.[n]) : [];
+  return deedsHero(draft) && draft.classId ? [1,3,7].filter(n=>signatureLevel(draft,n)<=draft.progression.level && !draft.signatures?.[n]) : [];
 }
 export function forgeBenefits(draft, C) {
   const owned = forgeOwned(draft, C),
     stats = {},
     profiles = { melee: [1, 1, 2], ranged: [1, 1, 2] },
-    upgrades = [],
+    techniques = {}, spellbook = {}, upgrades = [],
     abilities = deedsHero(draft) ? ["power-forge-strike", "power-forge-shot", "ability-stabilize"] : [],
     recipes = [];
   if (deedsHero(draft)) {
-    const signatures = Object.values(draft.signatures ?? {}).map(id => POWERS[id]).filter(p => p?.signature && p.classId === draft.classId && p.minimumLevel <= draft.progression.level);
+    const signatures = Object.values(draft.signatures ?? {}).map(id => POWERS[id]).filter(p => p?.signature && p.classId === draft.classId && signatureLevel(draft,p.minimumLevel) <= draft.progression.level);
     for (const power of signatures) {
       abilities.push(power.id);
       for (const [key,value] of Object.entries(power.buildStats ?? {}))
@@ -250,6 +261,11 @@ export function forgeBenefits(draft, C) {
   for (const id of owned) {
     const n = FORGE_NODE[id];
     if (!n) continue;
+    if (n.spec) techniques[n.power] = n.id;
+    if (n.pages) {
+      (spellbook[n.arm.slice(5)] ??= []).push(...n.pages);
+      abilities.push(...n.pages);
+    }
     if (n.power) abilities.push(n.power);
     if (n.grant) abilities.push(n.grant);
     for (const [key, value] of Object.entries(n.stats ?? {}))
@@ -262,7 +278,7 @@ export function forgeBenefits(draft, C) {
     stats,
     profiles,
     upgrades,
-    abilities: [...new Set(abilities)],
+    techniques, spellbook, abilities: [...new Set(abilities)],
     recipes: [...new Set(recipes)],
     owned: [...owned],
   };
@@ -355,12 +371,12 @@ export function forgeCharacter(draft, C) {
     error("traits", "Choose two distinct ancestry traits.");
   if (deedsHero(draft)) {
     for (const [tier,id] of Object.entries(draft.signatures ?? {}))
-      if (!cls?.signatures?.[tier]?.includes(id) || Number(tier) > draft.progression.level)
+      if (!cls?.signatures?.[tier]?.includes(id) || signatureLevel(draft,tier) > draft.progression.level)
         error("signature","Choose a signature for this class and trained level.");
     for (const stat of DEEDS_CLASSES[draft.classId]?.minimum ?? [])
       if (attr[stat] < 0) error("class", "This class requires at least 0 " + stat + ".");
     const roots = forgeOrigins(draft, C);
-    if (new Set(roots.map(root => fieldOf(root.id))).size < roots.length)
+    if (new Set(roots.map(root => linearHero(draft) ? root.id : fieldOf(root.id))).size < roots.length)
       error("origins", "Choose three distinct starting disciplines.");
   }
   const selection = ancestrySelection(draft, C.choices);
@@ -545,8 +561,8 @@ export function forgeCharacter(draft, C) {
 }
 export function forgePower(spec, h) {
   if (!h?.draft?.forge) return spec;
-  const p = structuredClone(spec),
-    b = h.preview.forge ?? { stats: {}, profiles: {}, upgrades: [] };
+  const b = h.preview.forge ?? { stats: {}, profiles: {}, upgrades: [] };
+  const p = structuredClone(FORGE_NODE[b.techniques?.[spec.id]]?.spec ?? spec);
   if (p.id === "power-field-care")
     p.effects.unshift({ kind: "heal", amount: [1, 2, 3] });
   const weaponProfile = p.forgeProfile ?? (!p.forgePower && p.weapon);
@@ -612,6 +628,9 @@ export function forgePowerText(p) {
   return [
     `${{ main: "Action", maneuver: "Maneuver", reaction: "Reaction", passive: "Passive" }[p.category] ?? "Power"}${p.target === "self" ? "" : ` · range ${p.range ?? 0}`}${p.radius ? ` · radius ${p.radius}` : ""}${p.shape ? ` · ${p.shape}` : ""}${p.shots ? ` · ${p.shots} arrows` : ""}.`,
     p.spell && p.spCost != null ? p.spCost + " SP · " + (p.weapon || p.shield ? "Held focus." : "Free hand required.") : "",
+    p.ritualMinutes ? "Ritual · "+p.ritualMinutes+" min outside combat." : "",
+    p.maxTargets ? "Up to "+p.maxTargets+" adjacent enemies." : "",
+    p.dungeonName ? "Adapted from "+p.printedName+"." : "",
     p.trainingBoon ? "Basic strike training grants 1 Boon on this attack." : "",
     p.normalRange ? "Normal range " + p.normalRange + ". Beyond it, 1 Bane." : "",
     p.attribute && p.effects?.some((e) => ["damage", "heal"].includes(e.kind))
@@ -642,6 +661,10 @@ export function forgePowerText(p) {
           survey: "Reveal the floor layout and containers, not hidden enemies.",
           cue: (e.ally ? "Choose an ally within three squares to move" : "You may step") + " up to " + (e.steps ?? 1) + " square(s)" + (e.strongSteps ? " ("+e.strongSteps+" on Strong)" : "") + (e.safe ? " without reactions." : e.ignoreTarget ? " without a reaction from the target." : ".") + (e.aid ? " The ally gains an attack Boon against the target." : ""),
           sense: "Sense "+e.sense+" within "+e.range+" squares and record what the company discovers.",
+          refill: "Refill a carried water flask to d8.",
+          transferSP: (e.draw ? "Draw up to " : "Give up to ")+e.amount+" SP from the donor’s current reserve. Casting costs are separate.",
+          identify: "Choose an unidentified carried find. Examine it for hidden properties.",
+          returnRite: "Return one fallen hero at the Shrine. Consumes a Grave pearl and Ash of the Last Witness.",
           wound: "Treat one recoverable wound using a restoration draught.",
           stabilize: "Stabilize a dying companion.",
           reveal: "Reveal the target.",

@@ -1,3 +1,5 @@
+import { TECHNIQUES } from "./linear-atlas.mjs";
+import { SPELLS } from "./spell-pages.mjs";
 import { bulkCatalog } from "./bulk.mjs";
 import { addForgePowers } from "./forge-powers.mjs";
 import { RECIPE_ITEMS } from "./recipes.mjs";
@@ -806,6 +808,7 @@ expandSignatures(definitions);
 definitions.push(...DEEDS_POWERS);
 addForgePowers(definitions);
 makeAtWill(definitions);
+definitions.push(...TECHNIQUES, ...SPELLS);
 export const POWERS = Object.freeze(
   Object.fromEntries(definitions.map((p) => [p.id, Object.freeze(p)])),
 );
@@ -932,6 +935,7 @@ export function mappedPower(id, C) {
   return id;
 }
 export function isTrainable(c, C) {
+  if (POWERS[c.id]?.linear && !C.forge) return false;
   if (POWERS[c.id]?.deedsOnly && !C.forge) return false;
   return (
     !C.gamePowers ||

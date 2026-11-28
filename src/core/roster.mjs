@@ -1,5 +1,5 @@
 import {missingSignatures} from "./forge.mjs";
-import { xpForLevel, levelForXP, legacyXPForLevel } from "./experience.mjs";
+import { effectiveXP, heroThreshold, xpForLevel, levelForXP, legacyXPForLevel } from "./experience.mjs";
 
 export function storedHero(hero) {
   const { preview, ...record } = hero;
@@ -21,7 +21,7 @@ export function prepareRoster(campaign) {
   for(const h of heroes) {
     h.heroId ??= crypto.randomUUID();
     const earned=h.earnedLevel ?? h.draft.progression?.level ?? 1;
-    h.xp ??= (oldCurve?legacyXPForLevel:xpForLevel)(earned);
+    h.xp ??= (oldCurve?legacyXPForLevel:heroThreshold(h.draft))(earned);
     h.xpHistory ??=[];
     if(oldCurve && Number.isSafeInteger(h.xp) && h.xp>=0) {
       const oldLevel=levelForXP(h.xp,legacyXPForLevel);
@@ -61,8 +61,9 @@ export function validateRoster(campaign) {
       typeof h.heroId !== "string" ||
       !h.heroId ||
       !Number.isSafeInteger(h.xp) ||
-      h.xp < xpForLevel(h.earnedLevel) ||
-      levelForXP(h.xp) !== h.earnedLevel ||
+      !Number.isSafeInteger(h.xpOffset ?? 0) || h.xp < 0 ||
+      effectiveXP(h) < heroThreshold(h.draft)(h.earnedLevel) ||
+      levelForXP(effectiveXP(h), heroThreshold(h.draft)) !== h.earnedLevel ||
       !Array.isArray(h.xpHistory) ||
       h.xpHistory.some(
         (e) =>
@@ -128,7 +129,7 @@ export const rosterMethods = {
     h.conditions = [];
     h.buffs = {};
     h.powerEffects = [];
-    h.sp = h.draft.forge?.version === 2 ? 0 : h.sp;
+    h.sp = h.draft.forge?.version >= 2 ? 0 : h.sp;
     this.refreshHero(h);
     for (const {hero,item} of ingredients) {
       this.removePortableItem(hero, item.instanceId);
