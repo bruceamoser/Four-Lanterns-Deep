@@ -30,4 +30,3 @@ Published 0.8 and 0.9 heroes can finish an expedition with their original rules.
 ## Source and art
 
 The first-party book titles, section order, printed prices, technique names and nine gold discipline symbols come from Bruce Moser’s Deeds of Legend source at `44ef046`. The nine SVGs in `public/art/discipline-tokens` come from its `design/player-book/art/tokens` directory. The original pinned Foundry import remains in its vendor directory. The effect definitions, UI and digital tuning are game adaptations. The [complete coverage report](linear-atlas-coverage.json) lists the resulting game effects and costs for every purchasable stage. Regenerate it with `npm run coverage:abilities`. The source tables are in `src/core/study-books.mjs` and `study-arms.mjs`, with execution data in `spell-pages.mjs` and `linear-atlas.mjs`.
-

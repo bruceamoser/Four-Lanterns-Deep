@@ -6,13 +6,12 @@
 
 ## Implemented
 
-Replaced new-hero Atlas development with 84 linear arms. A technique keeps one action ID as it evolves. Buying each seven-section source book automatically grants the corresponding pages to the hero. Fully implemented dungeon adaptations for 319 pages use the regular casting, inventory, recovery and combat authorities. The new edition has 100 XP levels, class/ancestry growth and class-priced roots. Personal book UI, Atlas, roster creation, Greyhaven respec and equipment attunement use the same purchased studies. [Design, migration and implementation coverage](../../linear-atlas.md).
+Replaced new-hero Atlas development with 84 linear arms. A technique keeps one action ID as it evolves. Buying a section of any source book immediately grants all spells in that section to the purchasing hero. Fully implemented dungeon adaptations for 319 pages use the regular casting, inventory, recovery and combat authorities. The new edition has 100 XP levels, class/ancestry growth and class-priced roots. Personal book UI, Atlas, roster creation, Greyhaven respec and equipment attunement use the same purchased studies. [Design, migration and implementation coverage](../../linear-atlas.md).
 
 ## Verification and outstanding work
 
-The direct Ubuntu launcher has passed silent native checks for spell study, immediate personal pages, an actual healing cast, team isolation, refunds and save-on-close. Full catalogue tests exercise 319 pages, ordered predecessors, every active martial stage, maximum level, equipment attunement, ritual rewards and migration. The 0.8.8 migration regression passes. Source tests, Linux/Windows packages and release smoke tests are being qualified before publication.
+The direct Ubuntu launcher has passed silent native checks for spell study, immediate personal pages, an actual healing cast, team isolation, refunds and save-on-close. Full catalogue tests exercise 319 pages, ordered predecessors, every active martial stage, maximum level, equipment attunement, ritual rewards and migration. The 0.8.8 migration regression passes. All 407 automated tests passed. The Linux AppImage, Debian package and Windows portable build are assembled. The game archives on both platforms contain all 58 approved creature models. Installer and updater checks run separately. See [PR 211](https://github.com/bruceamoser/Four-Lanterns-Deep/pull/211).
 
 ## Local state
 
 Paid character exports and all 58 approved creature inputs are staged privately in this worktree. The installer, screenshots and synthetic QA profiles are local. Use an on-disk `TMPDIR` for packaging because the desktop’s shared memory-backed temporary directory has a quota. Personal save slots and installed binaries are outside the test profiles.
-
