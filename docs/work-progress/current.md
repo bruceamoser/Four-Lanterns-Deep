@@ -1,8 +1,10 @@
 # Current working progress
 
-## November 28 — Linear discipline arms and personal spellbooks
+## November 28 — Stable release 0.10.0
 
-Implementation merged in [PR 211](https://github.com/bruceamoser/Four-Lanterns-Deep/pull/211). Tag `v0.10.0` points to `23889416d3869fe298e2df2c894eef09b7dde093`. New heroes use a 100-level digital curve. Successive purchases evolve one technique slot per arm. A section purchase automatically adds every associated spell to that hero’s personal book. Existing heroes can rebuild in Greyhaven. The direct Ubuntu launcher passed the personal book and Atlas walkthrough. Playtest follow-up found extra distance and stationary ration checks. Food and water now roll once per dungeon day, lit torches once per burning hour and camp pauses both. 411 automated tests and the AppImage update round trip passed. The release is staged for installer qualification. [Implementation handoff](handoffs/2026-11-28-linear-atlas.md).
+[Four Lanterns Deep 0.10.0 — The Living Atlas](https://github.com/bruceamoser/Four-Lanterns-Deep/releases/tag/v0.10.0) is the latest public release. Tag `v0.10.0` points to `23889416d3869fe298e2df2c894eef09b7dde093`. The AppImage, installed Debian package and installed Windows build passed the [finished installer checks](https://github.com/bruceamoser/Four-Lanterns-Deep/actions/runs/46172165774). All eleven public assets matched the published checksums. An unmodified 0.9.0 AppImage downloaded the update from the public feed.
+
+The Atlas has 84 linear arms across 21 disciplines. Buying a section automatically puts its spells in the purchasing hero’s book. Techniques improve in one slot. Digital heroes train through level 100. Existing 0.8 and 0.9 heroes can adopt the new progression in Greyhaven. Supplies use elapsed dungeon time, with one meal and drink per hero per day and one fuel check per burning hour. Camp pauses both. 411 automated tests and the full muted native Linux walkthrough passed. [Release handoff](handoffs/2026-11-28-linear-atlas.md). [Player changes](../release-notes.md).
 
 ## November 27 — Stable release 0.9.0
 
